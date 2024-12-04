@@ -1,0 +1,7 @@
+sentinel_scenes
+sentinel_scenes_SL
+.venv
+venv
+.ipynb_*
+
+__pycache__
