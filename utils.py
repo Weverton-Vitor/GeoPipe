@@ -14,19 +14,25 @@ def donwload_images(
     final_date: str,
     roi_path: str,
     prefix_images_name: str,
-    all_bands=True,
+    all_bands: bool=True,
+    scale :int=10
 ) -> None:
+    
+    # Create directories structure
     os.makedirs(dowload_path, exist_ok=True)
+    
+    for year in range(int(init_date.split('-')[0]), int(final_date.split('-')[0])+1):
+        os.makedirs(f'{dowload_path}{year}', exist_ok=True)
 
+    # Create roi
     roi = shapefile2feature_collection(roi_path)
 
+    # Get collection
     collection = (
         ee.ImageCollection(collection_id)
         .filterDate(init_date, final_date)
         .filterBounds(roi)
     )
-
-    print(collection.first().geometry().projection().getInfo())
 
     # Filter if necessary
     if not all_bands:
@@ -44,7 +50,7 @@ def donwload_images(
 
         url = image.getDownloadURL(
             {
-                "scale": 10,  # Resolução espacial
+                "scale": scale,  # Resolução espacial
                 "region": roi.geometry(),  # Região de interesse
                 "crs": "EPSG:4326",  # Sistema de coordenadas
                 "format": "GeoTIFF",  # Formato de saída
@@ -58,7 +64,7 @@ def donwload_images(
         )  # Converte para data legível
 
         # Nome do arquivo de saída
-        output_file = os.path.join(dowload_path, f"{prefix_images_name}_{date}.tif")
+        output_file = os.path.join(f'{dowload_path}/{date[:4]}', f"{prefix_images_name}_{date}.tif")
 
         # Faz o download da imagem e salva no diretório especificado
         response = requests.get(url)
