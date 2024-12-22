@@ -1,0 +1,9 @@
+collection_id: "COPERNICUS/S2_HARMONIZED"
+dowload_path: ""
+init_date: "2020-11-30"
+final_date: "2024-12-30"
+roi_path: ""
+prefix_images_name: ""
+all_bands: False
+scale: 10
+  
