@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 
 import ee
@@ -8,12 +9,16 @@ import requests
 from tqdm import tqdm
 
 
+
+# Obter o logger específico do node
+logger = logging.getLogger(__name__)
+
 def donwload_images(
     collection_id: str,
     dowload_path: str,
     init_date: str,
     final_date: str,
-    roi_path: str,
+    roi: ee.FeatureCollection,
     prefix_images_name: str,
     all_bands: bool=True,
     scale :int=10
@@ -25,8 +30,6 @@ def donwload_images(
     for year in range(int(init_date.split('-')[0]), int(final_date.split('-')[0])+1):
         os.makedirs(f'{dowload_path}{year}', exist_ok=True)
 
-    # Create roi
-    roi = shapefile2feature_collection(roi_path)
 
     # Get collection
     collection = (
@@ -37,9 +40,9 @@ def donwload_images(
 
     # Filter if necessary
     if not all_bands:
-        collection = collection.select(["B2", "B3", "B4", "B8", "B11", "B12"])
+        logger.warning("Download bands: [B2, B3, B4, B8, B11, B12]")
 
-    print("Total Imagens:", collection.size().getInfo())
+    logger.info(f"Total images: {collection.size().getInfo()}")
 
     images = collection.toList(collection.size()).getInfo()
 
@@ -48,6 +51,10 @@ def donwload_images(
     ):
         image_id = image_info["id"]
         image = ee.Image(image_id)
+        
+        # Filter if necessary
+        if not all_bands:
+            image = image.select(["B2", "B3", "B4", "B8", "B11", "B12"])
 
         url = image.getDownloadURL(
             {
@@ -74,12 +81,9 @@ def donwload_images(
 
 
 
-def shapefile2feature_collection(shapefile_path: str) -> ee.FeatureCollection:
-    # Loading the shapefile .zip format
-    gdf = gpd.read_file(shapefile_path)
-
+def shapefile2feature_collection(shapefile: gpd.GeoDataFrame) -> ee.FeatureCollection:
     # Convert from GeoDataFrame to GeoJson
-    geojson_data = geojson.loads(gdf.to_json())
+    geojson_data = geojson.loads(shapefile.to_json())
 
     # Create the FeatureCollection from geojson
     fc = ee.FeatureCollection(geojson_data)

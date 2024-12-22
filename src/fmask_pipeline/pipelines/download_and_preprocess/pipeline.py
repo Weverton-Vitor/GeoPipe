@@ -12,12 +12,20 @@ def create_pipeline(**kwargs) -> Pipeline:
                 func=shapefile2feature_collection,
                 inputs=["shapefile"],
                 outputs="shapefile_features",
-                name="load_shuttles_to_csv_node",
+                name="load_shapefile",
             ),
          node(
                 func=donwload_images,
-                inputs="shapefile_features",
+                inputs={
+                        "collection_id":"params:sentinel.collection_id",
+                        "dowload_path":"params:sentinel.dowload_path",
+                        "init_date":"params:sentinel.init_date",
+                        "final_date":"params:sentinel.final_date",
+                        "prefix_images_name":"params:sentinel.prefix_images_name",
+                        "all_bands":"params:sentinel.all_bands",
+                        "scale":"params:sentinel.scale",
+                        "roi":"shapefile_features"},
                 outputs="shuttles@csv",
-                name="load_shuttles_to_csv_node",
+                name="download_images",
             ),
     ])
