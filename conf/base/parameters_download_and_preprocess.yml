@@ -1,8 +1,9 @@
 sentinel:
   collection_id: "COPERNICUS/S2_HARMONIZED"
-  dowload_path: "data/01_raw/sume/"
+  dowload_path: "data/01_toa/sume/"
+  masks_path: "data/02_masks/sume"
   init_date: "2020-11-30"
-  final_date: "2024-12-30"
+  final_date: "2020-12-30"
   prefix_images_name: "sentinel2_6B_TOA_sume"
   all_bands: False
   scale: 10
