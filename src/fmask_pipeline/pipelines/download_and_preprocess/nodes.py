@@ -8,10 +8,21 @@ import geopandas as gpd
 import requests
 from tqdm import tqdm
 
+from fmask import Fmask
 
 
 # Obter o logger específico do node
 logger = logging.getLogger(__name__)
+
+
+def shapefile2feature_collection(shapefile: gpd.GeoDataFrame) -> ee.FeatureCollection:
+    # Convert from GeoDataFrame to GeoJson
+    geojson_data = geojson.loads(shapefile.to_json())
+
+    # Create the FeatureCollection from geojson
+    fc = ee.FeatureCollection(geojson_data)
+
+    return fc
 
 def donwload_images(
     collection_id: str,
@@ -80,12 +91,38 @@ def donwload_images(
             file.write(response.content)
 
 
+def apply_fmask(toa_path: str, save_path: str, plot_path: str):
+    fmask = Fmask()
+    
+    
+    inputs = glob.glob(f'{toa_path}\*\*.tif')
+    inputs = []
 
-def shapefile2feature_collection(shapefile: gpd.GeoDataFrame) -> ee.FeatureCollection:
-    # Convert from GeoDataFrame to GeoJson
-    geojson_data = geojson.loads(shapefile.to_json())
+    for inp in inputs:
+        file_name = f'{inp.split("/")[-1].split(".")[0]}_result'
+        
+        color_composite, cloud_mask, shadow_mask, water_mask = fmask.create_fmask(inp)
+        
+        fmask.save_plot(
+            [cloud_mask, shadow_mask, water_mask],
+            color_composite,
+            plot_path,
+            name=file_name + ".png",
+        )
+        
+        # fmask.save_mask_tif(
+        #     cloud_mask=cloud_mask,
+        #     cloud_shadow_mask=shadow_mask,
+        #     water_mask=water_mask,
+        #     original_tif_file=inp,
+        #     output_file=file_name + ".tif",
+        # )
+        
+if __name__ == "__main__":
+    import glob
 
-    # Create the FeatureCollection from geojson
-    fc = ee.FeatureCollection(geojson_data)
 
-    return fc
+    # Using '*' pattern 
+    print('\nNamed with wildcard *:')
+    for name in glob.glob('C:\projectspy\RS\\fmask-pipeline\data\\01_toa\sume\*\*.tif'):
+        print(name)
