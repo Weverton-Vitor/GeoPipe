@@ -1,4 +1,5 @@
 import datetime
+import glob
 import logging
 import os
 
@@ -8,12 +9,27 @@ import geopandas as gpd
 import requests
 from tqdm import tqdm
 
-from fmask import Fmask
-
+from fmask.Fmask import Fmask
 
 # Obter o logger específico do node
 logger = logging.getLogger(__name__)
 
+def create_dirs(dowload_path: str,
+                save_masks_path: str,
+                save_plots_path: str,
+                init_date: str,
+                final_date: str):
+
+    # Create directories structure, if not exists
+    os.makedirs(dowload_path, exist_ok=True)
+    os.makedirs(save_masks_path, exist_ok=True)
+    os.makedirs(save_plots_path, exist_ok=True)
+
+    logger.warning(int(init_date.split('-')[0]), int(final_date.split('-')[0])+1)
+    for year in range(int(init_date.split('-')[0]), int(final_date.split('-')[0])+1):
+        os.makedirs(f'{dowload_path}{year}', exist_ok=True)
+        os.makedirs(f'{save_masks_path}{year}', exist_ok=True)
+        os.makedirs(f'{save_plots_path}{year}', exist_ok=True)
 
 def shapefile2feature_collection(shapefile: gpd.GeoDataFrame) -> ee.FeatureCollection:
     # Convert from GeoDataFrame to GeoJson
@@ -34,13 +50,6 @@ def donwload_images(
     all_bands: bool=True,
     scale :int=10
 ) -> None:
-    
-    # Create directories structure
-    os.makedirs(dowload_path, exist_ok=True)
-    
-    for year in range(int(init_date.split('-')[0]), int(final_date.split('-')[0])+1):
-        os.makedirs(f'{dowload_path}{year}', exist_ok=True)
-
 
     # Get collection
     collection = (
@@ -62,7 +71,7 @@ def donwload_images(
     ):
         image_id = image_info["id"]
         image = ee.Image(image_id)
-        
+
         # Filter if necessary
         if not all_bands:
             image = image.select(["B2", "B3", "B4", "B8", "B11", "B12"])
@@ -91,22 +100,17 @@ def donwload_images(
             file.write(response.content)
 
 
-def apply_fmask(toa_path: str, save_path: str, plot_path: str):
+def apply_fmask(toa_path: str, save_masks_path: str, save_plots_path: str):
     fmask = Fmask()
-    
-    
-    inputs = glob.glob(f'{toa_path}\*\*.tif')
-    inputs = []
+    inputs = glob.glob(f'{toa_path}/*/*.tif')
 
     for inp in inputs:
         file_name = f'{inp.split("/")[-1].split(".")[0]}_result'
-        
         color_composite, cloud_mask, shadow_mask, water_mask = fmask.create_fmask(inp)
-        
         fmask.save_plot(
             [cloud_mask, shadow_mask, water_mask],
             color_composite,
-            plot_path,
+            save_plots_path,
             name=file_name + ".png",
         )
         
@@ -118,11 +122,3 @@ def apply_fmask(toa_path: str, save_path: str, plot_path: str):
         #     output_file=file_name + ".tif",
         # )
         
-if __name__ == "__main__":
-    import glob
-
-
-    # Using '*' pattern 
-    print('\nNamed with wildcard *:')
-    for name in glob.glob('C:\projectspy\RS\\fmask-pipeline\data\\01_toa\sume\*\*.tif'):
-        print(name)
