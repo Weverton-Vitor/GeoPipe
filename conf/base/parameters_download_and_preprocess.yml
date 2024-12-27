@@ -4,8 +4,8 @@ sentinel:
   dowload_path: "data/01_toa/"
   save_masks_path: "data/02_masks/"
   save_plot_masks_path: "data/03_masks_plot/"
-  init_date: "2020-11-01"
-  final_date: "2020-11-15"
+  init_date: "2017-01-01"
+  final_date: "2020-12-30"
   prefix_images_name: "sentinel2_6B_TOA"
   all_bands: False
   scale: 10

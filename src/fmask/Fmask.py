@@ -904,8 +904,9 @@ if __name__ == "__main__":
 
     for inp in inputs:
         file_name = f'{inp.split("/")[-1].split(".")[0]}_result'
+        
         color_composite, cloud_mask, shadow_mask, water_mask = fmask.create_fmask(inp)
-        # fmask.save_tif(result, inputs[0], "./test.tif")
+        
         fmask.save_plot(
             [cloud_mask, shadow_mask, water_mask],
             color_composite,
