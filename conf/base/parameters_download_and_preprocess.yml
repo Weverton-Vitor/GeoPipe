@@ -1,11 +1,12 @@
 sentinel:
   collection_id: "COPERNICUS/S2_HARMONIZED"
-  dowload_path: "data/01_toa/sume/"
-  save_masks_path: "data/02_masks/sume/"
-  save_plot_masks_path: "data/03_masks_plot/sume/"
+  location_name: "sume"
+  dowload_path: "data/01_toa/"
+  save_masks_path: "data/02_masks/"
+  save_plot_masks_path: "data/03_masks_plot/"
   init_date: "2020-11-01"
   final_date: "2020-11-15"
-  prefix_images_name: "sentinel2_6B_TOA_sume"
+  prefix_images_name: "sentinel2_6B_TOA"
   all_bands: False
   scale: 10
   

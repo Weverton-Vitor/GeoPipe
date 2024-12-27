@@ -563,6 +563,9 @@ class Fmask:
         mask_final[cloud_shadow_mask] = 2
         mask_final[cloud_mask] = 1
         mask_final[water_mask] = 3
+        
+        os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
+        
 
         with rasterio.open(original_tif_file) as src:
             profile = src.profile
@@ -571,15 +574,13 @@ class Fmask:
                 dst.write(mask_final, 1)
 
     def save_plot(
-        self, masks: list, color_composite: np.ndarray, save_dir: str, name: str
-    ) -> None:
+        self, masks: list, color_composite: np.ndarray, output_file: str) -> None:
         """Save a plot contains mask with mask
 
         Args:
             mask (np.ndarray): Final mask
             color_composite (str): A color composite with three bands
             save_dir (str): Directory to save the plot
-            name (str): Name of the file
         """
 
         fig = plt.figure(figsize=(25, 15))
@@ -605,9 +606,9 @@ class Fmask:
         plt.legend(handles=legend_elements, loc="upper right", fontsize=25)
         plt.axis(False)
 
-        os.makedirs(save_dir, exist_ok=True)
+        os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
 
-        fig.savefig(save_dir + name, dpi=fig.dpi)
+        fig.savefig(output_file, dpi=fig.dpi)
 
     def separar_componentes(self, mask):
         """

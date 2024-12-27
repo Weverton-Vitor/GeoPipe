@@ -15,23 +15,25 @@ from fmask.Fmask import Fmask
 logger = logging.getLogger(__name__)
 
 def create_dirs(dowload_path: str,
+                location_name: str,
                 save_masks_path: str,
                 save_plots_path: str,
                 init_date: str,
                 final_date: str):
 
     # Create directories structure, if not exists
-    os.makedirs(dowload_path, exist_ok=True)
-    os.makedirs(save_masks_path, exist_ok=True)
-    os.makedirs(save_plots_path, exist_ok=True)
+    os.makedirs(f"{dowload_path}{location_name}/", exist_ok=True)
+    os.makedirs(f"{save_masks_path}{location_name}/", exist_ok=True)
+    os.makedirs(f"{save_plots_path}{location_name}/", exist_ok=True)
 
-    logger.warning(int(init_date.split('-')[0]), int(final_date.split('-')[0])+1)
     for year in range(int(init_date.split('-')[0]), int(final_date.split('-')[0])+1):
-        os.makedirs(f'{dowload_path}{year}', exist_ok=True)
-        os.makedirs(f'{save_masks_path}{year}', exist_ok=True)
-        os.makedirs(f'{save_plots_path}{year}', exist_ok=True)
+        os.makedirs(f'{dowload_path}{location_name}/{year}', exist_ok=True)
+        os.makedirs(f'{save_masks_path}{location_name}/{year}', exist_ok=True)
+        os.makedirs(f'{save_plots_path}{location_name}/{year}', exist_ok=True)
+        
+    return True
 
-def shapefile2feature_collection(shapefile: gpd.GeoDataFrame) -> ee.FeatureCollection:
+def shapefile2feature_collection(shapefile: gpd.GeoDataFrame, *args, **kwargs) -> ee.FeatureCollection:
     # Convert from GeoDataFrame to GeoJson
     geojson_data = geojson.loads(shapefile.to_json())
 
@@ -42,14 +44,15 @@ def shapefile2feature_collection(shapefile: gpd.GeoDataFrame) -> ee.FeatureColle
 
 def donwload_images(
     collection_id: str,
+    location_name: str,
     dowload_path: str,
     init_date: str,
     final_date: str,
     roi: ee.FeatureCollection,
     prefix_images_name: str,
     all_bands: bool=True,
-    scale :int=10
-) -> None:
+    scale :int=10,
+) -> bool:
 
     # Get collection
     collection = (
@@ -92,33 +95,41 @@ def donwload_images(
         )  # Converte para data legível
 
         # Nome do arquivo de saída
-        output_file = os.path.join(f'{dowload_path}/{date[:4]}', f"{prefix_images_name}_{date}.tif")
+        output_file = os.path.join(f'{dowload_path}{location_name}/{date[:4]}', f"{prefix_images_name}_{date}.tif")
 
         # Faz o download da imagem e salva no diretório especificado
         response = requests.get(url)
         with open(output_file, "wb") as file:
             file.write(response.content)
 
+    return True
 
-def apply_fmask(toa_path: str, save_masks_path: str, save_plots_path: str):
+def apply_fmask(toa_path: str,
+                location_name: str,
+                save_masks_path: str,
+                save_plots_path: str,
+                *args, **kwargs):
     fmask = Fmask()
-    inputs = glob.glob(f'{toa_path}/*/*.tif')
+    inputs = glob.glob(f'{toa_path}{location_name}/*/*.tif')
 
     for inp in inputs:
-        file_name = f'{inp.split("/")[-1].split(".")[0]}_result'
+        inp = inp.replace('\\', '/')
+        file_name = f'{location_name}/{inp.split("/")[-2]}/{inp.split("/")[-1].split(".")[0]}_result'
+
         color_composite, cloud_mask, shadow_mask, water_mask = fmask.create_fmask(inp)
+
         fmask.save_plot(
             [cloud_mask, shadow_mask, water_mask],
             color_composite,
-            save_plots_path,
-            name=file_name + ".png",
+            output_file=f"{save_plots_path}{file_name}.png",
         )
-        
-        # fmask.save_mask_tif(
-        #     cloud_mask=cloud_mask,
-        #     cloud_shadow_mask=shadow_mask,
-        #     water_mask=water_mask,
-        #     original_tif_file=inp,
-        #     output_file=file_name + ".tif",
-        # )
-        
+
+        fmask.save_mask_tif(
+            cloud_mask=cloud_mask,
+            cloud_shadow_mask=shadow_mask,
+            water_mask=water_mask,
+            original_tif_file=inp,
+            output_file=f"{save_masks_path}{file_name}.tif",
+        )
+
+

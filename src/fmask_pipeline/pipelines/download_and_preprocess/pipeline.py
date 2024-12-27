@@ -14,17 +14,18 @@ def create_pipeline(**kwargs) -> Pipeline:
             func=create_dirs,
             inputs={
                 "dowload_path":"params:sentinel.dowload_path",
+                "location_name":"params:sentinel.location_name",
                 "save_masks_path": "params:sentinel.save_masks_path",
                 "save_plots_path": "params:sentinel.save_plot_masks_path",
                 "init_date":"params:sentinel.init_date",
                 "final_date":"params:sentinel.final_date"
             },
-            outputs=[],
+            outputs="dependency1",
             name="create_dirs"
         ),
         node(
                 func=shapefile2feature_collection,
-                inputs=["shapefile"],
+                inputs=["shapefile", "dependency1"],
                 outputs="shapefile_features",
                 name="load_shapefile",
             ),
@@ -33,22 +34,25 @@ def create_pipeline(**kwargs) -> Pipeline:
                 inputs={
                         "collection_id":"params:sentinel.collection_id",
                         "dowload_path":"params:sentinel.dowload_path",
+                        "location_name":"params:sentinel.location_name",
                         "init_date":"params:sentinel.init_date",
                         "final_date":"params:sentinel.final_date",
                         "prefix_images_name":"params:sentinel.prefix_images_name",
                         "all_bands":"params:sentinel.all_bands",
                         "scale":"params:sentinel.scale",
                         "roi":"shapefile_features"},
-                outputs=[],
+                outputs="dependency2",
                 name="download_images",
             ),
          node(
             func=apply_fmask,
             inputs={
+                "dependency": "dependency2",
                 "toa_path": "params:sentinel.dowload_path",
+                "location_name": "params:sentinel.location_name",
                 "save_masks_path": "params:sentinel.save_masks_path",
                 "save_plots_path": "params:sentinel.save_plot_masks_path",
             },
-            outputs=[],
+            outputs=None,
             name="appy_FMask")
     ])
