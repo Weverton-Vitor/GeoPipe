@@ -95,7 +95,7 @@ def donwload_images(
         )  # Converte para data legível
 
         # Nome do arquivo de saída
-        output_file = os.path.join(f'{dowload_path}{location_name}/{date[:4]}', f"{prefix_images_name}_{date}.tif")
+        output_file = os.path.join(f'{dowload_path}{location_name}/{date[:4]}', f"{prefix_images_name}_{location_name}_{date}.tif")
 
         # Faz o download da imagem e salva no diretório especificado
         response = requests.get(url)
