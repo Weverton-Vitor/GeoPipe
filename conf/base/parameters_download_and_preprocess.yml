@@ -9,4 +9,6 @@ sentinel:
   prefix_images_name: "sentinel2_6B_TOA"
   all_bands: False
   scale: 10
+  scale_factor: 10000
+  skip_download: True
   
