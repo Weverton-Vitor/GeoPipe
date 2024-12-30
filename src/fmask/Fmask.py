@@ -11,6 +11,10 @@ from segmentation_mask_overlay import overlay_masks
 
 
 class Fmask:
+    
+    def __init__(self, scale_factor):
+        self.scale_factor = scale_factor
+    
     def read_landsat_bands(self, tif_file: str) -> np.ndarray:
         """Read the tif file
 
@@ -787,12 +791,12 @@ class Fmask:
         # vza_band = bands[12]
 
         # Extract each band landsat
-        B2 = bands[0]  # Blue
-        B3 = bands[1]  # Green
-        B4 = bands[2]  # Red
-        B8 = bands[3]  # NIR
-        B11 = bands[4]  #
-        B12 = bands[5]  #
+        B2 = bands[0] // self.scale_factor  # Blue
+        B3 = bands[1] // self.scale_factor  # Green
+        B4 = bands[2] // self.scale_factor  # Red
+        B8 = bands[3] // self.scale_factor  # NIR
+        B11 = bands[4] // self.scale_factor  #
+        B12 = bands[5] // self.scale_factor  #
 
         # rgb = [B4/np.max(B4), B3/np.max(B3), B2/np.max(B2)]
 
@@ -848,8 +852,8 @@ class Fmask:
         shadow_masks_individuais = self.separar_componentes(shadow_mask)
 
         # Printando o número de nuvens e sombras encontradas
-        print(f"Número de nuvens encontradas: {len(cloud_masks_individuais)}")
-        print(f"Número de sombras encontradas: {len(shadow_masks_individuais)}")
+        # print(f"Número de nuvens encontradas: {len(cloud_masks_individuais)}")
+        # print(f"Número de sombras encontradas: {len(shadow_masks_individuais)}")
 
         # Exemplo de uso
         # nuvens e sombras são listas de máscaras binárias (arrays numpy)
