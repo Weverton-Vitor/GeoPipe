@@ -51,8 +51,13 @@ def donwload_images(
     roi: ee.FeatureCollection,
     prefix_images_name: str,
     all_bands: bool=True,
+    skip_download: bool=False,
     scale :int=10,
 ) -> bool:
+
+    if skip_download:
+        return True
+
 
     # Get collection
     collection = (
@@ -108,8 +113,9 @@ def apply_fmask(toa_path: str,
                 location_name: str,
                 save_masks_path: str,
                 save_plots_path: str,
+                scale_factor :int=1,
                 *args, **kwargs):
-    fmask = Fmask()
+    fmask = Fmask(scale_factor=scale_factor)
     inputs = glob.glob(f'{toa_path}{location_name}/*/*.tif')
 
     for inp in inputs:

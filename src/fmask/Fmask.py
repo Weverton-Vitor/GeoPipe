@@ -791,12 +791,12 @@ class Fmask:
         # vza_band = bands[12]
 
         # Extract each band landsat
-        B2 = bands[0] // self.scale_factor  # Blue
-        B3 = bands[1] // self.scale_factor  # Green
-        B4 = bands[2] // self.scale_factor  # Red
-        B8 = bands[3] // self.scale_factor  # NIR
-        B11 = bands[4] // self.scale_factor  #
-        B12 = bands[5] // self.scale_factor  #
+        B2 = bands[0] / self.scale_factor  # Blue
+        B3 = bands[1] / self.scale_factor  # Green
+        B4 = bands[2] / self.scale_factor  # Red
+        B8 = bands[3] / self.scale_factor  # NIR
+        B11 = bands[4] / self.scale_factor  #
+        B12 = bands[5] / self.scale_factor  #
 
         # rgb = [B4/np.max(B4), B3/np.max(B3), B2/np.max(B2)]
 
