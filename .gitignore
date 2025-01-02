@@ -16,6 +16,8 @@ conf/local/**
 # ignore potentially sensitive credentials files
 conf/**/*credentials*
 
+!data/00_shapefiles/*.geojson
+
 # ignore everything in the following folders
 data/**
 
