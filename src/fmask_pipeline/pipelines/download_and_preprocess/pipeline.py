@@ -5,7 +5,12 @@ generated using Kedro 0.19.10
 
 from kedro.pipeline import Pipeline, node, pipeline
 
-from .nodes import apply_fmask, donwload_images, shapefile2feature_collection, create_dirs
+from .nodes import (
+    apply_fmask,
+    create_dirs,
+    donwload_images,
+    shapefile2feature_collection,
+)
 
 
 def create_pipeline(**kwargs) -> Pipeline:
