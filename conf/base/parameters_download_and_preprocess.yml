@@ -1,14 +1,40 @@
 sentinel:
+  # Coleção do GEE
   collection_id: "COPERNICUS/S2_HARMONIZED"
+
+  # Nome da localidade, usada no caminho de download das imagens,
+  # plot da máscara e no nome da imagem
   location_name: "sume"
+
+  # Caminho das imagens baixadas
   dowload_path: "data/01_toa/"
+
+  # Caminho onde as máscaras serão salvas
   save_masks_path: "data/02_masks/"
+
+  # Caminho para as plotagem das máscaras
   save_plot_masks_path: "data/03_masks_plot/"
+
+  # Datas para filtrar a coleção
   init_date: "2017-01-01"
   final_date: "2020-12-30"
+
+  # Primeira parte do nome das imagens
   prefix_images_name: "sentinel2_6B_TOA"
+
+  # Selecionar as todas as bandas
   all_bands: False
+
+  # Escala da imagem
   scale: 10
+
+  # Fator de escala dos valores da reflectancia,
   scale_factor: 10000
+
+  # Pular o download
   skip_download: True
+
+  # Valores da máscara que representam nuvem e sombra de nuvem
+  cloud_and_cloud_shadow_pixels: []
+
   
