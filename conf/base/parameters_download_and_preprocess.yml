@@ -22,8 +22,8 @@ sentinel:
   # Primeira parte do nome das imagens
   prefix_images_name: "sentinel2_6B_TOA"
 
-  # Selecionar as todas as bandas
-  all_bands: False
+  # Selecionar as bandas, se for vazio todas as bandas são selecionadas
+  selected_bands: ["B2", "B3", "B4", "B8", "B11", "B12"]
 
   # Escala da imagem
   scale: 10
