@@ -57,8 +57,8 @@ def donwload_images(
     final_date: str,
     roi: ee.FeatureCollection,
     prefix_images_name: str,
-    all_bands: bool = True,
-    skip_download: bool = False,
+    selected_bands: list=[],
+    skip_download: bool=False,
     scale: int = 10,
 ) -> bool:
     if skip_download:
@@ -71,9 +71,10 @@ def donwload_images(
         .filterBounds(roi)
     )
 
-    # Filter if necessary
-    if not all_bands:
-        logger.warning("Download bands: [B2, B3, B4, B8, B11, B12]")
+    if not selected_bands:
+        logger.warning("Download All Bands")
+    else:
+        logger.warning(f"Download Bands: {selected_bands}")
 
     logger.info(f"Total images: {collection.size().getInfo()}")
 
@@ -86,8 +87,8 @@ def donwload_images(
         image = ee.Image(image_id)
 
         # Filter if necessary
-        if not all_bands:
-            image = image.select(["B2", "B3", "B4", "B8", "B11", "B12"])
+        if selected_bands:
+            image = image.select(selected_bands)
 
         url = image.getDownloadURL(
             {
