@@ -7,7 +7,7 @@ sentinel:
   location_name: "sume"
 
   # Caminho das imagens baixadas
-  dowload_path: "data/01_toa/"
+  dowload_path: "data/01_images/"
 
   # Caminho onde as máscaras serão salvas
   save_masks_path: "data/02_masks/"
