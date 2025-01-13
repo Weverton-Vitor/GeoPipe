@@ -11,6 +11,9 @@ from tqdm import tqdm
 
 from fmask.Fmask import Fmask
 from fmask.fmask_utils import save_mask_tif, save_overlayed_mask_plot
+from cloud_removal.bcl import BCL
+import rasterio as TIFF
+
 
 # Obter o logger específico do node
 logger = logging.getLogger(__name__)
@@ -57,8 +60,8 @@ def donwload_images(
     final_date: str,
     roi: ee.FeatureCollection,
     prefix_images_name: str,
-    selected_bands: list=[],
-    skip_download: bool=False,
+    selected_bands: list = [],
+    skip_download: bool = False,
     scale: int = 10,
 ) -> bool:
     if skip_download:
@@ -133,7 +136,7 @@ def apply_fmask(
 
     for inp in inputs:
         inp = inp.replace("\\", "/")
-        file_name = f'{location_name}/{inp.split("/")[-2]}/{inp.split("/")[-1].split(".")[0]}_result'
+        file_name = f"{location_name}/{inp.split('/')[-2]}/{inp.split('/')[-1].split('.')[0]}_result"
 
         color_composite, cloud_mask, shadow_mask, water_mask = fmask.create_fmask(inp)
 
@@ -150,3 +153,47 @@ def apply_fmask(
             original_tif_file=inp,
             output_file=f"{save_masks_path}{file_name}.tif",
         )
+
+
+def cloud_removal(
+    path_images: str,
+    path_masks: str,
+    location_name: str,
+    init_date: str,
+    final_date: str,
+    output_path,
+):
+    logger.info(f"Executando reservatório {location_name}.")
+
+    for year in range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1):
+        path_images_year = f"{path_images}{location_name}/{year}/"
+
+        for image in os.listdir(path_images_year):
+            logger.info(f"Executando o ano de {year}")
+
+            # Greping img_size limits
+            with TIFF.open(path_images_year + image) as tiff:
+                image_tiff = tiff.read()
+
+            size = image_tiff.shape[1], image_tiff.shape[2]
+
+            # obtenção da data
+            size_init_path = len(location_name + "_")
+            date = image[size_init_path : size_init_path + 8]
+
+            logger.info(f"Image shape: {image_tiff.shape} | Image date: {date}")
+
+            # Classe que será utilizada
+            i = BCL(
+                size, path_masks, path_images, year, date, location_name, use_dec_tree=False
+            )
+
+            # Correção
+            try:
+                i.singleImageCorrection(date, year, output_path)
+            except:
+                print(f"Erro na data {date}")
+                continue
+
+            # cv2.imwrite(output_path + f"mask_{image}.png", i.mask)
+            i.death()
