@@ -3,7 +3,7 @@ sentinel:
   collection_id: "COPERNICUS/S2_HARMONIZED"
 
   # Nome da localidade, usada no caminho de download das imagens,
-  # plot da máscara e no nome da imagem
+  # plot da máscara, no salvamento da imagem limpa e no nome da imagem
   location_name: "sume"
 
   # Caminho das imagens baixadas
@@ -14,6 +14,9 @@ sentinel:
 
   # Caminho para as plotagem das máscaras
   save_plot_masks_path: "data/03_masks_plot/"
+
+  # Caminho para salvar as imagens limpas
+  save_clean_images_path: "data/04_clean_images/"
 
   # Datas para filtrar a coleção
   init_date: "2017-01-01"
@@ -33,6 +36,9 @@ sentinel:
 
   # Pular o download
   skip_download: True
+
+  # Pular geração das máscaras
+  skip_masks: True
 
   # Valores da máscara que representam nuvem e sombra de nuvem
   cloud_and_cloud_shadow_pixels: [1, 2]

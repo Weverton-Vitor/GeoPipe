@@ -6,14 +6,13 @@ import os
 import ee
 import geojson
 import geopandas as gpd
+import rasterio as TIFF
 import requests
 from tqdm import tqdm
 
+from cloud_removal.bcl import BCL
 from fmask.Fmask import Fmask
 from fmask.fmask_utils import save_mask_tif, save_overlayed_mask_plot
-from cloud_removal.bcl import BCL
-import rasterio as TIFF
-
 
 # Obter o logger específico do node
 logger = logging.getLogger(__name__)
@@ -24,6 +23,7 @@ def create_dirs(
     location_name: str,
     save_masks_path: str,
     save_plots_path: str,
+    save_clean_images_path: str,
     init_date: str,
     final_date: str,
 ):
@@ -36,6 +36,7 @@ def create_dirs(
         os.makedirs(f"{dowload_path}{location_name}/{year}", exist_ok=True)
         os.makedirs(f"{save_masks_path}{location_name}/{year}", exist_ok=True)
         os.makedirs(f"{save_plots_path}{location_name}/{year}", exist_ok=True)
+        os.makedirs(f"{save_clean_images_path}{location_name}/{year}", exist_ok=True)
 
     return True
 
@@ -65,6 +66,7 @@ def donwload_images(
     scale: int = 10,
 ) -> bool:
     if skip_download:
+        logger.warning("Skip Download of images")
         return True
 
     # Get collection
@@ -128,9 +130,14 @@ def apply_fmask(
     save_masks_path: str,
     save_plots_path: str,
     scale_factor: int = 1,
+    skip_masks: bool = False,
     *args,
     **kwargs,
 ):
+    if skip_masks:
+        logger.warning("Skip generation of masks")
+        return True
+
     fmask = Fmask(scale_factor=scale_factor)
     inputs = glob.glob(f"{toa_path}{location_name}/*/*.tif")
 
@@ -160,50 +167,63 @@ def apply_fmask(
 def cloud_removal(
     path_images: str,
     path_masks: str,
+    output_path: str,
     location_name: str,
+    cloud_and_cloud_shadow_pixels: str,
     init_date: str,
     final_date: str,
-    output_path,
     *args,
     **kwargs,
 ):
     logger.info(f"Executando reservatório {location_name}.")
 
-    for year in range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1):
-        path_images_year = f"{path_images}{location_name}/{year}/"
+    year_range = range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1)
 
-        for image in os.listdir(path_images_year):
+    tif_files = glob.glob(os.path.join(path_images, "**", "*.tif"), recursive=True)
+    total_tifs = len(tif_files)
+
+    with tqdm(total=total_tifs, desc="Cleaning Images", unit="file") as pbar:
+        for year in year_range:
+            path_images_year = f"{path_images}{location_name}/{year}/"
+            path_masks_year = f"{path_images}{location_name}/{year}/"
             logger.info(f"Executando o ano de {year}")
 
-            # Greping img_size limits
-            with TIFF.open(path_images_year + image) as tiff:
-                image_tiff = tiff.read()
+            for image in os.listdir(path_images_year):
+                # Greping img_size limits
+                with TIFF.open(path_images_year + image) as tiff:
+                    image_tiff = tiff.read()
 
-            size = image_tiff.shape[1], image_tiff.shape[2]
+                size = image_tiff.shape[1], image_tiff.shape[2]
 
-            # obtenção da data
-            size_init_path = len(location_name + "_")
-            date = image[size_init_path : size_init_path + 8]
+                # obtenção da data
+                date = image.split("_")[-1].split(".")[0].replace("-", "")
 
-            logger.info(f"Image shape: {image_tiff.shape} | Image date: {date}")
+                # logger.info(f"Image shape: {image_tiff.shape} | Image date: {date}")
 
-            # Classe que será utilizada
-            i = BCL(
-                size,
-                path_masks,
-                path_images,
-                year,
-                date,
-                location_name,
-                use_dec_tree=False,
-            )
+                # Classe que será utilizada
+                i = BCL(
+                    size,
+                    path_masks_year,
+                    path_images_year,
+                    year,
+                    date,
+                    location_name,
+                    cloud_pixels=cloud_and_cloud_shadow_pixels,
+                    use_dec_tree=False,
+                )
 
-            # Correção
-            try:
-                i.singleImageCorrection(date, year, output_path)
-            except:
-                logger.error(f"Erro na data {date}")
-                continue
+                # Correção
+                try:
+                    i.singleImageCorrection(
+                        date,
+                        year,
+                        f"{output_path}{location_name}/{year}/",
+                        image.replace(".tif", ""),
+                    )
+                except Exception as e:
+                    logger.error(e)
+                    continue
 
-            # cv2.imwrite(output_path + f"mask_{image}.png", i.mask)
-            i.death()
+                pbar.update(1)
+                # cv2.imwrite(output_path + f"mask_{image}.png", i.mask)
+                i.death()

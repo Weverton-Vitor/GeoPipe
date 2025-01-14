@@ -1,5 +1,7 @@
 import datetime
+import logging
 import os
+import warnings
 from datetime import datetime as dt
 
 import cv2
@@ -7,6 +9,11 @@ import numpy as np
 import rasterio as TIFF
 from matplotlib import pyplot as plt
 from PIL import Image as img
+
+# Suprime todos os warnings
+# warnings.filterwarnings("ignore", category=UserWarning, module="rasterio")
+logging.getLogger("rasterio").setLevel(logging.ERROR)
+logger = logging.getLogger(__name__)
 
 
 class BCL:
@@ -29,6 +36,7 @@ class BCL:
         self.nuvem = (cloud_pixels,)
         self.idx_class_cloud = 0
         self.color_file = open(f"color_file_{data_i}.txt", "w")
+        self.imgNDWI = None
         pass
 
     def death(self):
@@ -38,19 +46,22 @@ class BCL:
         return pixelValue in self.nuvem
 
     # Função que carrega em memórias as imagens que serão corrigidas
+    # TODO OTIMIZAR URGENTEMENTE
     def getImageSCLandNDNWI(self, data, year):
+        # procurando a mascara pela data
         for imageSCL in os.listdir(self.scl_path):
-            if imageSCL.find(data) != -1:
+            if imageSCL.replace("-", "").find(data) != -1:
                 with TIFF.open(self.scl_path + imageSCL) as img:
                     self.imgSCL = img.read()
                     self.sclMETA = img.meta
 
+        # procurando a imagem pela data
         for imageNDWI in os.listdir(self.path_6B):
-            if imageNDWI.find(data) != -1:
+            if imageNDWI.replace("-", "").find(data) != -1:
                 with TIFF.open(self.path_6B + imageNDWI) as img:
                     self.imgNDWI = img.read()
                     self.ndwiMETA = img.meta
-                    print(self.ndwiMETA)
+
         # se alguma das duas imagens são vazias, lança exceção
         if self.imgNDWI.shape[0] == 0 or self.imgSCL.shape[0] == 0:
             raise Exception("Erro")
@@ -84,7 +95,7 @@ class BCL:
     def getAllImagesYear(self, year, data):
         self.imagesSclOfTheYear = []
         for image in os.listdir(self.scl_path):
-            if image.find(data) != -1:
+            if image.replace("-", "").find(data) != -1:
                 continue
             else:
                 self.imagesSclOfTheYear.append(image)
@@ -102,9 +113,9 @@ class BCL:
 
             # Obtém a data da imagem
             size_init_path = len(self.intern_reservoir + "_")
-            date = imagem[size_init_path : size_init_path + 8]
+            date = imagem.split("_")[-1].split(".")[0].replace("-", "")
 
-            print(f"Date = {date}")
+            # print(f"Date = {date}")
 
             formated_date = dt.strptime(date, "%Y%m%d")
 
@@ -147,7 +158,7 @@ class BCL:
             ]
 
             for i6b in os.listdir(self.path_6B):
-                if i6b.find(date) != -1:
+                if i6b.replace("-", "").find(date) != -1:
                     with TIFF.open(self.path_6B + i6b) as tiff:
                         image_more_close_6b = tiff.read()
                         break
@@ -219,7 +230,7 @@ class BCL:
         for key, value in dict_color_image.items():
             self.color_file.write(f"{key} is the color of {value}\n")
 
-    def singleImageCorrection(self, data, year, output_path, just_sp=False):
+    def singleImageCorrection(self, data, year, output_path, image_name, just_sp=False):
         # Obtém os objetos internos para serem corrigidos, a imagem SCL e a imagem NDWI
         self.getImageSCLandNDNWI(data, year)
 
@@ -248,17 +259,10 @@ class BCL:
         self.resultadoIMGNDWI = np.where(
             self.resultadoIMGNDWI == -1, 0, self.resultadoIMGNDWI
         )
-        scl_output_path = os.path.join(output_path, "SCL")
-        a6b_output_path = os.path.join(output_path, "6B")
-
-        if not os.path.exists(scl_output_path):
-            os.makedirs(scl_output_path)
-        if not os.path.exists(a6b_output_path):
-            os.makedirs(a6b_output_path)
 
         # Salvando novo arquivo com resultado e rasterio
-        cv2.imwrite(scl_output_path + "/" + data + "_SCL.png", self.resultadoIMGSCL[0])
+        # cv2.imwrite(scl_output_path + "/" + data + "_mask.png", self.resultadoIMGSCL[0])
         with TIFF.open(
-            a6b_output_path + "/" + data + "_6B.tif", "w", **self.ndwiMETA
+            f"{output_path}{image_name}_clean.tif", "w", **self.ndwiMETA
         ) as dst:
             dst.write(self.resultadoIMGNDWI)
