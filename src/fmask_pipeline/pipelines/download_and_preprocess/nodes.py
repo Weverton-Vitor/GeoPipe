@@ -154,6 +154,8 @@ def apply_fmask(
             output_file=f"{save_masks_path}{file_name}.tif",
         )
 
+    return True
+
 
 def cloud_removal(
     path_images: str,
@@ -162,6 +164,8 @@ def cloud_removal(
     init_date: str,
     final_date: str,
     output_path,
+    *args,
+    **kwargs,
 ):
     logger.info(f"Executando reservatório {location_name}.")
 
@@ -185,14 +189,20 @@ def cloud_removal(
 
             # Classe que será utilizada
             i = BCL(
-                size, path_masks, path_images, year, date, location_name, use_dec_tree=False
+                size,
+                path_masks,
+                path_images,
+                year,
+                date,
+                location_name,
+                use_dec_tree=False,
             )
 
             # Correção
             try:
                 i.singleImageCorrection(date, year, output_path)
             except:
-                print(f"Erro na data {date}")
+                logger.error(f"Erro na data {date}")
                 continue
 
             # cv2.imwrite(output_path + f"mask_{image}.png", i.mask)
