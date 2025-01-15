@@ -214,9 +214,9 @@ def save_mask_tif(
 
     mask_final = np.zeros_like(cloud_mask).astype(np.int8)
 
+    mask_final[water_mask] = 3
     mask_final[cloud_shadow_mask] = 2
     mask_final[cloud_mask] = 1
-    mask_final[water_mask] = 3
 
     os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
 

@@ -143,7 +143,7 @@ def apply_fmask(
 
     for inp in inputs:
         inp = inp.replace("\\", "/")
-        file_name = f"{location_name}/{inp.split('/')[-2]}/{inp.split('/')[-1].split('.')[0]}_result"
+        file_name = f"{location_name}/{inp.split('/')[-2]}/mask_{inp.split('/')[-1].split('.')[0]}"
 
         color_composite, cloud_mask, shadow_mask, water_mask = fmask.create_fmask(inp)
 
@@ -185,8 +185,7 @@ def cloud_removal(
     with tqdm(total=total_tifs, desc="Cleaning Images", unit="file") as pbar:
         for year in year_range:
             path_images_year = f"{path_images}{location_name}/{year}/"
-            path_masks_year = f"{path_images}{location_name}/{year}/"
-            logger.info(f"Executando o ano de {year}")
+            path_masks_year = f"{path_masks}{location_name}/{year}/"
 
             for image in os.listdir(path_images_year):
                 # Greping img_size limits
@@ -202,12 +201,12 @@ def cloud_removal(
 
                 # Classe que será utilizada
                 i = BCL(
-                    size,
-                    path_masks_year,
-                    path_images_year,
-                    year,
-                    date,
-                    location_name,
+                    img_dim=size,
+                    scl_path=path_masks_year,
+                    path_6B=path_images_year,
+                    year=year,
+                    data=date,
+                    intern_reservoir=location_name,
                     cloud_pixels=cloud_and_cloud_shadow_pixels,
                     use_dec_tree=False,
                 )

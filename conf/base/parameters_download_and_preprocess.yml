@@ -38,7 +38,7 @@ sentinel:
   skip_download: True
 
   # Pular geração das máscaras
-  skip_masks: True
+  skip_masks: False
 
   # Valores da máscara que representam nuvem e sombra de nuvem
   cloud_and_cloud_shadow_pixels: [1, 2]

@@ -20,22 +20,22 @@ class BCL:
     def __init__(
         self,
         img_dim,
-        scl_path_i,
-        path_6B_i,
-        year_i,
-        data_i,
+        scl_path,
+        path_6B,
+        year,
+        data,
         intern_reservoir,
         cloud_pixels,
         use_dec_tree,
     ):
         self.intern_reservoir = intern_reservoir
         self.width, self.height = img_dim
-        self.scl_path = scl_path_i
-        self.path_6B = path_6B_i
-        self.year = year_i
-        self.nuvem = (cloud_pixels,)
+        self.scl_path = scl_path
+        self.path_6B = path_6B
+        self.year = year
+        self.nuvem = cloud_pixels
         self.idx_class_cloud = 0
-        self.color_file = open(f"color_file_{data_i}.txt", "w")
+        self.color_file = open(f"color_file_{data}.txt", "w")
         self.imgNDWI = None
         pass
 
@@ -46,7 +46,7 @@ class BCL:
         return pixelValue in self.nuvem
 
     # Função que carrega em memórias as imagens que serão corrigidas
-    # TODO OTIMIZAR URGENTEMENTE
+    # TODO OTIMIZAR URGENTEMENTE, sem fazer esse for
     def getImageSCLandNDNWI(self, data, year):
         # procurando a mascara pela data
         for imageSCL in os.listdir(self.scl_path):
@@ -152,10 +152,12 @@ class BCL:
             )
 
             # Filtro para obter a data da imagem
-            size_init_path = len(self.intern_reservoir + "_")
-            date = self.pairImages[i_image_more_closer][
-                size_init_path : size_init_path + 8
-            ]
+            date = (
+                self.pairImages[i_image_more_closer]
+                .split("_")[-1]
+                .split(".")[0]
+                .replace("-", "")
+            )
 
             for i6b in os.listdir(self.path_6B):
                 if i6b.replace("-", "").find(date) != -1:
