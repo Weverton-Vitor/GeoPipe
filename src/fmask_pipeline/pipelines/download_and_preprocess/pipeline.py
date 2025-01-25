@@ -20,7 +20,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             node(
                 func=create_dirs,
                 inputs={
-                    "dowload_path": "params:sentinel.dowload_path",
+                    "dowload_path": "params:sentinel.toa_dowload_path",
                     "location_name": "params:sentinel.location_name",
                     "save_masks_path": "params:sentinel.save_masks_path",
                     "save_plots_path": "params:sentinel.save_plot_masks_path",
@@ -41,7 +41,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                 func=donwload_images,
                 inputs={
                     "collection_id": "params:sentinel.collection_id",
-                    "dowload_path": "params:sentinel.dowload_path",
+                    "dowload_path": "params:sentinel.toa_dowload_path",
                     "location_name": "params:sentinel.location_name",
                     "init_date": "params:sentinel.init_date",
                     "final_date": "params:sentinel.final_date",
@@ -58,7 +58,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                 func=apply_fmask,
                 inputs={
                     "dependency": "dependency2",
-                    "toa_path": "params:sentinel.dowload_path",
+                    "toa_path": "params:sentinel.toa_dowload_path",
                     "location_name": "params:sentinel.location_name",
                     "save_masks_path": "params:sentinel.save_masks_path",
                     "save_plots_path": "params:sentinel.save_plot_masks_path",
@@ -72,7 +72,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                 func=cloud_removal,
                 inputs={
                     "dependency": "dependency3",
-                    "path_images": "params:sentinel.dowload_path",
+                    "path_images": "params:sentinel.toa_dowload_path",
                     "path_masks": "params:sentinel.save_masks_path",
                     "output_path": "params:sentinel.save_clean_images_path",
                     "location_name": "params:sentinel.location_name",

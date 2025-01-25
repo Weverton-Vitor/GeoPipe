@@ -6,17 +6,21 @@ sentinel:
   # plot da máscara, no salvamento da imagem limpa e no nome da imagem
   location_name: "sume"
 
-  # Caminho das imagens baixadas
-  dowload_path: "data/01_images/"
+  # Caminho das imagens baixadas do topo da atmosfera (TOA)
+  toa_dowload_path: "data/01_toa_images/"
+
+  # Caminho das imagens baixadas do base da atmosfera BOA)
+  boa_dowload_path: "data/01_boa_images/"
 
   # Caminho onde as máscaras serão salvas
-  save_masks_path: "data/02_masks/"
-
-  # Caminho para as plotagem das máscaras
-  save_plot_masks_path: "data/03_masks_plot/"
+  save_masks_path: "data/03_masks/"
 
   # Caminho para salvar as imagens limpas
   save_clean_images_path: "data/04_clean_images/"
+
+  # Caminho para as plotagem das máscaras
+  save_plot_masks_path: "data/05_masks_plot/"
+
 
   # Datas para filtrar a coleção
   init_date: "2017-01-01"
