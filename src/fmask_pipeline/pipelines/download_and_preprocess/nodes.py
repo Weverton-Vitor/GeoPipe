@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 def create_dirs(
-    dowload_path: str,
+    toa_dowload_path: str,
+    boa_dowload_path: str,
     location_name: str,
     save_masks_path: str,
     save_plots_path: str,
@@ -28,12 +29,14 @@ def create_dirs(
     final_date: str,
 ):
     # Create directories structure, if not exists
-    os.makedirs(f"{dowload_path}{location_name}/", exist_ok=True)
+    os.makedirs(f"{toa_dowload_path}{location_name}/", exist_ok=True)
+    os.makedirs(f"{boa_dowload_path}{location_name}/", exist_ok=True)
     os.makedirs(f"{save_masks_path}{location_name}/", exist_ok=True)
     os.makedirs(f"{save_plots_path}{location_name}/", exist_ok=True)
 
     for year in range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1):
-        os.makedirs(f"{dowload_path}{location_name}/{year}", exist_ok=True)
+        os.makedirs(f"{toa_dowload_path}{location_name}/{year}", exist_ok=True)
+        os.makedirs(f"{boa_dowload_path}{location_name}/{year}", exist_ok=True)
         os.makedirs(f"{save_masks_path}{location_name}/{year}", exist_ok=True)
         os.makedirs(f"{save_plots_path}{location_name}/{year}", exist_ok=True)
         os.makedirs(f"{save_clean_images_path}{location_name}/{year}", exist_ok=True)
