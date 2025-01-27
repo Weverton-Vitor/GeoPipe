@@ -1,6 +1,7 @@
 sentinel:
   # Coleção do GEE
-  collection_id: "COPERNICUS/S2_HARMONIZED"
+  toa_collection_id: "COPERNICUS/S2_HARMONIZED"
+  boa_collection_id: "COPERNICUS/S2_SR_HARMONIZED"
 
   # Nome da localidade, usada no caminho de download das imagens,
   # plot da máscara, no salvamento da imagem limpa e no nome da imagem
@@ -10,7 +11,7 @@ sentinel:
   toa_dowload_path: "data/01_toa_images/"
 
   # Caminho das imagens baixadas do base da atmosfera BOA)
-  boa_dowload_path: "data/01_boa_images/"
+  boa_dowload_path: "data/02_boa_images/"
 
   # Caminho onde as máscaras serão salvas
   save_masks_path: "data/03_masks/"
@@ -23,11 +24,12 @@ sentinel:
 
 
   # Datas para filtrar a coleção
-  init_date: "2017-01-01"
-  final_date: "2020-12-30"
+  init_date: "2020-01-01"
+  final_date: "2020-01-30"
 
   # Primeira parte do nome das imagens
-  prefix_images_name: "sentinel2_6B_TOA"
+  toa_prefix_images_name: "sentinel2_6B_TOA"
+  boa_prefix_images_name: "sentinel2_6B_BOA"
 
   # Selecionar as bandas, se for vazio todas as bandas são selecionadas
   selected_bands: ["B2", "B3", "B4", "B8", "B11", "B12"]
@@ -39,7 +41,8 @@ sentinel:
   scale_factor: 10000
 
   # Pular o download
-  skip_download: True
+  toa_skip_download: False
+  boa_skip_download: False
 
   # Pular geração das máscaras
   skip_masks: False
