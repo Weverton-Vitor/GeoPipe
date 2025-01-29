@@ -57,7 +57,7 @@ def shapefile2feature_collection(
 
 
 def donwload_images(
-    collection_id: str,
+    collection_ids: str,
     location_name: str,
     dowload_path: str,
     init_date: str,
@@ -72,57 +72,60 @@ def donwload_images(
         logger.warning("Skip Download of images")
         return True
 
-    # Get collection
-    collection = (
-        ee.ImageCollection(collection_id)
-        .filterDate(init_date, final_date)
-        .filterBounds(roi)
-    )
+    for collection_id in collection_ids:
+        logger.info(f"Donwload: {collection_id} collection")
 
-    if not selected_bands:
-        logger.warning("Download All Bands")
-    else:
-        logger.warning(f"Download Bands: {selected_bands}")
-
-    logger.info(f"Total images: {collection.size().getInfo()}")
-
-    images = collection.toList(collection.size()).getInfo()
-
-    for i, image_info in enumerate(
-        tqdm(images, desc="Downloading Images", unit="imagem")
-    ):
-        image_id = image_info["id"]
-        image = ee.Image(image_id)
-
-        # Filter if necessary
-        if selected_bands:
-            image = image.select(selected_bands)
-
-        url = image.getDownloadURL(
-            {
-                "scale": scale,  # Resolução espacial
-                "region": roi.geometry(),  # Região de interesse
-                "crs": "EPSG:4326",  # Sistema de coordenadas
-                "format": "GeoTIFF",  # Formato de saída
-            }
+        # Get collection
+        collection = (
+            ee.ImageCollection(collection_id)
+            .filterDate(init_date, final_date)
+            .filterBounds(roi)
         )
 
-        # Get date of image
-        timestamp = image_info["properties"]["system:time_start"]  # Timestamp Unix
-        date = datetime.datetime.utcfromtimestamp(timestamp / 1000).strftime(
-            "%Y-%m-%d"
-        )  # Converte para data legível
+        if not selected_bands:
+            logger.warning("Download All Bands")
+        else:
+            logger.warning(f"Download Bands: {selected_bands}")
 
-        # Nome do arquivo de saída
-        output_file = os.path.join(
-            f"{dowload_path}{location_name}/{date[:4]}",
-            f"{prefix_images_name}_{location_name}_{date}.tif",
-        )
+        logger.info(f"Total images: {collection.size().getInfo()}")
 
-        # Faz o download da imagem e salva no diretório especificado
-        response = requests.get(url)
-        with open(output_file, "wb") as file:
-            file.write(response.content)
+        images = collection.toList(collection.size()).getInfo()
+
+        for i, image_info in enumerate(
+            tqdm(images, desc="Downloading Images", unit="imagem")
+        ):
+            image_id = image_info["id"]
+            image = ee.Image(image_id)
+
+            # Filter if necessary
+            if selected_bands:
+                image = image.select(selected_bands)
+
+            url = image.getDownloadURL(
+                {
+                    "scale": scale,  # Resolução espacial
+                    "region": roi.geometry(),  # Região de interesse
+                    "crs": "EPSG:4326",  # Sistema de coordenadas
+                    "format": "GeoTIFF",  # Formato de saída
+                }
+            )
+
+            # Get date of image
+            timestamp = image_info["properties"]["system:time_start"]  # Timestamp Unix
+            date = datetime.datetime.utcfromtimestamp(timestamp / 1000).strftime(
+                "%Y-%m-%d"
+            )  # Converte para data legível
+
+            # Nome do arquivo de saída
+            output_file = os.path.join(
+                f"{dowload_path}{location_name}/{date[:4]}",
+                f"{prefix_images_name}_{location_name}_{date}.tif",
+            )
+
+            # Faz o download da imagem e salva no diretório especificado
+            response = requests.get(url)
+            with open(output_file, "wb") as file:
+                file.write(response.content)
 
     return True
 
