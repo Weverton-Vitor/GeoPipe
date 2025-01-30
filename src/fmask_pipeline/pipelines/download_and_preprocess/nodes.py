@@ -74,6 +74,7 @@ def donwload_images(
 
     for collection_id in collection_ids:
         logger.info(f"Donwload: {collection_id} collection")
+        # Obtém a menor e a maior data da coleção
 
         # Get collection
         collection = (
