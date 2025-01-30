@@ -1,9 +1,10 @@
 """Project pipelines."""
 
+import ee
 from kedro.framework.project import find_pipelines
 from kedro.pipeline import Pipeline
+
 from fmask_pipeline.pipelines import download_and_preprocess
-import ee
 
 ee.Authenticate()
 ee.Initialize(project="ee-cloud-segmentation")

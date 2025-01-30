@@ -73,15 +73,21 @@ def donwload_images(
         return True
 
     for collection_id in collection_ids:
-        logger.info(f"Donwload: {collection_id} collection")
-        # Obtém a menor e a maior data da coleção
-
         # Get collection
         collection = (
             ee.ImageCollection(collection_id)
             .filterDate(init_date, final_date)
             .filterBounds(roi)
         )
+
+        min_date = collection.aggregate_min("system:time_start")
+        max_date = collection.aggregate_max("system:time_start")
+
+        min_date = ee.Date(min_date).format("YYYY-MM-dd").getInfo()
+        max_date = ee.Date(max_date).format("YYYY-MM-dd").getInfo()
+
+        logger.info(f"Donwload: {collection_id} collection")
+        logger.info(f"Collection Date Availability: {min_date} - {max_date}")
 
         if not selected_bands:
             logger.warning("Download All Bands")
