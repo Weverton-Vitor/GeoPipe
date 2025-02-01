@@ -10,7 +10,6 @@ import rasterio as TIFF
 import requests
 from tqdm import tqdm
 
-import utils.deepwatermap.inference as deep_water_map
 from utils.cloud_removal.bcl import BCL
 from utils.fmask.Fmask import Fmask
 from utils.fmask.fmask_utils import save_mask_tif, save_overlayed_mask_plot
@@ -242,7 +241,3 @@ def cloud_removal(
                 i.death()
 
 
-def apply_deep_water_map(deep_water_map_model: str, image_path: str, save_path: str):
-    deep_water_map.main(
-        checkpoint_path=deep_water_map_model, image_path=image_path, save_path=save_path
-    )

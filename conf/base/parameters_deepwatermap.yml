@@ -1,0 +1,7 @@
+configs:
+
+  # Caminho das imagens baixadas do base da atmosfera BOA)
+  clean_images_paths: "data/04_clean_images/"
+
+  # Caminho onde as máscaras serão salvas
+  water_masks_save_path: "data/07_water_masks/"
