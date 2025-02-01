@@ -6,6 +6,7 @@ venv
 .ipynb_*
 
 src/utils/deepwatermap/checkpoints/cp.135.ckpt.data-00000-of-00001
+src/utils/deepwatermap/checkpoints/cp.135.ckpt.index
 
 __pycache__
 
