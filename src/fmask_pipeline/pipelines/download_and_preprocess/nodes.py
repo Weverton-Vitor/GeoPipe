@@ -10,9 +10,10 @@ import rasterio as TIFF
 import requests
 from tqdm import tqdm
 
-from cloud_removal.bcl import BCL
-from fmask.Fmask import Fmask
-from fmask.fmask_utils import save_mask_tif, save_overlayed_mask_plot
+import utils.deepwatermap.inference as deep_water_map
+from utils.cloud_removal.bcl import BCL
+from utils.fmask.Fmask import Fmask
+from utils.fmask.fmask_utils import save_mask_tif, save_overlayed_mask_plot
 
 # Obter o logger específico do node
 logger = logging.getLogger(__name__)
@@ -239,3 +240,9 @@ def cloud_removal(
                 pbar.update(1)
                 # cv2.imwrite(output_path + f"mask_{image}.png", i.mask)
                 i.death()
+
+
+def apply_deep_water_map(deep_water_map_model: str, image_path: str, save_path: str):
+    deep_water_map.main(
+        checkpoint_path=deep_water_map_model, image_path=image_path, save_path=save_path
+    )

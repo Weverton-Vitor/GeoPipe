@@ -9,6 +9,7 @@ from fmask_pipeline.pipelines import download_and_preprocess
 ee.Authenticate()
 ee.Initialize(project="ee-cloud-segmentation")
 
+
 def register_pipelines() -> dict[str, Pipeline]:
     """Register the project's pipelines.
 

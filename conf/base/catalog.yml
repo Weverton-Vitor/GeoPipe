@@ -50,5 +50,5 @@
 
 
 shapefile:
-  type: datasets.GeoJsonDataset.GeoJsonDataSet
+  type: utils.datasets.GeoJsonDataset.GeoJsonDataSet
   filepath: data/00_shapefiles/sume.geojson

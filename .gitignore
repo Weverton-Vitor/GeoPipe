@@ -1,8 +1,11 @@
+*.zip
 sentinel_scenes
 sentinel_scenes_SL
 .venv
 venv
 .ipynb_*
+
+src/utils/deepwatermap/checkpoints/cp.135.ckpt.data-00000-of-00001
 
 __pycache__
 

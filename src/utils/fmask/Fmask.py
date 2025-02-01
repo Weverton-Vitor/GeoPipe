@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image, ImageFilter
 
-from fmask.fmask_utils import (
+from utils.fmask.fmask_utils import (
     calculate_brightness_temperature,
     calculate_flood_fill_transformation,
     calculate_ndsi,
