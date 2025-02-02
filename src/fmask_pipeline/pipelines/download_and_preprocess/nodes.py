@@ -28,6 +28,7 @@ def create_dirs(
     init_date: str,
     final_date: str,
 ):
+    logger.info("Create Download and Preprocess Pipeline Directories")
     # Create directories structure, if not exists
     os.makedirs(f"{toa_dowload_path}{location_name}/", exist_ok=True)
     os.makedirs(f"{boa_dowload_path}{location_name}/", exist_ok=True)
@@ -185,9 +186,13 @@ def cloud_removal(
     cloud_and_cloud_shadow_pixels: str,
     init_date: str,
     final_date: str,
+    skip_clean: bool,
     *args,
     **kwargs,
 ):
+    if skip_clean:
+        return True
+
     logger.info(f"Executando reservatório {location_name}.")
 
     year_range = range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1)

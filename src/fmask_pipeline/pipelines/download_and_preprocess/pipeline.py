@@ -30,7 +30,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "final_date": "params:configs.final_date",
                 },
                 outputs="dependency1",
-                name="create_dirs",
+                name="create_download_and_preprocess_directories",
             ),
             node(
                 func=shapefile2feature_collection,
@@ -98,6 +98,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "cloud_and_cloud_shadow_pixels": "params:configs.cloud_and_cloud_shadow_pixels",
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
+                    "skip_clean": "params:configs.skip_clean",
                 },
                 outputs="dependency5",
                 name="Cloud_removal",
