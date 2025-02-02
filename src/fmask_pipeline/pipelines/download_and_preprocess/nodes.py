@@ -240,4 +240,4 @@ def cloud_removal(
                 # cv2.imwrite(output_path + f"mask_{image}.png", i.mask)
                 i.death()
 
-
+    return True

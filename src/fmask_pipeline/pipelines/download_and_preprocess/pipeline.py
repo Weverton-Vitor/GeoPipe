@@ -99,7 +99,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
                 },
-                outputs=None,
+                outputs="dependency5",
                 name="Cloud_removal",
             ),
         ]

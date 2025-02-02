@@ -31,12 +31,9 @@ def register_pipelines() -> dict[str, Pipeline]:
 
     water_volume_monitoring = pipeline(
         pipe=download_and_preprocess.create_pipeline() + deepwatermap.create_pipeline(),
-        inputs=["shapefile"],
-        parameters={f"params:configs.{key}" for key in list(params["configs"].keys())},
+        parameters=None,
     )
 
-    pipelines = find_pipelines()
-    pipelines["__default__"] = sum(pipelines.values())
     return {
         "__default__": download_and_preprocess.create_pipeline(),
         "download_and_preprocess": download_and_preprocess.create_pipeline(),
