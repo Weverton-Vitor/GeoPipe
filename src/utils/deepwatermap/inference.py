@@ -18,9 +18,7 @@ import tifffile as tiff
 
 from utils.deepwatermap import deepwatermap
 
-checkpoint_path = os.path.abspath(
-    "src/utils/deepwatermap/checkpoints/cp.135.ckpt.data-00000-of-00001"
-)
+checkpoint_path = os.path.abspath("src/utils/deepwatermap/checkpoints/cp.135.ckpt")
 
 
 def find_padding(v, divisor=32):
