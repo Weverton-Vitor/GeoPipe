@@ -10,7 +10,6 @@ import rasterio as TIFF
 import requests
 from tqdm import tqdm
 
-import utils.deepwatermap.inference as deep_water_map
 from utils.cloud_removal.bcl import BCL
 from utils.fmask.Fmask import Fmask
 from utils.fmask.fmask_utils import save_mask_tif, save_overlayed_mask_plot
@@ -29,6 +28,7 @@ def create_dirs(
     init_date: str,
     final_date: str,
 ):
+    logger.info("Create Download and Preprocess Pipeline Directories")
     # Create directories structure, if not exists
     os.makedirs(f"{toa_dowload_path}{location_name}/", exist_ok=True)
     os.makedirs(f"{boa_dowload_path}{location_name}/", exist_ok=True)
@@ -186,9 +186,13 @@ def cloud_removal(
     cloud_and_cloud_shadow_pixels: str,
     init_date: str,
     final_date: str,
+    skip_clean: bool,
     *args,
     **kwargs,
 ):
+    if skip_clean:
+        return True
+
     logger.info(f"Executando reservatório {location_name}.")
 
     year_range = range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1)
@@ -241,8 +245,4 @@ def cloud_removal(
                 # cv2.imwrite(output_path + f"mask_{image}.png", i.mask)
                 i.death()
 
-
-def apply_deep_water_map(deep_water_map_model: str, image_path: str, save_path: str):
-    deep_water_map.main(
-        checkpoint_path=deep_water_map_model, image_path=image_path, save_path=save_path
-    )
+    return True
