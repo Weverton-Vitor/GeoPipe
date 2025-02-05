@@ -34,11 +34,14 @@ configs:
   # Selecionar as bandas, se for vazio todas as bandas são selecionadas
   selected_bands: ["B2", "B3", "B4", "B8", "B11", "B12"]
 
-  # Escala da imagem
+  # Escala da imagem a ser salva
   scale: 10
 
   # Fator de escala dos valores da reflectancia,
-  scale_factor: 10000
+  scale_factor: 0.0001
+
+  # Fator de deslocamento dos valores da reflectancia
+  offset: 0
 
   # Pular o download
   toa_skip_download: True

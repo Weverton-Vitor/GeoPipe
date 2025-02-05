@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 from matplotlib.patches import Patch
-from segmentation_mask_overlay import overlay_masks
 from PIL import Image, ImageDraw
+from segmentation_mask_overlay import overlay_masks
 
 
 def calculate_ndvi(red: np.ndarray, nir: np.ndarray) -> tuple[np.ndarray]:
