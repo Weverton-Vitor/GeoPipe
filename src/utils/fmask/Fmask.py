@@ -527,7 +527,7 @@ if __name__ == "__main__":
     fmask = Fmask()
 
     for inp in inputs:
-        file_name = f'{inp.split("/")[-1].split(".")[0]}_result'
+        file_name = f"{inp.split('/')[-1].split('.')[0]}_result"
 
         color_composite, cloud_mask, shadow_mask, water_mask = fmask.create_fmask(inp)
 

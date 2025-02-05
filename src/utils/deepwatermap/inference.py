@@ -30,13 +30,22 @@ def find_padding(v, divisor=32):
     return pad_1, pad_2
 
 
-def main(image_path, save_path):
+def main(image_path, save_path, scale_factor, offset):
     # load the model
     model = deepwatermap.model()
     model.load_weights(checkpoint_path)
 
     # load and preprocess the input image
     image = tiff.imread(image_path)
+
+    # Deepwatermap don't need scaçe factpr and offset
+    # image = (image / scale_factor) - offset
+    print(image)
+    print(image)
+    print(image)
+    print(image)
+    print(image)
+    print(image)
     pad_r = find_padding(image.shape[0])
     pad_c = find_padding(image.shape[1])
     image = np.pad(

@@ -13,6 +13,7 @@ from tqdm import tqdm
 from utils.cloud_removal.bcl import BCL
 from utils.fmask.Fmask import Fmask
 from utils.fmask.fmask_utils import save_mask_tif, save_overlayed_mask_plot
+from utils.preprocessing.reflectance_preprocessing import scale_offset_image
 
 # Obter o logger específico do node
 logger = logging.getLogger(__name__)
@@ -68,6 +69,9 @@ def donwload_images(
     selected_bands: list = [],
     skip_download: bool = False,
     scale: int = 10,
+    scale_factor: float | int = 1,
+    offset: float | int = 0,
+    apply_scale_factor_and_offset: bool = False,
 ) -> bool:
     if skip_download:
         logger.warning("Skip Download of images")
@@ -105,9 +109,24 @@ def donwload_images(
             image_id = image_info["id"]
             image = ee.Image(image_id)
 
-            # Filter if necessary
+            # Filter bands if necessary
             if selected_bands:
                 image = image.select(selected_bands)
+
+            # Only apply transformation if isn't TOA or is sentinel image
+            # On landsat series the offset and scale is just applied into SR/BOA image
+            # On sentinel series is just applied the scale in both types images SR/BOA and TOA
+            if apply_scale_factor_and_offset & (
+                "TOA" not in collection_id or "COPERNICUS" in collection_id
+            ):
+                image = ee.Image(scale_offset_image(image, scale_factor, offset))
+
+            if apply_scale_factor_and_offset & (
+                "TOA" not in collection_id or "COPERNICUS" in collection_id
+            ):
+                logger.warning(
+                    f"Applying scale factor: {scale_factor} and offset: {offset}"
+                )
 
             url = image.getDownloadURL(
                 {
@@ -143,7 +162,7 @@ def apply_fmask(
     location_name: str,
     save_masks_path: str,
     save_plots_path: str,
-    scale_factor: int = 1,
+    scale_factor: float,
     skip_masks: bool = False,
     *args,
     **kwargs,
