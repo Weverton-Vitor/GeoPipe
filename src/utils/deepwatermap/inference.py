@@ -14,6 +14,7 @@ import os
 
 import cv2
 import numpy as np
+import rasterio
 import tifffile as tiff
 
 from utils.deepwatermap import deepwatermap
@@ -64,10 +65,15 @@ def main(image_path, save_path):
 
     # soft threshold
     dwm = 1.0 / (1 + np.exp(-(16 * (dwm - 0.5))))
-    dwm = np.clip(dwm, 0, 1)
+    dwm = np.clip(dwm, 0, 1) * 255
 
     # save the output water map
-    cv2.imwrite(save_path, dwm * 255)
+    # cv2.imwrite(save_path, dwm * 255)
+    with rasterio.open(image_path) as src:
+        profile = src.profile
+        profile.update(count=1)
+        with rasterio.open(save_path, "w", **profile) as dst:
+            dst.write(dwm, 1)
 
 
 if __name__ == "__main__":
