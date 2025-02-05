@@ -40,9 +40,8 @@ def apply_deep_water_map(
         for tif_path in tif_files:
             deep_water_map.main(
                 image_path=tif_path,
-                save_path={
-                    f"{water_masks_save_path}{location_name}/{images_path.split('/')[-2]}/{images_path.split('/')[-1]}"
-                },
+                save_path=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
             )
             pbar.update(1)
 
+    return True
