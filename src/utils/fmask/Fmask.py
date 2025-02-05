@@ -17,9 +17,6 @@ from utils.fmask.fmask_utils import (
 
 
 class Fmask:
-    def __init__(self, scale_factor):
-        self.scale_factor = scale_factor
-
     def basic_test(self, swir2, bt, ndvi, ndsi) -> np.ndarray:
         """_summary_
 
@@ -446,12 +443,12 @@ class Fmask:
         # vza_band = bands[12]
 
         # Extract each band sentinel
-        B2 = bands[0] / self.scale_factor  # Blue
-        B3 = bands[1] / self.scale_factor  # Green
-        B4 = bands[2] / self.scale_factor  # Red
-        B8 = bands[3] / self.scale_factor  # NIR
-        B11 = bands[4] / self.scale_factor  # SWIR 1
-        B12 = bands[5] / self.scale_factor  #
+        B2 = bands[0]  # Blue
+        B3 = bands[1]  # Green
+        B4 = bands[2]  # Red
+        B8 = bands[3]  # NIR
+        B11 = bands[4]  # SWIR 1
+        B12 = bands[5]  #
 
         # rgb = [B4/np.max(B4), B3/np.max(B3), B2/np.max(B2)]
 
@@ -527,7 +524,7 @@ if __name__ == "__main__":
     fmask = Fmask()
 
     for inp in inputs:
-        file_name = f'{inp.split("/")[-1].split(".")[0]}_result'
+        file_name = f"{inp.split('/')[-1].split('.')[0]}_result"
 
         color_composite, cloud_mask, shadow_mask, water_mask = fmask.create_fmask(inp)
 
