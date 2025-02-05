@@ -17,6 +17,9 @@ from utils.fmask.fmask_utils import (
 
 
 class Fmask:
+    def __init__(self, scale_factor):
+        self.scale_factor = scale_factor
+
     def basic_test(self, swir2, bt, ndvi, ndsi) -> np.ndarray:
         """_summary_
 

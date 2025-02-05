@@ -51,4 +51,4 @@
 
 shapefile:
   type: utils.datasets.GeoJsonDataset.GeoJsonDataSet
-  filepath: data/00_shapefiles/sume.geojson
+  filepath: data/00_shapefiles/santa_luzia.geojson
