@@ -71,7 +71,6 @@ def donwload_images(
     scale: int = 10,
     scale_factor: float | int = 1,
     offset: float | int = 0,
-    apply_scale_factor_and_offset: bool = False,
 ) -> bool:
     if skip_download:
         logger.warning("Skip Download of images")
@@ -116,14 +115,10 @@ def donwload_images(
             # Only apply transformation if isn't TOA or is sentinel image
             # On landsat series the offset and scale is just applied into SR/BOA image
             # On sentinel series is just applied the scale in both types images SR/BOA and TOA
-            if apply_scale_factor_and_offset & (
-                "TOA" not in collection_id or "COPERNICUS" in collection_id
-            ):
+            if "TOA" not in collection_id or "COPERNICUS" in collection_id:
                 image = ee.Image(scale_offset_image(image, scale_factor, offset))
 
-            if apply_scale_factor_and_offset & (
-                "TOA" not in collection_id or "COPERNICUS" in collection_id
-            ):
+            if "TOA" not in collection_id or "COPERNICUS" in collection_id:
                 logger.warning(
                     f"Applying scale factor: {scale_factor} and offset: {offset}"
                 )
@@ -171,7 +166,7 @@ def apply_fmask(
         logger.warning("Skip generation of cloud and shadow masks")
         return True
 
-    fmask = Fmask(scale_factor=scale_factor)
+    fmask = Fmask()
     inputs = glob.glob(f"{toa_path}{location_name}/*/*.tif")
 
     for inp in inputs:

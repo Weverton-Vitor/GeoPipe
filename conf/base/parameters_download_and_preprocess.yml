@@ -43,9 +43,6 @@ configs:
   # Fator de deslocamento dos valores da reflectancia
   offset: 0
 
-  # Se Falso não aplica scale factor e offset
-  apply_scale_factor_and_offset: False
-
   # Pular o download
   toa_skip_download: False
   boa_skip_download: False
