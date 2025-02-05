@@ -149,7 +149,7 @@ def apply_fmask(
     **kwargs,
 ):
     if skip_masks:
-        logger.warning("Skip generation of masks")
+        logger.warning("Skip generation of cloud and shadow masks")
         return True
 
     fmask = Fmask(scale_factor=scale_factor)
@@ -191,6 +191,7 @@ def cloud_removal(
     **kwargs,
 ):
     if skip_clean:
+        logger.warning("Skip Cloud Removal")
         return True
 
     logger.info(f"Executando reservatório {location_name}.")
