@@ -30,7 +30,7 @@ def find_padding(v, divisor=32):
     return pad_1, pad_2
 
 
-def main(image_path, save_path):
+def main(image_path, save_path, scale_factor, offset):
     # load the model
     model = deepwatermap.model()
     model.load_weights(checkpoint_path)

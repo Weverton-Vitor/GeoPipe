@@ -28,7 +28,13 @@ def create_dirs(
 
 
 def apply_deep_water_map(
-    images_path: str, water_masks_save_path: str, location_name: str, *args, **kwargs
+    images_path: str,
+    water_masks_save_path: str,
+    location_name: str,
+    scale_factor,
+    offset,
+    *args,
+    **kwargs,
 ):
     path = f"{images_path}{location_name}"
     tif_files = glob.glob(os.path.join(path, "**", "*.tif"), recursive=True)
@@ -41,6 +47,8 @@ def apply_deep_water_map(
             deep_water_map.main(
                 image_path=tif_path,
                 save_path=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
+                scale_factor=scale_factor,
+                offset=offset,
             )
             pbar.update(1)
 

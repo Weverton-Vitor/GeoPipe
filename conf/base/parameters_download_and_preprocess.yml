@@ -44,14 +44,14 @@ configs:
   offset: 0
 
   # Pular o download
-  toa_skip_download: True
-  boa_skip_download: True
+  toa_skip_download: False
+  boa_skip_download: False
 
   # Pular geração das máscaras
-  skip_masks: True
+  skip_masks: False
 
   # Valores da máscara que representam nuvem e sombra de nuvem
   cloud_and_cloud_shadow_pixels: [1, 2]
 
   # Pula o processo de limpeza das imagens
-  skip_clean: True
+  skip_clean: False
