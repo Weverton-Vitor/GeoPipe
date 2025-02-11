@@ -5,7 +5,7 @@ generated using Kedro 0.19.10
 
 from kedro.pipeline import Pipeline, node, pipeline
 
-from fmask_pipeline.pipelines.fmask_preprocess.nodes import apply_fmask, cloud_removal
+from .nodes import apply_fmask, cloud_removal
 
 
 def create_pipeline(**kwargs) -> Pipeline:
