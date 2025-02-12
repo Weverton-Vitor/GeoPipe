@@ -3,10 +3,6 @@ configs:
   toa_collection_ids: ["COPERNICUS/S2_HARMONIZED"]
   boa_collection_ids: ["COPERNICUS/S2_SR_HARMONIZED"]
 
-  # Nome da localidade, usada no caminho de download das imagens,
-  # plot da máscara, no salvamento da imagem limpa e no nome da imagem
-  location_name: "gramame"
-
   # Caminho das imagens baixadas do topo da atmosfera (TOA)
   toa_dowload_path: "data/01_toa_images/"
 
@@ -47,11 +43,5 @@ configs:
   toa_skip_download: False
   boa_skip_download: False
 
-  # Pular geração das máscaras
-  skip_masks: False
 
-  # Valores da máscara que representam nuvem e sombra de nuvem
-  cloud_and_cloud_shadow_pixels: [1, 2]
 
-  # Pula o processo de limpeza das imagens
-  skip_clean: False
