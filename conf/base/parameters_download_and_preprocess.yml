@@ -5,7 +5,7 @@ configs:
 
   # Nome da localidade, usada no caminho de download das imagens,
   # plot da máscara, no salvamento da imagem limpa e no nome da imagem
-  location_name: "santaLuzia"
+  location_name: "gramame"
 
   # Caminho das imagens baixadas do topo da atmosfera (TOA)
   toa_dowload_path: "data/01_toa_images/"
