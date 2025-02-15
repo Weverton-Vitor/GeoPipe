@@ -6,8 +6,6 @@ generated using Kedro 0.19.10
 from kedro.pipeline import Pipeline, node, pipeline
 
 from .nodes import (
-    apply_fmask,
-    cloud_removal,
     create_dirs,
     donwload_images,
     shapefile2feature_collection,
