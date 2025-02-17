@@ -1,0 +1,4 @@
+configs:
+  # Nome da localidade, usada no caminho de download das imagens,
+  # plot da máscara, no salvamento da imagem limpa e no nome da imagem
+  location_name: "santa_luzia"

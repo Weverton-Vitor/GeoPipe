@@ -8,9 +8,10 @@ from kedro.framework.project import find_pipelines
 from kedro.pipeline import Pipeline, pipeline
 
 from fmask_pipeline.pipelines.deepwatermap import pipeline as deepwatermap
-from fmask_pipeline.pipelines.download_and_preprocess import (
-    pipeline as download_and_preprocess,
+from fmask_pipeline.pipelines.download import (
+    pipeline as download,
 )
+from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +30,17 @@ def register_pipelines() -> dict[str, Pipeline]:
         A mapping from pipeline names to ``Pipeline`` objects.
     """
 
-    water_volume_monitoring = pipeline(
-        pipe=download_and_preprocess.create_pipeline() + deepwatermap.create_pipeline(),
+    water_volume_monitoring_fmask = pipeline(
+        pipe=download.create_pipeline()
+        + fmask_preprocess.create_pipeline()
+        + deepwatermap.create_pipeline(),
         parameters=None,
     )
 
     return {
-        "__default__": download_and_preprocess.create_pipeline(),
-        "download_and_preprocess": download_and_preprocess.create_pipeline(),
-        "water_volume_monitoring": water_volume_monitoring,
+        "__default__": download.create_pipeline(),
+        "download": download.create_pipeline(),
+        "fmask_preprocessing": fmask_preprocess.create_pipeline(),
+        "apply_deepwatermap": deepwatermap.create_pipeline(),
+        "water_volume_monitoring_fmask": water_volume_monitoring_fmask,
     }
