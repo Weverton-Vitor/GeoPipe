@@ -38,7 +38,7 @@ def register_pipelines() -> dict[str, Pipeline]:
         parameters=None,
     )
 
-    coastline_cfmask_deepwatermap = pipeline(
+    coastline_fmask_deepwatermap = pipeline(
         pipe=download.create_pipeline()
         + fmask_preprocess.create_pipeline()
         + deepwatermap.create_pipeline()
@@ -53,5 +53,5 @@ def register_pipelines() -> dict[str, Pipeline]:
         "apply_deepwatermap": deepwatermap.create_pipeline(),
         "apply_canny": canny.create_pipeline(),
         "water_volume_monitoring_fmask": water_volume_monitoring_fmask,
-        "coastline_cfmask_deepwatermap": coastline_cfmask_deepwatermap,
+        "coastline_fmask_deepwatermap": coastline_fmask_deepwatermap,
     }

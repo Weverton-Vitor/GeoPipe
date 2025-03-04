@@ -34,6 +34,7 @@ def apply_deep_water_map(
     scale_factor,
     offset,
     skip_deepewatermap,
+    threshold,
     *args,
     **kwargs,
 ):
@@ -54,6 +55,7 @@ def apply_deep_water_map(
                 save_path=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
                 scale_factor=scale_factor,
                 offset=offset,
+                threshold=threshold,
             )
             pbar.update(1)
 

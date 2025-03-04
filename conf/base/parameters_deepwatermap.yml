@@ -6,4 +6,14 @@ configs:
   # Caminho onde as máscaras serão salvas
   water_masks_save_path: "data/07_water_masks/"
 
-  skip_deepewatermap: True
+  # Pula a geração de mascaras
+  skip_deepewatermap: False
+
+  # Limiar de confiança (0 - 255), quanto mais perto de 255 mais preciso
+  # Valores mais comuns
+  # 0%	0
+  # 25%	64
+  # 50%	128
+  # 75%	191
+  # 100%	255
+  deepwatermap_threshold: 217 # 85%

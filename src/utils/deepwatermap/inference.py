@@ -30,7 +30,7 @@ def find_padding(v, divisor=32):
     return pad_1, pad_2
 
 
-def main(image_path, save_path, scale_factor, offset):
+def main(image_path, save_path, scale_factor, offset, threshold):
     # load the model
     model = deepwatermap.model()
     model.load_weights(checkpoint_path)
@@ -68,13 +68,15 @@ def main(image_path, save_path, scale_factor, offset):
     dwm = 1.0 / (1 + np.exp(-(16 * (dwm - 0.5))))
     dwm = np.clip(dwm, 0, 1) * 255
 
+    dwm_binary = (dwm >= threshold).astype(np.uint8)
+
     # save the output water map
     # cv2.imwrite(save_path, dwm * 255)
     with rasterio.open(image_path) as src:
         profile = src.profile
-        profile.update(count=1)
+        profile.update(count=1, dtype=rasterio.uint8)
         with rasterio.open(save_path, "w", **profile) as dst:
-            dst.write(dwm, 1)
+            dst.write(dwm_binary, 1)
 
 
 if __name__ == "__main__":
