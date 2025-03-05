@@ -1,0 +1,12 @@
+# This is a boilerplate parameters config generated for pipeline 'cfmask_preprocess'
+# using Kedro 0.19.10.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/0.19.10/configuration/parameters.html
+configs:
+  
+  # -1 indica que a banda QA_PIXEL é a última
+  qa_pixel_band_index: -1
+
+  # Index das bandas Blue, Green e Red
+  bgr_index: [0, 1, 2]
