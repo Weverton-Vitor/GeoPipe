@@ -179,6 +179,7 @@ def save_overlayed_mask_plot(
 
     colors = ["gold", "red", "blue"]
     classes = ["Nuvem", "Sombra de Nuvem", "Água"]
+
     masked_image = overlay_masks(
         color_composite, np.stack(masks, -1), classes, colors=colors
     )
@@ -196,7 +197,6 @@ def save_overlayed_mask_plot(
     plt.axis(False)
 
     os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
-
     fig.savefig(output_file, dpi=fig.dpi)
 
 
@@ -217,9 +217,9 @@ def save_mask_tif(
 
     mask_final = np.zeros_like(cloud_mask).astype(np.int8)
 
-    mask_final[water_mask] = 3
-    mask_final[cloud_shadow_mask] = 2
-    mask_final[cloud_mask] = 1
+    mask_final[water_mask == 1] = 3
+    mask_final[cloud_shadow_mask == 1] = 2
+    mask_final[cloud_mask == 1] = 1
 
     os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
 

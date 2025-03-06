@@ -10,3 +10,5 @@ configs:
 
   # Index das bandas Blue, Green e Red
   bgr_index: [0, 1, 2]
+
+  skip_cfmasks: False

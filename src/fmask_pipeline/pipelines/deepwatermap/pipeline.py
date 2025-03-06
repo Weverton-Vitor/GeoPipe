@@ -34,6 +34,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "threshold": "params:configs.deepwatermap_threshold",
                     "dependency1": "dependency5",
                     "dependency2": "dependency6",
+                    "dependency3": "dependency10",
                 },
                 outputs="dependency7",
                 name="apply_deep_water_map",
