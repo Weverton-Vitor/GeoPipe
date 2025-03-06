@@ -19,7 +19,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
                 },
-                outputs="dependency6",
+                outputs=["dependency6", "dependency10"],
                 name="create_water_volume_monitoring_directories",
             ),
             node(

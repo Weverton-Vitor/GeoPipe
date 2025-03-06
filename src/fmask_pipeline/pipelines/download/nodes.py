@@ -117,7 +117,7 @@ def get_original_bands_name(satelite: str, fake_name_bands: list, is_toa: bool):
             "thermal2": f"{band_prefix}B11",
             "QA_PIXEL": "QA_PIXEL",
         },
-        "S2_SR_HARMONIZED": {
+        "S2": {
             "coastal": "B1",
             "blue": "B2",
             "green": "B3",
@@ -133,9 +133,6 @@ def get_original_bands_name(satelite: str, fake_name_bands: list, is_toa: bool):
             "QA_PIXEL": "QA60",
         },
     }
-
-    # Adding toa collection to Sentinel
-    band_mappings["S2_HARMONIZED"] = band_mappings["S2_SR_HARMONIZED"]
 
     return (
         [band_mappings[satelite].get(band, None) for band in fake_name_bands]
@@ -224,6 +221,10 @@ def donwload_images(
     for collection_id in collection_ids:
         # Validando as datas
         satelite_name = collection_id.split("/")[1]
+
+        if "S2" in satelite_name:
+            satelite_name = "S2"
+
         new_init_date, new_final_date = adjust_date(
             satelite=satelite_name, start_date_str=init_date, end_date_str=final_date
         )

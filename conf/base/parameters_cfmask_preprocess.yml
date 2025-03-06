@@ -11,4 +11,9 @@ configs:
   # Index das bandas Blue, Green e Red
   bgr_index: [0, 1, 2]
 
+  # Pular a geração da mascara
   skip_cfmasks: False
+
+  # Quais pixels da mascara serão usados para limpar as imagem
+  cloud_and_cloud_shadow_cfmask_pixels: [1, 2]
+
