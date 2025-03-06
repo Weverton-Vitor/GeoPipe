@@ -22,8 +22,10 @@ configs:
   save_plot_masks_path: "data/05_masks_plot/"
 
   # Datas para filtrar a coleção
-  init_date: "2000-01-01"
-  final_date: "2000-01-30"
+  # init_date: "2000-01-01"
+  # final_date: "2000-01-30"
+  init_date: "1984-01-01"
+  final_date: "2025-02-30"
 
   # Primeira parte do nome das imagens
   toa_prefix_images_name: "landsat_6B_TOA"
