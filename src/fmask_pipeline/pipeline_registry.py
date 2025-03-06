@@ -48,9 +48,10 @@ def register_pipelines() -> dict[str, Pipeline]:
     )
 
     coastline_cfmask_landsat_deepwatermap = pipeline(
-        pipe=download.create_pipeline() + cfmask_preprocess.create_pipeline(),
-        # + deepwatermap.create_pipeline()
-        # + canny.create_pipeline(),
+        pipe=download.create_pipeline()
+        + cfmask_preprocess.create_pipeline()
+        + deepwatermap.create_pipeline()
+        + canny.create_pipeline(),
         parameters=None,
     )
 

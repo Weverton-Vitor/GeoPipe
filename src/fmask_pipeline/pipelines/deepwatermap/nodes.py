@@ -24,7 +24,7 @@ def create_dirs(
     for year in range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1):
         os.makedirs(f"{water_masks_save_path}{location_name}/{year}", exist_ok=True)
 
-    return [True, True]
+    return True
 
 
 def apply_deep_water_map(

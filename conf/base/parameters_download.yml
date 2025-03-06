@@ -1,10 +1,10 @@
 configs:
   # Coleção do GEE
-  toa_collection_ids: ["COPERNICUS/S2_HARMONIZED"]
-  boa_collection_ids: ["COPERNICUS/S2_SR_HARMONIZED"]
+  # toa_collection_ids: ["COPERNICUS/S2_HARMONIZED"]
+  # boa_collection_ids: ["COPERNICUS/S2_SR_HARMONIZED"]
   
-  # toa_collection_ids: []
-  # boa_collection_ids: ["LANDSAT/LT05/C02/T1_L2", "LANDSAT/LE07/C02/T1_L2", "LANDSAT/LC08/C02/T1_L2"]
+  toa_collection_ids: []
+  boa_collection_ids: ["LANDSAT/LT05/C02/T1_L2", "LANDSAT/LE07/C02/T1_L2", "LANDSAT/LC08/C02/T1_L2"]
 
   # Caminho das imagens baixadas do topo da atmosfera (TOA)
   toa_dowload_path: "data/01_toa_images/"
@@ -26,11 +26,11 @@ configs:
   final_date: "2020-01-30"
 
   # Primeira parte do nome das imagens
-  # toa_prefix_images_name: "landsat_6B_TOA"
-  # boa_prefix_images_name: "landsat_6B_BOA"
+  toa_prefix_images_name: "landsat_6B_TOA"
+  boa_prefix_images_name: "landsat_6B_BOA"
 
-  toa_prefix_images_name: "sentinel_6B_TOA"
-  boa_prefix_images_name: "sentinel_6B_BOA"
+  # toa_prefix_images_name: "sentinel_6B_TOA"
+  # boa_prefix_images_name: "sentinel_6B_BOA"
 
   # Selecionar as bandas, se for vazio todas as bandas são selecionadas
   # selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2", "QA_PIXEL"]
@@ -40,8 +40,8 @@ configs:
   scale: 10
 
   # Pular o download
-  toa_skip_download: True
-  boa_skip_download: True
+  toa_skip_download: False
+  boa_skip_download: False
 
 
 
