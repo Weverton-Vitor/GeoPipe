@@ -22,8 +22,8 @@ configs:
   save_plot_masks_path: "data/05_masks_plot/"
 
   # Datas para filtrar a coleção
-  init_date: "2020-01-01"
-  final_date: "2020-01-30"
+  init_date: "2000-01-01"
+  final_date: "2000-01-30"
 
   # Primeira parte do nome das imagens
   toa_prefix_images_name: "landsat_6B_TOA"
@@ -33,8 +33,8 @@ configs:
   # boa_prefix_images_name: "sentinel_6B_BOA"
 
   # Selecionar as bandas, se for vazio todas as bandas são selecionadas
-  # selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2", "QA_PIXEL"]
-  selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2"]
+  selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2", "QA_PIXEL"]
+  # selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2"]
 
   # Escala da imagem a ser salva
   scale: 10

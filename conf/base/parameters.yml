@@ -2,7 +2,7 @@ configs:
   # Nome da localidade, usada no caminho de download das imagens,
   # plot da máscara, no salvamento da imagem limpa e no nome da imagem
   # Parametro geral, usado pela maioria dos pipelines para acessar as imagens
-  location_name: "baia_da_traicao_sentinel"
+  location_name: "baia_da_traicao_landsat"
 
   # Fator de escala dos valores da reflectancia,
   scale_factor: 0.0001

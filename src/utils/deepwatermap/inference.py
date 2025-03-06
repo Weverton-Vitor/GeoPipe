@@ -37,6 +37,7 @@ def main(image_path, save_path, scale_factor, offset, threshold):
 
     # load and preprocess the input image
     image = tiff.imread(image_path)
+    image = image[:, :, :6]  # 6 primeiras badnas
 
     pad_r = find_padding(image.shape[0])
     pad_c = find_padding(image.shape[1])
