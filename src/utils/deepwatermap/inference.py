@@ -10,9 +10,9 @@ $ python inference.py --checkpoint_path checkpoints/cp.135.ckpt \
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 import argparse
+import gc
 import os
 
-import cv2
 import numpy as np
 import rasterio
 import tifffile as tiff
@@ -30,13 +30,14 @@ def find_padding(v, divisor=32):
     return pad_1, pad_2
 
 
-def main(image_path, save_path, scale_factor, offset):
+def main(image_path, save_path, scale_factor, offset, threshold):
     # load the model
     model = deepwatermap.model()
     model.load_weights(checkpoint_path)
 
     # load and preprocess the input image
     image = tiff.imread(image_path)
+    image = image[:, :, :6]  # 6 primeiras badnas
 
     pad_r = find_padding(image.shape[0])
     pad_c = find_padding(image.shape[1])
@@ -68,13 +69,23 @@ def main(image_path, save_path, scale_factor, offset):
     dwm = 1.0 / (1 + np.exp(-(16 * (dwm - 0.5))))
     dwm = np.clip(dwm, 0, 1) * 255
 
+    dwm_binary = (dwm >= threshold).astype(np.uint8)
+
     # save the output water map
     # cv2.imwrite(save_path, dwm * 255)
     with rasterio.open(image_path) as src:
         profile = src.profile
-        profile.update(count=1)
+        profile.update(count=1, dtype=rasterio.uint8)
         with rasterio.open(save_path, "w", **profile) as dst:
-            dst.write(dwm, 1)
+            dst.write(dwm_binary, 1)
+
+            del model
+            del image
+            del dwm
+            del dwm_binary
+            del dst
+
+            gc.collect()
 
 
 if __name__ == "__main__":

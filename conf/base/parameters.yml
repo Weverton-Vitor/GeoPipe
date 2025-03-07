@@ -1,4 +1,11 @@
 configs:
   # Nome da localidade, usada no caminho de download das imagens,
   # plot da máscara, no salvamento da imagem limpa e no nome da imagem
-  location_name: "santa_luzia"
+  # Parametro geral, usado pela maioria dos pipelines para acessar as imagens
+  location_name: "baia_da_traicao_landsat"
+
+  # Fator de escala dos valores da reflectancia,
+  scale_factor: 0.0001
+
+  # Fator de deslocamento dos valores da reflectancia
+  offset: 0

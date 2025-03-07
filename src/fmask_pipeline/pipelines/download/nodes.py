@@ -2,6 +2,7 @@ import datetime
 import glob
 import logging
 import os
+from datetime import datetime
 
 import ee
 import geojson
@@ -9,6 +10,13 @@ import geopandas as gpd
 import rasterio as TIFF
 import requests
 from tqdm import tqdm
+
+from utils.download.download import (
+    adjust_date,
+    get_original_bands_name,
+    is_TOA,
+    validate_date,
+)
 
 # Obter o logger específico do node
 logger = logging.getLogger(__name__)
@@ -54,7 +62,7 @@ def shapefile2feature_collection(
 
 
 def donwload_images(
-    collection_ids: str,
+    collection_ids: list,
     location_name: str,
     dowload_path: str,
     init_date: str,
@@ -70,12 +78,44 @@ def donwload_images(
         return True
 
     for collection_id in collection_ids:
+        # Validando as datas
+        satelite_name = collection_id.split("/")[1]
+
+        if "S2" in satelite_name:
+            satelite_name = "S2"
+
+        new_init_date, new_final_date = adjust_date(
+            satelite=satelite_name, start_date_str=init_date, end_date_str=final_date
+        )
+
+        logger.warning(
+            f"A data inicial para o satelite {satelite_name} foi alterada para {new_init_date}"
+        )
+        logger.warning(
+            f"A data final para o satelite {satelite_name} foi alterada para {new_final_date}"
+        )
+
+        validate_date(satelite=satelite_name, date_str=new_init_date)
+        validate_date(satelite=satelite_name, date_str=new_final_date)
+
+        if new_final_date == new_init_date:
+            logger.warning(
+                "Data inicial e final iguais, passando para a próxima coleção"
+            )
+            continue
+
         # Get collection
         collection = (
             ee.ImageCollection(collection_id)
-            .filterDate(init_date, final_date)
+            .filterDate(new_init_date, new_final_date)
             .filterBounds(roi)
         )
+        collection_lenght = collection.size().getInfo()
+        logger.info(f"Total images: {collection_lenght}")
+
+        if collection_lenght == 0:
+            logger.warning("Coleção com 0 imagens, passando para a próxima coleção")
+            continue
 
         min_date = collection.aggregate_min("system:time_start")
         max_date = collection.aggregate_max("system:time_start")
@@ -89,9 +129,12 @@ def donwload_images(
         if not selected_bands:
             logger.warning("Download All Bands")
         else:
-            logger.warning(f"Download Bands: {selected_bands}")
-
-        logger.info(f"Total images: {collection.size().getInfo()}")
+            new_selected_bands = get_original_bands_name(
+                satelite=satelite_name,
+                fake_name_bands=selected_bands,
+                is_toa=is_TOA(collection_id),
+            )
+            logger.warning(f"Download Bands: {new_selected_bands}")
 
         images = collection.toList(collection.size()).getInfo()
 
@@ -102,8 +145,8 @@ def donwload_images(
             image = ee.Image(image_id)
 
             # Filter if necessary
-            if selected_bands:
-                image = image.select(selected_bands)
+            if new_selected_bands:
+                image = image.select(new_selected_bands)
 
             url = image.getDownloadURL(
                 {
@@ -116,14 +159,14 @@ def donwload_images(
 
             # Get date of image
             timestamp = image_info["properties"]["system:time_start"]  # Timestamp Unix
-            date = datetime.datetime.utcfromtimestamp(timestamp / 1000).strftime(
+            date = datetime.utcfromtimestamp(timestamp / 1000).strftime(
                 "%Y-%m-%d"
             )  # Converte para data legível
 
             # Nome do arquivo de saída
             output_file = os.path.join(
                 f"{dowload_path}{location_name}/{date[:4]}",
-                f"{prefix_images_name}_{location_name}_{date}.tif",
+                f"{prefix_images_name}_{satelite_name}_{location_name}_{date}.tif",
             )
 
             # Faz o download da imagem e salva no diretório especificado

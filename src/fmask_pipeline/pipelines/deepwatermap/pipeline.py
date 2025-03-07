@@ -30,6 +30,8 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "location_name": "params:configs.location_name",
                     "scale_factor": "params:configs.scale_factor",
                     "offset": "params:configs.offset",
+                    "skip_deepewatermap": "params:configs.skip_deepewatermap",
+                    "threshold": "params:configs.deepwatermap_threshold",
                     "dependency1": "dependency5",
                     "dependency2": "dependency6",
                 },
