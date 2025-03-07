@@ -10,9 +10,9 @@ $ python inference.py --checkpoint_path checkpoints/cp.135.ckpt \
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 import argparse
+import gc
 import os
 
-import cv2
 import numpy as np
 import rasterio
 import tifffile as tiff
@@ -78,6 +78,14 @@ def main(image_path, save_path, scale_factor, offset, threshold):
         profile.update(count=1, dtype=rasterio.uint8)
         with rasterio.open(save_path, "w", **profile) as dst:
             dst.write(dwm_binary, 1)
+
+            del model
+            del image
+            del dwm
+            del dwm_binary
+            del dst
+
+            gc.collect()
 
 
 if __name__ == "__main__":

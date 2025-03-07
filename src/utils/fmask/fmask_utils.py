@@ -1,4 +1,5 @@
 import os
+import gc
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -199,6 +200,14 @@ def save_overlayed_mask_plot(
     os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
     fig.savefig(output_file, dpi=fig.dpi)
 
+    plt.close("all")
+    del masks
+    del color_composite
+    del fig
+    del masked_image
+
+    gc.collect()
+
 
 def save_mask_tif(
     cloud_mask: np.ndarray,
@@ -228,6 +237,15 @@ def save_mask_tif(
         profile.update(count=1)
         with rasterio.open(output_file, "w", **profile) as dst:
             dst.write(mask_final, 1)
+
+            del cloud_mask
+            del cloud_shadow_mask
+            del water_mask
+            del mask_final
+            del profile
+            del dst
+
+            gc.collect()
 
 
 def read_bands(tif_file: str) -> np.ndarray:

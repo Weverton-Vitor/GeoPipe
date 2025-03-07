@@ -39,7 +39,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "cloud_and_cloud_shadow_pixels": "params:configs.cloud_and_cloud_shadow_cfmask_pixels",
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
-                    "skip_clean": "params:configs.skip_cfmasks",
+                    "skip_clean": "params:configs.skip_clean_cfmask",
                 },
                 outputs="dependency5",
                 name="Cloud_removal",

@@ -1,9 +1,10 @@
+import gc
+import logging
 import os
 
 import numpy as np
 import rasterio
 import tifffile as tiff
-import logging
 
 from utils.fmask.fmask_utils import read_bands
 
@@ -56,6 +57,13 @@ def get_binary_mask_from_path(image_path, qa_index=-1, bgr_index=[0, 1, 2]):
     final_shadow_mask = ((qa_pixel & (1 << bits["shadow"])) > 0).astype(np.uint8)
     water_mask = ((qa_pixel & (1 << bits["water"])) > 0).astype(np.uint8)
     final_cloud_mask = (cloud_mask | dilated_cloud_mask | cirrus_mask).astype(np.uint8)
+
+    del bits
+    del all_bands
+    del cloud_mask
+    del qa_pixel
+
+    gc.collect()
 
     return {
         "rgb_composite": rgb_composite,
