@@ -26,7 +26,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "skip_masks": "params:configs.skip_cfmasks",
                 },
                 outputs="dependency11",
-                name="appy_CFMask",
+                name="apply_CFMask",
             ),
             node(
                 func=cloud_removal,

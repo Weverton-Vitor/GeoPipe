@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "gramame",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -35.083472475786877, -7.257987389747711 ], [ -35.079629838712137, -7.354751977902526 ], [ -34.946185533025712, -7.347416034396205 ], [ -34.950726831386767, -7.244712825307701 ], [ -35.083472475786877, -7.257987389747711 ] ] ] ] } }
+]
+}

@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "santa_luzia",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -36.928085843407644, -6.873370815978137 ], [ -36.914857020627672, -6.873066004393345 ], [ -36.914125472824168, -6.89068411399432 ], [ -36.931926469376023, -6.88916005607036 ], [ -36.928085843407644, -6.873370815978137 ] ] ] ] } }
+]
+}
