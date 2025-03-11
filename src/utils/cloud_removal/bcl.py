@@ -27,6 +27,7 @@ class BCL:
         intern_reservoir,
         cloud_pixels,
         use_dec_tree,
+        color_file_path
     ):
         self.intern_reservoir = intern_reservoir
         self.width, self.height = img_dim
@@ -35,7 +36,7 @@ class BCL:
         self.year = year
         self.nuvem = cloud_pixels
         self.idx_class_cloud = 0
-        self.color_file = open(f"color_file_{data}.txt", "w")
+        self.color_file = open(f"{color_file_path}color_file_{data}.txt", "w")
         self.imgNDWI = None
         pass
 

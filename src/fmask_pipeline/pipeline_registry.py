@@ -17,12 +17,14 @@ from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preproce
 
 logger = logging.getLogger(__name__)
 
-ee.Authenticate()
-ee.Initialize(project="ee-cloud-segmentation")
-
 CONF_SOURCE = "conf/"
 conf_loader = OmegaConfigLoader(CONF_SOURCE)
 params = conf_loader["parameters"]
+
+logger.error(params["configs"]["ee_project"])
+
+ee.Authenticate()
+ee.Initialize(project=params["configs"]["ee_project"])
 
 
 def register_pipelines() -> dict[str, Pipeline]:

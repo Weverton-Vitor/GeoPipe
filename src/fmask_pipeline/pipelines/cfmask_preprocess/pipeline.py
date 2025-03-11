@@ -40,6 +40,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
                     "skip_clean": "params:configs.skip_clean_cfmask",
+                    "color_file_log_path": "params:configs.cloud_removal_log",
                 },
                 outputs="dependency5",
                 name="Cloud_removal",

@@ -1,4 +1,6 @@
 configs:
+  ee_project: "ee-cloud-segmentation"
+
   # Nome da localidade, usada no caminho de download das imagens,
   # plot da máscara, no salvamento da imagem limpa e no nome da imagem
   # Parametro geral, usado pela maioria dos pipelines para acessar as imagens
@@ -9,3 +11,6 @@ configs:
 
   # Fator de deslocamento dos valores da reflectancia
   offset: 0
+
+  # Log do algoritmo de remoção de nuvens
+  cloud_removal_log: "data/06_color_file_log/"

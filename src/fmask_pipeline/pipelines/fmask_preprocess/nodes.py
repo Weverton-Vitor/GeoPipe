@@ -61,6 +61,7 @@ def cloud_removal(
     init_date: str,
     final_date: str,
     skip_clean: bool,
+    color_file_log_path: str,
     *args,
     **kwargs,
 ):
@@ -79,6 +80,7 @@ def cloud_removal(
         for year in year_range:
             path_images_year = f"{path_images}{location_name}/{year}/"
             path_masks_year = f"{path_masks}{location_name}/{year}/"
+            color_file_log = f"{color_file_log_path}{location_name}/{year}/"
 
             for image in os.listdir(path_images_year):
                 # Greping img_size limits
@@ -102,6 +104,7 @@ def cloud_removal(
                     intern_reservoir=location_name,
                     cloud_pixels=cloud_and_cloud_shadow_pixels,
                     use_dec_tree=False,
+                    color_file_path=color_file_log,
                 )
 
                 # Correção

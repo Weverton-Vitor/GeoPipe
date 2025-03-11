@@ -22,6 +22,7 @@ from utils.download.download import (
 logger = logging.getLogger(__name__)
 
 
+# TODO split create dirs for each mini pipeline
 def create_dirs(
     toa_dowload_path: str,
     boa_dowload_path: str,
@@ -29,6 +30,7 @@ def create_dirs(
     save_masks_path: str,
     save_plots_path: str,
     save_clean_images_path: str,
+    cloud_removal_log: str,
     init_date: str,
     final_date: str,
 ):
@@ -38,6 +40,7 @@ def create_dirs(
     os.makedirs(f"{boa_dowload_path}{location_name}/", exist_ok=True)
     os.makedirs(f"{save_masks_path}{location_name}/", exist_ok=True)
     os.makedirs(f"{save_plots_path}{location_name}/", exist_ok=True)
+    os.makedirs(f"{cloud_removal_log}{location_name}/", exist_ok=True)
 
     for year in range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1):
         os.makedirs(f"{toa_dowload_path}{location_name}/{year}", exist_ok=True)
@@ -45,6 +48,7 @@ def create_dirs(
         os.makedirs(f"{save_masks_path}{location_name}/{year}", exist_ok=True)
         os.makedirs(f"{save_plots_path}{location_name}/{year}", exist_ok=True)
         os.makedirs(f"{save_clean_images_path}{location_name}/{year}", exist_ok=True)
+        os.makedirs(f"{cloud_removal_log}{location_name}/{year}", exist_ok=True)
 
     return True
 
