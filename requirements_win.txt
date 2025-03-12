@@ -67,12 +67,8 @@ google-auth-oauthlib==1.2.1
 google-cloud-core==2.4.1
 google-cloud-storage==2.19.0
 google-crc32c==1.6.0
-<<<<<<< HEAD
-google-resumable-media==2.7.2 
-=======
 google-pasta==0.2.0
-google-resumable-media==2.7.2
->>>>>>> 66a4753c85e89670ae3ac85f402afc648c16663f
+google-resumable-media==2.7.2 
 googleapis-common-protos==1.66.0
 graphql-core==3.2.5
 greenlet==3.1.1

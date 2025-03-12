@@ -42,7 +42,8 @@ def apply_canny(
     with tqdm(
         total=total_tifs, desc="Generating CostLine using Canny Method", unit="images"
     ) as pbar:
-        for tif_path in tif_files:
+        for path in tif_files:
+            tif_path = path.replace("\\", "/")
             output_path = f"{canny_output_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1].replace('.tif', '_canny.tif')}"
             canny_detector.detect_border(tif_path=tif_path, output_path=output_path)
             pbar.update(1)

@@ -15,7 +15,7 @@ configs:
   skip_cfmasks: True
 
   # Pular a substuição de pixels
-  skip_clean_cfmask: False
+  skip_clean_cfmask: True
 
   # Quais pixels da mascara serão usados para limpar as imagem
   cloud_and_cloud_shadow_cfmask_pixels: [1, 2]

@@ -25,7 +25,7 @@ configs:
   # init_date: "2000-01-01"
   # final_date: "2000-01-30"
   # init_date: "1984-01-01"
-  init_date: "2011-01-01"
+  init_date: "2025-01-01"
   final_date: "2025-02-28"
 
   # Primeira parte do nome das imagens

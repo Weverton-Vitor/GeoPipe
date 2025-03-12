@@ -21,8 +21,6 @@ CONF_SOURCE = "conf/"
 conf_loader = OmegaConfigLoader(CONF_SOURCE)
 params = conf_loader["parameters"]
 
-logger.error(params["configs"]["ee_project"])
-
 ee.Authenticate()
 ee.Initialize(project=params["configs"]["ee_project"])
 
