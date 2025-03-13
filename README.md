@@ -1,100 +1,78 @@
-# fmask-pipeline
+# Remote Sensing Preprocessing Pipeline
 
 [![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
 
 ## Overview
 
-This is your new Kedro project with PySpark setup, which was generated using `kedro 0.19.10`.
+This project is group of  data preprocessing pipelines to process Sentinel 2, Landsat 5 TM, Landsat 7 ETM+, Landsat 8 OLI/TIRS and Landsat 9 OLI-2/TIRS-2, which was generated using `kedro 0.19.10`. The preprocess includes Cloud and Cloud shadow remove and replacement, water detect, etc.
+
+### Example
+
+![alt text](doc/images/kedro-pipeline-exemple.png)
+
 
 Take a look at the [Kedro documentation](https://docs.kedro.org) to get started.
 
-## Rules and guidelines
+## Install Visual Studio Code
 
-In order to get the best out of the template:
+- [Visual Studio Code Tutorial](https://youtu.be/R9dLGLVqK9Q?si=G_Fb6qW_f7c9BY5p)
 
-* Don't remove any lines from the `.gitignore` file we provide
-* Make sure your results can be reproduced by following a [data engineering convention](https://docs.kedro.org/en/stable/faq/faq.html#what-is-data-engineering-convention)
-* Don't commit data to your repository
-* Don't commit any credentials or your local configuration to your repository. Keep all your credentials and local configuration in `conf/local/`
+## Install Python 3.11
+
+It's required by some dependecies runs on python 3.11
+
+- [Python 3.11 Donwload](https://www.python.org/downloads/release/python-31111/)
+
+## How To create a virtual environment 
+
+- [ Virtual environment's python on windows (using venv and VSCode) - Portuguese video ](https://youtu.be/m1TYpvIYm74?si=m6XuErnnPiZRgCuR)
+
+
 
 ## How to install dependencies
 
-Declare any dependencies in `requirements.txt` for `pip` installation.
+Declare any dependencies in `requirements.txt` or `requirements_win.txt` if on windows, for `pip` installation.
 
 To install them, run:
 
 ```
-pip install -r requirements.txt
+On Linux
+$ pip install -r requirements.txt
 ```
+
+```
+On Windows
+$ pip install -r requirements_win.txt
+```
+
+`$ pip install -r file.txt` install all lib listed in file.txt
+
+
+## Donwload ML/DL model's weigths
+
+If You desire run with ML/DL models, you need to download the weigths:
+
+### Deep Water Map Wheigths
+
+You must donwload and unzip the `checkpoints` folder inside `src\utils\deepwatermap`
+
+- [Checkpoints Download](https://utexas.app.box.com/s/j9ymvdkaq36tk04be680mbmlaju08zkq/file/565662752887)
+
 
 ## How to run your Kedro pipeline
 
 You can run your Kedro project with:
 
 ```
-kedro run
+# Running default pipeline
+$ kedro run
 ```
 
-## How to test your Kedro project
-
-Have a look at the files `src/tests/test_run.py` and `src/tests/pipelines/data_science/test_pipeline.py` for instructions on how to write your tests. Run the tests as follows:
-
 ```
-pytest
+# Running specific pipeline
+$ kedon run --pipeline=my_pipeline
 ```
 
-To configure the coverage threshold, look at the `.coveragerc` file.
+## Parameters .yml files
 
-## Project dependencies
-
-To see and update the dependency requirements for your project use `requirements.txt`. Install the project requirements with `pip install -r requirements.txt`.
-
-[Further information about project dependencies](https://docs.kedro.org/en/stable/kedro_project_setup/dependencies.html#project-specific-dependencies)
-
-## How to work with Kedro and notebooks
-
-> Note: Using `kedro jupyter` or `kedro ipython` to run your notebook provides these variables in scope: `catalog`, `context`, `pipelines` and `session`.
->
-> Jupyter, JupyterLab, and IPython are already included in the project requirements by default, so once you have run `pip install -r requirements.txt` you will not need to take any extra steps before you use them.
-
-### Jupyter
-To use Jupyter notebooks in your Kedro project, you need to install Jupyter:
-
-```
-pip install jupyter
-```
-
-After installing Jupyter, you can start a local notebook server:
-
-```
-kedro jupyter notebook
-```
-
-### JupyterLab
-To use JupyterLab, you need to install it:
-
-```
-pip install jupyterlab
-```
-
-You can also start JupyterLab:
-
-```
-kedro jupyter lab
-```
-
-### IPython
-And if you want to run an IPython session:
-
-```
-kedro ipython
-```
-
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can use tools like [`nbstripout`](https://github.com/kynan/nbstripout). For example, you can add a hook in `.git/config` with `nbstripout --install`. This will run `nbstripout` before anything is committed to `git`.
-
-> *Note:* Your output cells will be retained locally.
-
-## Package your Kedro project
-
-[Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html)
+## Data folders structure
