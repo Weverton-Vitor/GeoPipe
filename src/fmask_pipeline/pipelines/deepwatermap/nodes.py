@@ -46,15 +46,11 @@ def apply_deep_water_map(
     tif_files = glob.glob(os.path.join(path, "**", "*.tif"), recursive=True)
     total_tifs = len(tif_files)
 
-
     with tqdm(
         total=total_tifs, desc="Segmenting Water in Images", unit="images"
     ) as pbar:
         for path in tif_files:
             tif_path = path.replace("\\", "/")
-            logger.error(f"{tif_path.split('/')}")
-            logger.error(f"{tif_path.split('/')}")
-            logger.error(f"{tif_path.split('/')}")
             deep_water_map.main(
                 image_path=tif_path,
                 save_path=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
