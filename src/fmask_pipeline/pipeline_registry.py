@@ -21,8 +21,27 @@ CONF_SOURCE = "conf/"
 conf_loader = OmegaConfigLoader(CONF_SOURCE)
 params = conf_loader["parameters"]
 
-ee.Authenticate()
-ee.Initialize(project=params["configs"]["ee_project"])
+# ee.Authenticate()
+# ee.Initialize(project=params["configs"]["ee_project"])
+# ee.Initialize()
+
+import json
+import ee
+
+# Carregar o arquivo key.json
+with open("/home/kedro_docker/key.json", "r") as f:
+    key_data = json.load(f)
+
+# Pegar o email da conta de serviço
+service_account = key_data["client_email"]
+
+# Inicializar Earth Engine com as credenciais
+credentials = ee.ServiceAccountCredentials(
+    service_account, "/home/kedro_docker/key.json"
+)
+ee.Initialize(credentials)
+
+logger.info(f"Autenticado com a conta de serviço: {service_account}")
 
 
 def register_pipelines() -> dict[str, Pipeline]:

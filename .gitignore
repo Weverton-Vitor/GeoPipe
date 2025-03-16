@@ -5,6 +5,8 @@ sentinel_scenes_SL
 venv
 .ipynb_*
 
+*key.*
+
 src/utils/deepwatermap/checkpoints/cp.135.ckpt.data-00000-of-00001
 src/utils/deepwatermap/checkpoints/cp.135.ckpt.index
 
