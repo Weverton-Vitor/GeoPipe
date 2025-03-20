@@ -10,6 +10,15 @@ logger = logging.getLogger(__name__)
 
 class Canny:
 
+    sigma: int = 1
+    lower_factor: int = 3
+    upper_factor: int = 9
+
+    def __init__(self, sigma=1, lower_factor=3, upper_factor=9):
+        self.sigma = sigma
+        self.lower_factor = lower_factor
+        self.upper_factor = upper_factor
+
     def detect_border(self, tif_path, output_path):
         img = cv2.imread(tif_path, cv2.IMREAD_UNCHANGED)
 
@@ -23,12 +32,11 @@ class Canny:
             )
 
             # Autocanny
-            sigma = 1
             median = np.median(img_8bit)
 
             # apply automatic Canny edge detection using the computed median
-            lower = int(max(0, (3 - sigma) * median))
-            upper = int(min(255, (9 + sigma) * median))
+            lower = int(max(0, (self.lower_factor - self.sigma) * median))
+            upper = int(min(255, (self.upper_factor + self.sigma) * median))
 
             auto_canny = cv2.Canny(img_8bit, lower, upper)
 

@@ -5,3 +5,10 @@ configs:
 
   # Caminho onde as bordas serão salvas
   canny_output_save_path: "data/08_canny/"
+
+  # Sigma
+  sigma: 1.0
+
+  lower_factor: 3
+
+  upper_factor: 9
