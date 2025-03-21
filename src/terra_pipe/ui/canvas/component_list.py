@@ -14,6 +14,11 @@ UI_NODES_NAME = {
     "apply_deep_water_map": "Detecção de Água com o Deep Water Map",
     "apply_fmask": "Detecção de nuvems e suas sombras com FMask",
     "cloud_removal": "Remoção de nuvens",
+    "LT5": "Landsat 5 TM",
+    "LT7": "Landsat 7 ETM+",
+    "LT8": "Lansat 8 OLI/TIRS",
+    "LT9": "Landast 9 OLI/TIRS2",
+    "ST2": "Sentinel 2",
 }
 
 class ComponentList(QListWidget):
@@ -41,6 +46,12 @@ class ComponentList(QListWidget):
         components = [
         ]
 
+        # components.append("Landsat 5 TM")
+        # components.append("Landsat 7 ETM+")
+        # components.append("Lansat 8 OLI/TIRS")
+        # components.append("Landast 9 OLI/TIRS2")
+        # components.append("Sentinel 2")
+
         nodes = find_all_nodes("../../")
         for node in nodes:
             if node.name in UI_NODES_NAME.keys():
@@ -50,7 +61,6 @@ class ComponentList(QListWidget):
                 self.raw_nodes.append(node)
 
         components.append("Dependency")
-
 
         for comp in components:
             item = QListWidgetItem(comp)

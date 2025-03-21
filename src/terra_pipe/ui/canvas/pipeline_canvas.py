@@ -105,7 +105,6 @@ class PipelineCanvas(QWidget):
                 if dlg.accepted:
                     node1, node2 = dlg.selected_nodes_widgets
                     new_arrow = PipelineArrow(node1, node2, parent=self)
-                    
                     new_arrow.show()
                     self.connections.append(new_arrow)
 
