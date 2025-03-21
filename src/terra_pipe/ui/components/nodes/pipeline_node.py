@@ -3,6 +3,11 @@ from PyQt5.QtGui import QColor, QDrag, QFont, QPainter, QPen, QPixmap, QLinearGr
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import QObject, QEvent
 
+from PyQt5.QtGui import QTextOption, QFont, QPainter
+from PyQt5.QtCore import Qt, QRectF
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel
+
+
 class PipelineNode(QWidget):
     """Widget que representa um node do pipeline Kedro"""
 
@@ -19,6 +24,7 @@ class PipelineNode(QWidget):
         self.selected_node_color = QColor(0, 0, 200)
         self.color = self.default_node_color
         self.node_raw_representation = node_raw_representation
+
 
     def initUI(self):
         self.setAcceptDrops(True)
@@ -43,26 +49,32 @@ class PipelineNode(QWidget):
         painter.setPen(QPen(Qt.black, 2))
         painter.drawRoundedRect(2, 2, self.width() - 4, self.height() - 4, 15, 15)
 
-        # Nome do node
         painter.setPen(Qt.white)
-        painter.setFont(QFont("Arial", 11, QFont.Bold))
-        painter.drawText(self.rect(), Qt.AlignCenter, self.name)
+        painter.setFont(QFont("Arial", 10, QFont.Bold))
+
+        text_rect = QRectF(self.rect())  # Define a área onde o texto será desenhado
+
+        text_option = QTextOption()
+        text_option.setWrapMode(QTextOption.WordWrap)  # Habilita quebra de linha automática
+        text_option.setAlignment(Qt.AlignCenter)  # Alinha o texto no centro
+
+        painter.drawText(text_rect, self.name, text_option)
 
         # Desenhar portas de entrada
-        for i, input_name in enumerate(self.inputs):
-            y_pos = 30 + i * 15
-            painter.setPen(QPen(Qt.black, 1))
-            painter.setBrush(Qt.white)
-            painter.drawEllipse(5, y_pos, 12, 12)
-            # painter.drawText(20, y_pos + 10, input_name)
+        # for i, input_name in enumerate(self.inputs):
+        #     y_pos = 30 + i * 15
+        #     painter.setPen(QPen(Qt.black, 1))
+        #     painter.setBrush(Qt.white)
+        #     painter.drawEllipse(5, y_pos, 12, 12)
+        #     # painter.drawText(20, y_pos + 10, input_name)
 
-        # Desenhar portas de saída
-        for i, output_name in enumerate(self.outputs):
-            y_pos = 30 + i * 15
-            painter.setPen(QPen(Qt.black, 1))
-            painter.setBrush(Qt.white)
-            painter.drawEllipse(self.width() - 17, y_pos, 12, 12)
-            # painter.drawText(self.width() - 85, y_pos + 10, output_name)
+        # # Desenhar portas de saída
+        # for i, output_name in enumerate(self.outputs):
+        #     y_pos = 30 + i * 15
+        #     painter.setPen(QPen(Qt.black, 1))
+        #     painter.setBrush(Qt.white)
+        #     painter.drawEllipse(self.width() - 17, y_pos, 12, 12)
+        #     # painter.drawText(self.width() - 85, y_pos + 10, output_name)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
