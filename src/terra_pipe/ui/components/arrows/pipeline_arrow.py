@@ -25,6 +25,7 @@ class PipelineArrow(QWidget):
 
         line = QLineF(start_pos, end_pos)
         painter.drawLine(line)
+        self.show()
 
     def update_position(self):
         self.update()

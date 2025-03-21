@@ -62,13 +62,13 @@ class PipelineCanvas(QWidget):
         #     self.painter.drawLine(start_pos, end_pos)
 
         # Desenhar conexão atual sendo criada
-        if self.connecting_mode and self.current_connection:
-            start_node, start_port, mouse_pos = self.current_connection
-            for node in self.nodes:
-                if node.node_id == start_node:
-                    start_pos = node.pos() + QPoint(node.width(), 30 + 15 * start_port)
-                    self.painter.setPen(QPen(Qt.darkGray, 2, Qt.DashLine))
-                    self.painter.drawLine(start_pos, mouse_pos)
+        # if self.connecting_mode and self.current_connection:
+        #     start_node, start_port, mouse_pos = self.current_connection
+        #     for node in self.nodes:
+        #         if node.node_id == start_node:
+        #             start_pos = node.pos() + QPoint(node.width(), 30 + 15 * start_port)
+        #             self.painter.setPen(QPen(Qt.darkGray, 2, Qt.DashLine))
+        #             self.painter.drawLine(start_pos, mouse_pos)
                 
 
     def dragEnterEvent(self, event):
@@ -105,6 +105,7 @@ class PipelineCanvas(QWidget):
                 if dlg.accepted:
                     node1, node2 = dlg.selected_nodes_widgets
                     new_arrow = PipelineArrow(node1, node2, parent=self)
+                    
                     new_arrow.show()
                     self.connections.append(new_arrow)
 
