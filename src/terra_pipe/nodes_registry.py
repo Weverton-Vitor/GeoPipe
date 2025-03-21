@@ -31,6 +31,7 @@ def find_all_nodes(project_path):
     """Procura por todos os arquivos 'nodes.py' e extrai os nomes das funções dentro deles."""
     path_nodes = glob.glob(os.path.join(f'{project_path}', "**", "nodes.py"), recursive=True)
     nodes = []
+    min_param_name_len = 4
 
     for node in path_nodes:
         with open(node, "r", encoding="utf-8") as file:
@@ -43,8 +44,11 @@ def find_all_nodes(project_path):
             node_name = function_text[0]
 
             parameters = function_text[1].split(',')
-            parameters = list(map(lambda x: x.replace('\n', ''), parameters))
-            parameters = list(map(lambda x: x.strip(), parameters))
+            parameters = list(map(lambda x: x.replace('\n', '').replace(" ", ''), parameters))
+            parameters = list(map(lambda x: x.strip().split("=")[0], parameters))
+            parameters = list(filter(lambda x: "*" not in x and len(x) > min_param_name_len, parameters))
+
+            print(parameters)
 
             nodes.append(NodeRepresentation(name=node_name, parameters=parameters))
 
