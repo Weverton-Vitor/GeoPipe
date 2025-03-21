@@ -1,5 +1,5 @@
 """fmask-pipeline file for ensuring the package is executable
-as `fmask-pipeline` and `python -m fmask_pipeline`
+as `fmask-pipeline` and `python -m terra_pipe`
 """
 import sys
 from pathlib import Path

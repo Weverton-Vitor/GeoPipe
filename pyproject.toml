@@ -4,22 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 requires-python = ">=3.9"
-name = "fmask_pipeline"
+name = "terra_pipe"
 readme = "README.md"
 dynamic = [ "version",]
-dependencies = [ "ipython>=8.10", "jupyterlab>=3.0", "notebook", "kedro[jupyter]~=0.19.10", "kedro-datasets[pandas-csvdataset, pandas-exceldataset, pandas-parquetdataset, spark-sparkdataset]>=3.0", "kedro-viz>=6.7.0", "scikit-learn~=1.5.1",]
+dependencies = [ "ipython>=8.10", "jupyterlab>=3.0", "notebook", "kedro[jupyter]~=0.19.10", "kedro-datasets[pandas-csvdataset, pandas-parquetdataset]>=3.0", "kedro-viz>=6.7.0", "scikit-learn~=1.5.1",]
 
 [project.scripts]
-fmask-pipeline = "fmask_pipeline.__main__:main"
+fmask-pipeline = "terra_pipe.__main__:main"
 
 [project.optional-dependencies]
 dev = [ "pytest-cov~=3.0", "pytest-mock>=1.7.1, <2.0", "pytest~=7.2", "ruff~=0.1.8",]
 
 [tool.kedro]
-package_name = "fmask_pipeline"
+package_name = "terra_pipe"
 project_name = "fmask-pipeline"
 kedro_init_version = "0.19.10"
-tools = "['Linting', 'Data Structure', 'PySpark']"
+tools = "['Linting', 'Data Structure']"
 example_pipeline = "True"
 source_dir = "src"
 
@@ -35,7 +35,7 @@ ignore = [ "E501",]
 docstring-code-format = true
 
 [tool.setuptools.dynamic.version]
-attr = "fmask_pipeline.__version__"
+attr = "terra_pipe.__version__"
 
 [tool.setuptools.packages.find]
 where = [ "src",]

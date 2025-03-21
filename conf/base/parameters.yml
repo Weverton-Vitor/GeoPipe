@@ -4,7 +4,7 @@ configs:
   # Nome da localidade, usada no caminho de download das imagens,
   # plot da máscara, no salvamento da imagem limpa e no nome da imagem
   # Parametro geral, usado pela maioria dos pipelines para acessar as imagens
-  location_name: "santa_luzia_landsat"
+  location_name: "sume"
 
   # Fator de escala dos valores da reflectancia,
   scale_factor: 0.0001

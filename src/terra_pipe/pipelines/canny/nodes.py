@@ -3,7 +3,6 @@ import logging
 import os
 
 from tqdm import tqdm
-
 from utils.coastline import canny
 
 logger = logging.getLogger(__name__)
@@ -31,13 +30,16 @@ def apply_canny(
     images_path: str,
     canny_output_save_path: str,
     location_name: str,
+    sigma: int,
+    lower_factor: int,
+    upper_factor: int,
     *args,
     **kwargs,
 ):
     path = f"{images_path}{location_name}"
     tif_files = glob.glob(os.path.join(path, "**", "*.tif"), recursive=True)
     total_tifs = len(tif_files)
-    canny_detector = canny.Canny()
+    canny_detector = canny.Canny(sigma=sigma, lower_factor=lower_factor, upper_factor=upper_factor)
 
     with tqdm(
         total=total_tifs, desc="Generating CostLine using Canny Method", unit="images"

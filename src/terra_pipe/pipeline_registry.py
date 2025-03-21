@@ -7,13 +7,13 @@ from kedro.config import OmegaConfigLoader
 from kedro.framework.project import find_pipelines
 from kedro.pipeline import Pipeline, pipeline
 
-from fmask_pipeline.pipelines.canny import pipeline as canny
-from fmask_pipeline.pipelines.cfmask_preprocess import pipeline as cfmask_preprocess
-from fmask_pipeline.pipelines.deepwatermap import pipeline as deepwatermap
-from fmask_pipeline.pipelines.download import (
+from terra_pipe.pipelines.canny import pipeline as canny
+from terra_pipe.pipelines.cfmask_preprocess import pipeline as cfmask_preprocess
+from terra_pipe.pipelines.deepwatermap import pipeline as deepwatermap
+from terra_pipe.pipelines.download import (
     pipeline as download,
 )
-from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
+from terra_pipe.pipelines.fmask_preprocess import pipeline as fmask_preprocess
 
 logger = logging.getLogger(__name__)
 
