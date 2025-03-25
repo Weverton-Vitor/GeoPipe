@@ -254,8 +254,7 @@ class NodePanel(QWidget):
             # Preencher parâmetros de entrada
             for i, input_name in enumerate(node.inputs):
                 param_name = input_name.split(":")[0].strip()
-                param_type = input_name.split(":")[1].strip()
-                print(param_type)
+                # param_type = input_name.split(":")[1].strip()
                 
                 # param_type = (
                 #     node.input_types[i] if hasattr(node, "input_types") else "str"
@@ -265,7 +264,7 @@ class NodePanel(QWidget):
                 )
 
                 param_widget = ParameterWidget(
-                    name=param_name, param_type=TYPE_MAP[param_type], value=param_value, parent=self.input_container
+                    name=param_name, value=param_value, parent=self.input_container
                 )
                 # param_widget.remove_btn.clicked.connect(
                 #     lambda checked=False, w=param_widget: self.remove_parameter(
@@ -309,8 +308,8 @@ class NodePanel(QWidget):
 
             for param_widget in self.input_params:
                 param_data = param_widget.get_parameter_data()
+                print(param_data)
                 self.node.inputs.append(param_data["name"])
-                self.node.input_types.append(param_data["type"])
                 self.node.input_values.append(param_data["value"])
 
             # Atualizar parâmetros de saída

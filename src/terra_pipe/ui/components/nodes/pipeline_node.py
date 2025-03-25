@@ -1,11 +1,15 @@
-from PyQt5.QtCore import QMimeData, QPoint, Qt
-from PyQt5.QtGui import QColor, QDrag, QFont, QPainter, QPen, QPixmap, QLinearGradient
+from PyQt5.QtCore import QEvent, QMimeData, QRectF, Qt
+from PyQt5.QtGui import (
+    QColor,
+    QDrag,
+    QFont,
+    QLinearGradient,
+    QPainter,
+    QPen,
+    QPixmap,
+    QTextOption,
+)
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import QObject, QEvent
-
-from PyQt5.QtGui import QTextOption, QFont, QPainter
-from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel
 
 
 class PipelineNode(QWidget):
