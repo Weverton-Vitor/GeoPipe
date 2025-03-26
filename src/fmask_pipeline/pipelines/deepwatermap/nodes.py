@@ -33,9 +33,14 @@ def apply_deep_water_map(
     location_name: str,
     scale_factor,
     offset,
+    skip_deepewatermap,
     *args,
     **kwargs,
 ):
+    if skip_deepewatermap:
+        logger.warning("Skip Deep Water Mask processing")
+        return True
+
     path = f"{images_path}{location_name}"
     tif_files = glob.glob(os.path.join(path, "**", "*.tif"), recursive=True)
     total_tifs = len(tif_files)
