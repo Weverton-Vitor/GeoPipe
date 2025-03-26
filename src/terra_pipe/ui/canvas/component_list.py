@@ -10,9 +10,9 @@ from terra_pipe.nodes_registry import find_all_nodes
 
 UI_NODES_NAME = {
     "apply_canny": "Detecção de bordas com Canny",
-    "apply_cfmask": "Detecção de nuvems e suas sombras com CFMask",
+    "apply_cfmask": "Detecção de nuvens e suas sombras com CFMask",
     "apply_deep_water_map": "Detecção de Água com o Deep Water Map",
-    "apply_fmask": "Detecção de nuvems e suas sombras com FMask",
+    "apply_fmask": "Detecção de nuvens e suas sombras com FMask",
     "cloud_removal": "Remoção de nuvens",
     "LT5": "Landsat 5 TM",
     "LT7": "Landsat 7 ETM+",

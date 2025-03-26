@@ -24,11 +24,13 @@ class PipelineNode(QWidget):
         self.setFixedSize(160, 90)
         self.initUI()
         self.installEventFilter(self)
-        self.default_node_color = QColor(255, 0, 200)
+        self.default_node_color = QColor(255, 0, 0)
         self.selected_node_color = QColor(0, 0, 200)
         self.color = self.default_node_color
         self.node_raw_representation = node_raw_representation
 
+    def __str__(self):
+        return f"Node: {self.name} | ID: {self.node_id} | Inputs: {self.inputs} | Outputs: {self.outputs} | Position: {self.pos()}"
 
     def initUI(self):
         self.setAcceptDrops(True)

@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
 from terra_pipe.ui.canvas.component_list import ComponentList
 from terra_pipe.ui.canvas.pipeline_canvas import PipelineCanvas
 from terra_pipe.ui.components.panels.node_panel import NodePanel
+from terra_pipe.ui.components.panels.node_panel_resizable import ResizableNodePanel
 
 # Tentar importar o Kedro (necessário em produção)
 try:
@@ -86,6 +87,7 @@ class KedroVisualEditor(QMainWindow):
 
         # Painel de Propriedades (Direita)
         self.property_panel = NodePanel(parent=self, node=self.canvas.selected_node)
+        self.property_panel.hide()
         main_layout.addWidget(self.property_panel)
 
     def new_pipeline(self):
@@ -179,8 +181,10 @@ class KedroVisualEditor(QMainWindow):
     def update_property_panel(self, text):
         self.statusBar().showMessage(text)
         self.property_panel.set_node(self.canvas.selected_node)
-        print(self.property_panel.node)
-
+        if self.canvas.selected_node:
+            self.property_panel.show()
+        else:
+            self.property_panel.hide()
 
 def main():
     app = QApplication(sys.argv)
