@@ -1,0 +1,7 @@
+configs:
+
+  # Caminho das mascaras geradas pelo deepwatermask
+  water_mask_path: "data/07_water_masks/"
+
+  # Caminho onde as bordas serão salvas
+  canny_output_save_path: "data/08_canny/"
