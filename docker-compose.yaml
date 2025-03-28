@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  fmask_pipeline:
+  terra_pipe:
     build:
       context: .
       dockerfile: Dockerfile
@@ -16,11 +16,11 @@ services:
       - OMP_NUM_THREADS=16
       - MKL_NUM_THREADS=16
     volumes:
-      - C:\Users\weverton.vitor\Documents\faculdade\pibic\fmask-pipeline\conf/local:/home/kedro_docker/conf/local
-      - C:\Users\weverton.vitor\Documents\faculdade\pibic\fmask-pipeline\data:/home/kedro_docker/data
-      - C:\Users\weverton.vitor\Documents\faculdade\pibic\fmask-pipeline\logs:/home/kedro_docker/logs
-      - C:\Users\weverton.vitor\Documents\faculdade\pibic\fmask-pipeline\notebooks:/home/kedro_docker/notebooks
-      - C:\Users\weverton.vitor\Documents\faculdade\pibic\fmask-pipeline\references:/home/kedro_docker/references
-      - C:\Users\weverton.vitor\Documents\faculdade\pibic\fmask-pipeline\results:/home/kedro_docker/results
+      - ./conf/local:/home/kedro_docker/conf/local
+      - ./data:/home/kedro_docker/data
+      - ./logs:/home/kedro_docker/logs
+      - ./notebooks:/home/kedro_docker/notebooks
+      - ./references:/home/kedro_docker/references
+      - ./results:/home/kedro_docker/results
       - ./key.json:/home/kedro_docker/key.json
     command: kedro run --pipeline=coastline_cfmask_landsat_deepwatermap
