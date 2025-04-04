@@ -1,5 +1,15 @@
-# This is a boilerplate parameters config generated for pipeline 'unet'
-# using Kedro 0.19.12.
-#
-# Documentation for this file format can be found in "Parameters"
-# Link: https://docs.kedro.org/en/0.19.12/configuration/parameters.html
+configs:
+  # Parâmetros do Fmask
+  skip_clean: False
+  skip_masks: False
+  cloud_and_cloud_shadow_pixels: [1, 2]
+
+  # Parâmetros do Unet
+  unet:
+    model_weights: "UNetMobV2_V2.pt"   # Atualize com o caminho real, se necessário
+    input_size: [512, 512, 13]           # Exemplo para Sentinel-2 com 13 canais
+    threshold: 0.5    
+    cloud_clear_class: 0                  # Classe que representa pixels sem nuvens                 
+    cloud_thick_class: 1                     # Classe que representa nuvens grossas
+    cloud_thin_class: 2                      # Classe que representa nuvens finas
+    cloud_shadow_class: 3              # Classe que representa sombras de nuvens
