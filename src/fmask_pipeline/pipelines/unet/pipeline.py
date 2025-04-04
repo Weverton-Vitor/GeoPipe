@@ -16,7 +16,6 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "location_name": "params:configs.location_name",
                     "save_masks_path": "params:configs.save_masks_path",
                     "save_plots_path": "params:configs.save_plot_masks_path",
-                    "scale_factor": "params:configs.scale_factor",
                     "skip_masks": "params:configs.skip_masks",
                     "unet_params": "params:configs.unet",  # parâmetros específicos do Unet
                 },
