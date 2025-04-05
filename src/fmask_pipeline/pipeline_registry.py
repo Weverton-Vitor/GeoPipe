@@ -16,7 +16,6 @@ from fmask_pipeline.pipelines.download import (
 from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
 from fmask_pipeline.pipelines.unet import pipeline as unet
 
-
 logger = logging.getLogger(__name__)
 
 CONF_SOURCE = "conf/"
@@ -30,8 +29,7 @@ params = conf_loader["parameters"]
 import json
 import ee
 
-# key_path = "/home/kedro_docker/key.json"
-key_path = "C:/Users/weverton.vitor/Documents/faculdade/pibic/fmask-pipeline/key.json"
+key_path = "/home/kedro_docker/key.json"
 # Carregar o arquivo key.json
 with open(key_path, "r") as f:
     key_data = json.load(f)

@@ -197,7 +197,7 @@ def save_overlayed_mask_plot(
     plt.legend(handles=legend_elements, loc="upper right", fontsize=25)
     plt.axis(False)
 
-    os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
+    # os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
     fig.savefig(output_file, dpi=fig.dpi)
 
     plt.close("all")
@@ -230,7 +230,7 @@ def save_mask_tif(
     mask_final[cloud_shadow_mask == 1] = 2
     mask_final[cloud_mask == 1] = 1
 
-    os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
+    # os.makedirs("/".join(output_file.split("/")[:-1]), exist_ok=True)
 
     with rasterio.open(original_tif_file) as src:
         profile = src.profile

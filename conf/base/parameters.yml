@@ -4,7 +4,7 @@ configs:
   # Nome da localidade, usada no caminho de download das imagens,
   # plot da máscara, no salvamento da imagem limpa e no nome da imagem
   # Parametro geral, usado pela maioria dos pipelines para acessar as imagens
-  location_name: "sume"
+  location_name: "sume_unet"
 
   # Fator de escala dos valores da reflectancia,
   scale_factor: 0.0001
@@ -12,5 +12,14 @@ configs:
   # Fator de deslocamento dos valores da reflectancia
   offset: 0
 
-  # Log do algoritmo de remoção de nuvens
+  # Caminho do log do algoritmo de remoção de nuvens
   cloud_removal_log: "data/06_color_file_log/"
+
+  # Caminho onde as máscaras serão salvas
+  save_masks_path: "data/03_masks/"
+
+  # Caminho para salvar as imagens limpas
+  save_clean_images_path: "data/04_clean_images/"
+
+  # Caminho para as plotagem das máscaras
+  save_plot_masks_path: "data/05_masks_plot/"

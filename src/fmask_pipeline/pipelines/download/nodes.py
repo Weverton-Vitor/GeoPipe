@@ -88,7 +88,11 @@ def donwload_images(
         satelite_name = collection_id.split("/")[1]
 
         if "S2" in satelite_name:
-            satelite_name = "S2"
+            if "SR" in satelite_name:
+                satelite_name = "S2_SR"
+            else:
+                satelite_name = "S2"
+
 
         new_init_date, new_final_date = adjust_date(
             satelite=satelite_name, start_date_str=init_date, end_date_str=final_date

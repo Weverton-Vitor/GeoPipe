@@ -24,6 +24,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "save_plots_path": "params:configs.save_plot_masks_path",
                     "skip_masks": "params:configs.skip_unet_masks",
                     "unet_params": "params:configs.unet",
+                    "scale_factor": "params:configs.scale_factor",
                 },
                 outputs="unet_segmentation_output",
                 name="apply_UNet",

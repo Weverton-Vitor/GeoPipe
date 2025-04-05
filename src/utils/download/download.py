@@ -92,19 +92,34 @@ def get_original_bands_name(satelite: str, fake_name_bands: list, is_toa: bool):
             "rededge3": "B7",
             "nir": "B8",
             "nir_narrow": "B8A",
+            "water_vapour": "B9",
+            "cirrus": "B10",
             "swir1": "B11",
             "swir2": "B12",
-            "cirrus": "B10",
+            "QA_PIXEL": "QA60",
+        },
+         "S2_SR": {
+            "coastal": "B1",
+            "blue": "B2",
+            "green": "B3",
+            "red": "B4",
+            "rededge1": "B5",
+            "rededge2": "B6",
+            "rededge3": "B7",
+            "nir": "B8",
+            "nir_narrow": "B8A",
+            "water_vapour": "B9",
+            "swir1": "B11",
+            "swir2": "B12",
             "QA_PIXEL": "QA60",
         },
     }
 
-    return (
-        [band_mappings[satelite].get(band, None) for band in fake_name_bands]
-        if satelite in band_mappings
-        else []
-    )
+    bands = [band_mappings[satelite].get(band, None) for band in fake_name_bands] if satelite in band_mappings else []
+    if None in bands:
+        bands.remove(None)  # Remove None values
 
+    return bands
 
 def adjust_date(satelite: str, start_date_str: str, end_date_str: str) -> tuple:
     satellite_dates = {
@@ -113,6 +128,7 @@ def adjust_date(satelite: str, start_date_str: str, end_date_str: str) -> tuple:
         "LC08": ("2013-02-11", None),  # Ainda operacional
         "LC09": ("2021-09-27", None),  # Ainda operacional
         "S2": ("2015-06-23", None),  # Sentinel-2A lançado em 2015
+        "S2_SR": ("2015-06-23", None),  # Sentinel-2A lançado em 2015
     }
 
     if satelite not in satellite_dates:
@@ -145,6 +161,7 @@ def validate_date(satelite: str, date_str: str):
         "LC08": ("2013-02-11", None),  # Ainda operacional
         "LC09": ("2021-09-27", None),  # Ainda operacional
         "S2": ("2015-06-23", None),  # Sentinel-2A lançado em 2015
+        "S2_SR": ("2015-06-23", None),  # Sentinel-2A lançado em 2015
     }
 
     if satelite not in satellite_dates:

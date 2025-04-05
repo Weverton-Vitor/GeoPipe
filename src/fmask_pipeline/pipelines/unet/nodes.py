@@ -22,6 +22,7 @@ def apply_unet(
     skip_masks: bool = False,
     model_path: str = None,
     unet_params: dict = None,
+    scale_factor: float = 1.0,
     *args,
     **kwargs,
 ):
@@ -35,7 +36,7 @@ def apply_unet(
         save_masks_path (str): Caminho para salvar as máscaras TIF combinadas.
         save_plots_path (str): Caminho para salvar os plots PNG combinados.
         skip_masks (bool, opcional): Se True, pula a geração das máscaras. Default é False.
-        model_path (str, opcional): Caminho do modelo UNet. Default é None.
+         (str, opcional): Caminho do modelo UNet. Default é None.
         unet_params (dict, opcional): Parâmetros adicionais para a UNet. Default é None.
     """
     if skip_masks:
@@ -65,13 +66,13 @@ def apply_unet(
             file_name = f"{location_name}/{file_parts[0]}/unet_mask_{inp.stem}"
             torch_model_cloud_and_shadows_inference(
                 input_tif_path=inp,
-                location_name=location_name,
-                save_masks_path=save_masks_path,
-                save_plots_path=save_plots_path,
-                file_name=file_name,
+                save_mask_path=save_masks_path,
+                save_plot_path=save_plots_path,
+                save_file_name=file_name,
                 cloud_classes=[cloud_thick_class, cloud_thin_class],
                 cloud_shadows_classes=cloud_shadow_class,
                 model=model,
+                scale_factor=scale_factor
             )
             pbar.update(1)
 

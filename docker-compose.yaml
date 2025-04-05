@@ -23,4 +23,4 @@ services:
       - ./references:/home/kedro_docker/references
       - ./results:/home/kedro_docker/results
       - ./key.json:/home/kedro_docker/key.json
-    command: kedro run --pipeline=coastline_cfmask_landsat_deepwatermap
+    command: kedro run --pipeline=water_volume_monitoring_sentinel_unet_deepwatermap
