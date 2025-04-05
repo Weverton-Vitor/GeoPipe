@@ -14,6 +14,8 @@ from fmask_pipeline.pipelines.download import (
     pipeline as download,
 )
 from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
+from fmask_pipeline.pipelines.unet import pipeline as unet
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +30,10 @@ params = conf_loader["parameters"]
 import json
 import ee
 
+# key_path = "/home/kedro_docker/key.json"
+key_path = "C:/Users/weverton.vitor/Documents/faculdade/pibic/fmask-pipeline/key.json"
 # Carregar o arquivo key.json
-with open("/home/kedro_docker/key.json", "r") as f:
+with open(key_path, "r") as f:
     key_data = json.load(f)
 
 # Pegar o email da conta de serviço
@@ -37,7 +41,7 @@ service_account = key_data["client_email"]
 
 # Inicializar Earth Engine com as credenciais
 credentials = ee.ServiceAccountCredentials(
-    service_account, "/home/kedro_docker/key.json"
+    service_account, key_path
 )
 ee.Initialize(credentials)
 
@@ -51,9 +55,16 @@ def register_pipelines() -> dict[str, Pipeline]:
         A mapping from pipeline names to ``Pipeline`` objects.
     """
 
-    water_volume_monitoring_fmask = pipeline(
+    water_volume_monitoring_sentinel_fmask_deepwatermap = pipeline(
         pipe=download.create_pipeline()
         + fmask_preprocess.create_pipeline()
+        + deepwatermap.create_pipeline(),
+        parameters=None,
+    )
+
+    water_volume_monitoring_sentinel_unet_deepwatermap = pipeline(
+        pipe=download.create_pipeline()
+        + unet.create_pipeline()
         + deepwatermap.create_pipeline(),
         parameters=None,
     )
@@ -74,13 +85,16 @@ def register_pipelines() -> dict[str, Pipeline]:
         parameters=None,
     )
 
+    
+
     return {
         "__default__": download.create_pipeline(),
         "download": download.create_pipeline(),
         "fmask_preprocessing": fmask_preprocess.create_pipeline(),
         "apply_deepwatermap": deepwatermap.create_pipeline(),
         "apply_canny": canny.create_pipeline(),
-        "water_volume_monitoring_fmask": water_volume_monitoring_fmask,
+        "water_volume_monitoring_sentinel_fmask_deepwatermap": water_volume_monitoring_sentinel_fmask_deepwatermap,
+        "water_volume_monitoring_sentinel_unet_deepwatermap": water_volume_monitoring_sentinel_unet_deepwatermap,
         "coastline_fmask_sentinel_deepwatermap": coastline_fmask_sentinel_deepwatermap,
         "coastline_cfmask_landsat_deepwatermap": coastline_cfmask_landsat_deepwatermap,
     }

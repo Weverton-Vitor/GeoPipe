@@ -3,8 +3,12 @@ This is a boilerplate pipeline 'unet'
 generated using Kedro 0.19.12
 """
 
-from kedro.pipeline import node, Pipeline, pipeline  # noqa
-from .nodes import apply_unet, cloud_removal
+from kedro.pipeline import Pipeline, node, pipeline
+
+from fmask_pipeline.pipelines.fmask_preprocess.nodes import cloud_removal  # noqa
+
+from .nodes import apply_unet
+
 
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline(
@@ -12,11 +16,13 @@ def create_pipeline(**kwargs) -> Pipeline:
             node(
                 func=apply_unet,
                 inputs={
+                    "dependency": "dependency2",
+                    "dependency2": "dependency3",
                     "toa_path": "params:configs.toa_dowload_path",
                     "location_name": "params:configs.location_name",
                     "save_masks_path": "params:configs.save_masks_path",
                     "save_plots_path": "params:configs.save_plot_masks_path",
-                    "skip_masks": "params:configs.skip_masks",
+                    "skip_masks": "params:configs.skip_unet_masks",
                     "unet_params": "params:configs.unet",  
                 },
                 outputs="unet_segmentation_output",
@@ -25,7 +31,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             node(
                 func=cloud_removal,
                 inputs={
-                    "dependency": "dependency4",
+                    "dependency": "unet_segmentation_output",
                     "path_images": "params:configs.boa_dowload_path",
                     "path_masks": "params:configs.save_masks_path",
                     "output_path": "params:configs.save_clean_images_path",

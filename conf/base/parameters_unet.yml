@@ -1,8 +1,5 @@
 configs:
-  # Parâmetros do Fmask
-  skip_clean: False
-  skip_masks: False
-  cloud_and_cloud_shadow_pixels: [1, 2]
+  skip_unet_masks: False
 
   # Parâmetros do Unet
   unet:
