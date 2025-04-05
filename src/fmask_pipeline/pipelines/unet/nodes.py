@@ -8,7 +8,6 @@ import rasterio
 import torch
 from tqdm import tqdm
 
-from utils.cloud_removal.bcl import BCL
 from utils.pytorch.pytorch_general_utils import torch_model_cloud_and_shadows_inference
 from utils.unet.unet_utils import load_unet_model
 
