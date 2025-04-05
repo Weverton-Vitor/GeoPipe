@@ -19,7 +19,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
                 },
-                outputs="dependency6",
+                outputs="created_deep_water_map_dirs_dependency",
                 name="create_deepwatermap_directories",
             ),
             node(
@@ -32,10 +32,10 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "offset": "params:configs.offset",
                     "skip_deepewatermap": "params:configs.skip_deepewatermap",
                     "threshold": "params:configs.deepwatermap_threshold",
-                    "dependency1": "dependency5",
-                    "dependency2": "dependency6",
+                    "cloud_removed_dependency": "cloud_removed_dependency",
+                    "TOA_download_images_dependency": "created_deep_water_map_dirs_dependency",
                 },
-                outputs="dependency7",
+                outputs="water_mask_dependency",
                 name="apply_deep_water_map",
             ),
         ]

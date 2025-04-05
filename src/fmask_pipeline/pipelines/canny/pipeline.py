@@ -19,7 +19,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
                 },
-                outputs="dependency8",
+                outputs="created_canny_dirs_dependency",
                 name="create_canny_directories",
             ),
             node(
@@ -31,10 +31,10 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "sigma":"params:configs.sigma",
                     "lower_factor":"params:configs.lower_factor",
                     "upper_factor":"params:configs.upper_factor",
-                    "dependency1": "dependency7",
-                    "dependency2": "dependency8",
+                    "water_mask_dependency": "water_mask_dependency",
+                    "created_canny_dirs_dependency": "created_canny_dirs_dependency",
                 },
-                outputs="dependency9",
+                outputs="canny_edge_dependency",
                 name="apply_canny",
             ),
         ]

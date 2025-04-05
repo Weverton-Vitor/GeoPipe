@@ -28,18 +28,19 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
                 },
-                outputs="dependency1",
+                outputs="created_dirs_dependency",
                 name="create_download_and_preprocess_directories",
             ),
             node(
                 func=shapefile2feature_collection,
-                inputs=["shapefile", "dependency1"],
+                inputs=["shapefile"],
                 outputs="shapefile_features",
                 name="load_shapefile",
             ),
             node(
                 func=donwload_images,
                 inputs={
+                    "created_dirs_dependency": "created_dirs_dependency",
                     "collection_ids": "params:configs.toa_collection_ids",
                     "dowload_path": "params:configs.toa_dowload_path",
                     "location_name": "params:configs.location_name",
@@ -51,12 +52,13 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "skip_download": "params:configs.toa_skip_download",
                     "roi": "shapefile_features",
                 },
-                outputs="dependency2",
+                outputs="TOA_download_images_dependency",
                 name="download_TOA_images",
             ),
             node(
                 func=donwload_images,
                 inputs={
+                    "created_dirs_dependency": "created_dirs_dependency",
                     "collection_ids": "params:configs.boa_collection_ids",
                     "dowload_path": "params:configs.boa_dowload_path",
                     "location_name": "params:configs.location_name",
@@ -68,7 +70,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "skip_download": "params:configs.boa_skip_download",
                     "roi": "shapefile_features",
                 },
-                outputs="dependency3",
+                outputs="BOA_download_images_dependency",
                 name="download_BOA_images",
             ),
         ]

@@ -16,8 +16,8 @@ def create_pipeline(**kwargs) -> Pipeline:
             node(
                 func=apply_cfmask,
                 inputs={
-                    "dependency": "dependency2",
-                    "dependency2": "dependency3",
+                    "dependency": "TOA_download_images_dependency",
+                    "TOA_download_images_dependency": "BOA_download_images_dependency",
                     "boa_path": "params:configs.boa_dowload_path",
                     "location_name": "params:configs.location_name",
                     "save_masks_path": "params:configs.save_masks_path",
@@ -25,13 +25,13 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "scale_factor": "params:configs.scale_factor",
                     "skip_masks": "params:configs.skip_cfmasks",
                 },
-                outputs="dependency11",
+                outputs="CF_mask_dependency",
                 name="apply_CFMask",
             ),
             node(
                 func=cloud_removal,
                 inputs={
-                    "dependency": "dependency11",
+                    "dependency": "CF_mask_dependency",
                     "path_images": "params:configs.boa_dowload_path",
                     "path_masks": "params:configs.save_masks_path",
                     "output_path": "params:configs.save_clean_images_path",
@@ -42,7 +42,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "skip_clean": "params:configs.skip_clean_cfmask",
                     "color_file_log_path": "params:configs.cloud_removal_log",
                 },
-                outputs="dependency5",
+                outputs="cloud_removed_dependency",
                 name="Cloud_removal",
             ),
         ]

@@ -76,6 +76,8 @@ def donwload_images(
     selected_bands: list = [],
     skip_download: bool = False,
     scale: int = 10,
+    *args,
+    **kwargs,
 ) -> bool:
     if skip_download:
         logger.warning("Skip Download of images")
