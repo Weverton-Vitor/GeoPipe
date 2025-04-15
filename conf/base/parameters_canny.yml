@@ -6,6 +6,8 @@ configs:
   # Caminho onde as bordas serão salvas
   canny_output_save_path: "data/08_canny/"
 
+  skip_canny: false
+
   # Sigma
   sigma: 1.0
 

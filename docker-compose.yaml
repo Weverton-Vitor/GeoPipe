@@ -17,6 +17,7 @@ services:
       - MKL_NUM_THREADS=16
     volumes:
       - ./conf/local:/home/kedro_docker/conf/local
+      - ./conf/base:/home/kedro_docker/conf/base
       - ./data:/home/kedro_docker/data
       - ./logs:/home/kedro_docker/logs
       - ./notebooks:/home/kedro_docker/notebooks

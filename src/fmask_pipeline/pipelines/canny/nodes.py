@@ -34,9 +34,14 @@ def apply_canny(
     sigma: int,
     lower_factor: int,
     upper_factor: int,
+    skip_canny: bool,
     *args,
     **kwargs,
 ):
+    if skip_canny:
+        logger.info("Skip Canny Method")
+        return True
+    
     path = f"{images_path}{location_name}"
     tif_files = glob.glob(os.path.join(path, "**", "*.tif"), recursive=True)
     total_tifs = len(tif_files)
