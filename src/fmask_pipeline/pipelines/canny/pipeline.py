@@ -32,7 +32,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "lower_factor":"params:configs.lower_factor",
                     "upper_factor":"params:configs.upper_factor",
                     "water_mask_dependency": "water_mask_dependency",
-                    "skip_canny": "params:configs:skip_canny",
+                    "skip_canny": "params:configs.skip_canny",
                     "created_canny_dirs_dependency": "created_canny_dirs_dependency",
                 },
                 outputs="canny_edge_dependency",
