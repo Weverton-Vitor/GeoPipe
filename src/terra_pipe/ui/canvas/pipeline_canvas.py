@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from terra_pipe.nodes_registry import NodeRepresentation
+from terra_pipe.ui.utils.nodes_registry import NodeRepresentation
 from terra_pipe.ui.components.arrows.pipeline_arrow import PipelineArrow
 from terra_pipe.ui.components.nodes.pipeline_node import PipelineNode
 from terra_pipe.ui.dialogues.dependency_dialogue import DependencyDialog
@@ -15,7 +15,6 @@ class PipelineCanvas(QWidget):
     """Área de canvas onde os nodes são colocados e conectados"""
 
     selected_node_changed = pyqtSignal(str)  # Sinal personalizado
-
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -33,7 +32,7 @@ class PipelineCanvas(QWidget):
 
     def set_selected_node(self, node):
         self.selected_node = node
-        self.selected_node_changed.emit('')
+        self.selected_node_changed.emit("")
 
     def paintEvent(self, event):
         self.painter.setRenderHint(QPainter.Antialiasing)
@@ -69,15 +68,14 @@ class PipelineCanvas(QWidget):
         #             start_pos = node.pos() + QPoint(node.width(), 30 + 15 * start_port)
         #             self.painter.setPen(QPen(Qt.darkGray, 2, Qt.DashLine))
         #             self.painter.drawLine(start_pos, mouse_pos)
-                
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasText():
-            if event.mimeData().text().startswith(
-                "component:"
-            ) or event.mimeData().text().startswith(
-                "dependency:"
-            ) or event.mimeData().text().startswith("node:"):
+            if (
+                event.mimeData().text().startswith("component:")
+                or event.mimeData().text().startswith("dependency:")
+                or event.mimeData().text().startswith("node:")
+            ):
                 event.acceptProposedAction()
 
     def dropEvent(self, event):
@@ -90,9 +88,16 @@ class PipelineCanvas(QWidget):
             if data.startswith("component:"):
                 # Novo node de componente da barra lateral
                 component_name = data.split(":")[1]
-                node_raw_representation = NodeRepresentation.from_qbytearray(mime_data.data("raw_node"))
+                node_raw_representation = NodeRepresentation.from_qbytearray(
+                    mime_data.data("raw_node")
+                )
 
-                new_node = PipelineNode(component_name, node_raw_representation, node_raw_representation.parameters, "", self)
+                new_node = PipelineNode(
+                    name=component_name,
+                    node_raw_representation=node_raw_representation,
+                    inputs=node_raw_representation.parameters,
+                    parent=self,
+                )
                 new_node.move(
                     event.pos() - QPoint(new_node.width() // 2, new_node.height() // 2)
                 )
@@ -139,7 +144,7 @@ class PipelineCanvas(QWidget):
         # Verificar se clicou em um node para seleção
         # for node in self.nodes:
         #     if node.geometry().contains(event.pos()):
-                
+
         #         self.selected_node = node
         #         self.selected_node.color= QColor(100, 100, 0)
         #         self.selected_node.update()

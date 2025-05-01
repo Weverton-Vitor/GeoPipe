@@ -17,6 +17,8 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtGui import QPalette, QColor
 
+from terra_pipe.ui.utils.nodes_registry import ParameterRepresentation
+
 TYPE_MAP = { 
     "str": "string",
     "int": "Inteiro",
@@ -32,10 +34,13 @@ TYPE_MAP = {
 class ParameterWidget(QWidget):
     """Widget para editar um único parâmetro com nome, tipo e valor"""
 
-    def __init__(self, name="", param_type="str", value="", parent=None):
+    def __init__(self, name, label="", param_type="str", value="", parent=None):
         super().__init__(parent)
         self.initUI()
-        self.name_edit.setText(name)
+        self.name = name
+        self.label = label
+
+        self.name_edit.setText(label)
         # self.type_combo.setCurrentText(param_type)
         self.value_edit.setText(value)
 
@@ -71,7 +76,8 @@ class ParameterWidget(QWidget):
     def get_parameter_data(self):
         """Retorna os dados do parâmetro"""
         return {
-            "name": self.name_edit.text(),
+            "name": self.name,
+            "label": self.label,
             # "type": self.type_combo.currentText(),
             "value": self.value_edit.text(),
         }
@@ -189,8 +195,8 @@ class NodePanel(QWidget):
         self.save_button.clicked.connect(self.save_changes)
         button_layout.addWidget(self.save_button)
 
-        self.cancel_button = QPushButton("Cancelar")
-        button_layout.addWidget(self.cancel_button)
+        # self.cancel_button = QPushButton("Cancelar")
+        # button_layout.addWidget(self.cancel_button)
 
         main_layout.addLayout(button_layout)
 
@@ -252,19 +258,10 @@ class NodePanel(QWidget):
             self.clear_parameters()
 
             # Preencher parâmetros de entrada
-            for i, input_name in enumerate(node.inputs):
-                param_name = input_name.split(":")[0].strip()
-                # param_type = input_name.split(":")[1].strip()
-                
-                # param_type = (
-                #     node.input_types[i] if hasattr(node, "input_types") else "str"
-                # )
-                param_value = (
-                    node.input_values[i] if hasattr(node, "input_values") else ""
-                )
+            for parameter in node.inputs:
 
                 param_widget = ParameterWidget(
-                    name=param_name, value=param_value, parent=self.input_container
+                    name=parameter.name, label=parameter.label, value=parameter.value, parent=self.input_container
                 )
                 # param_widget.remove_btn.clicked.connect(
                 #     lambda checked=False, w=param_widget: self.remove_parameter(
@@ -300,28 +297,19 @@ class NodePanel(QWidget):
             # Atualizar dados básicos
             self.node.name = self.name_edit.text()
             self.node.func_name = self.func_edit.text()
-
-            # Atualizar parâmetros de entrada
+            
             self.node.inputs = []
-            self.node.input_types = []
-            self.node.input_values = []
 
             for param_widget in self.input_params:
                 param_data = param_widget.get_parameter_data()
-                print(param_data)
-                self.node.inputs.append(param_data["name"])
-                self.node.input_values.append(param_data["value"])
+                
+                self.node.inputs.append(ParameterRepresentation(name=param_data["name"], label=param_data["label"], value=param_data["value"]))
 
-            # Atualizar parâmetros de saída
-            self.node.outputs = []
-            self.node.output_types = []
-            self.node.output_values = []
-
-            for param_widget in self.output_params:
-                param_data = param_widget.get_parameter_data()
-                self.node.outputs.append(param_data["name"])
-                self.node.output_types.append(param_data["type"])
-                self.node.output_values.append(param_data["value"])
+            # for param_widget in self.output_params:
+            #     param_data = param_widget.get_parameter_data()
+            #     self.node.outputs.append(param_data["name"])
+            #     self.node.output_types.append(param_data["type"])
+            #     self.node.output_values.append(param_data["value"])
 
             # Atualizar visualização do node
             self.node.update()

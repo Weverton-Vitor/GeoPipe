@@ -56,7 +56,8 @@ class KedroVisualEditor(QMainWindow):
             ("Novo", self.new_pipeline),
             ("Abrir", self.open_pipeline),
             ("Salvar", self.save_pipeline),
-            ("Exportar para Kedro", self.export_to_kedro)
+            ("Editar Pipeline", self.export_to_kedro),
+            ("Executar", self.execute)
         ]
         
         for name, method in actions:
@@ -178,6 +179,9 @@ class KedroVisualEditor(QMainWindow):
         code += "    ])\n}\n"
         return code
     
+    def execute(self):
+        pass
+
     def update_property_panel(self, text):
         self.statusBar().showMessage(text)
         self.property_panel.set_node(self.canvas.selected_node)

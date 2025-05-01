@@ -1,0 +1,122 @@
+{
+  "nodes": [
+    {
+      "name": "Download de Imagens",
+      "inputs": [
+        {
+          "name": "collection_ids",
+          "label": "ID das cole\u00e7\u00f5es",
+          "value": ""
+        },
+        {
+          "name": "location_name",
+          "label": "Nome do local",
+          "value": ""
+        },
+        {
+          "name": "dowload_path",
+          "label": "Diret\u00f3rio de download",
+          "value": ""
+        },
+        {
+          "name": "init_date",
+          "label": "Data inicial",
+          "value": "s"
+        },
+        {
+          "name": "final_date",
+          "label": "Data final",
+          "value": "s"
+        },
+        {
+          "name": "roi",
+          "label": "Regi\u00e3o de interesse (Shapefile)",
+          "value": ""
+        },
+        {
+          "name": "prefix_images_name",
+          "label": "Prefixo do nome das imagens",
+          "value": ""
+        },
+        {
+          "name": "selected_bands",
+          "label": "Bandas selecionadas",
+          "value": "d"
+        },
+        {
+          "name": "skip_download",
+          "label": "Pular download",
+          "value": ""
+        },
+        {
+          "name": "scale",
+          "label": "Escala (em metros)",
+          "value": ""
+        }
+      ],
+      "outputs": [],
+      "position": [
+        251,
+        197
+      ],
+      "id": 2569824336432
+    },
+    {
+      "name": "Remo\u00e7\u00e3o de nuvens",
+      "inputs": [
+        {
+          "name": "path_images",
+          "label": "Caminho das imagens",
+          "value": ""
+        },
+        {
+          "name": "path_masks",
+          "label": "Caminho das m\u00e1scaras",
+          "value": ""
+        },
+        {
+          "name": "output_path",
+          "label": "Caminho de sa\u00edda",
+          "value": "d"
+        },
+        {
+          "name": "location_name",
+          "label": "Nome do local",
+          "value": ""
+        },
+        {
+          "name": "cloud_and_cloud_shadow_pixels",
+          "label": "Pixels de nuvens e sombras de nuvens",
+          "value": "s"
+        },
+        {
+          "name": "init_date",
+          "label": "Data inicial",
+          "value": ""
+        },
+        {
+          "name": "final_date",
+          "label": "Data final",
+          "value": ""
+        },
+        {
+          "name": "skip_clean",
+          "label": "Pular limpeza",
+          "value": ""
+        },
+        {
+          "name": "color_file_log_path",
+          "label": "Diret\u00f3rio de logs da remo\u00e7\u00e3o de nuvens",
+          "value": ""
+        }
+      ],
+      "outputs": [],
+      "position": [
+        314,
+        463
+      ],
+      "id": 2569825325776
+    }
+  ],
+  "connections": []
+}

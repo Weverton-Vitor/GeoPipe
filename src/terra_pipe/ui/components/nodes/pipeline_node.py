@@ -1,3 +1,4 @@
+from typing import List
 from PyQt5.QtCore import QEvent, QMimeData, QRectF, Qt
 from PyQt5.QtGui import (
     QColor,
@@ -11,11 +12,20 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtWidgets import QWidget
 
+from terra_pipe.ui.utils.nodes_registry import ParameterRepresentation
+
 
 class PipelineNode(QWidget):
     """Widget que representa um node do pipeline Kedro"""
 
-    def __init__(self, name, node_raw_representation, inputs=None, outputs=None, parent=None):
+    def __init__(
+        self,
+        name: str,
+        node_raw_representation,
+        inputs:list[ParameterRepresentation]=[],
+        outputs=None,
+        parent=None
+    ):
         super().__init__(parent)
         self.name = name
         self.inputs = inputs or []
@@ -42,7 +52,7 @@ class PipelineNode(QWidget):
         elif "output" in self.name.lower():
             return QColor(200, 100, 100)
         return QColor(100, 100, 200)
-    
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -61,7 +71,9 @@ class PipelineNode(QWidget):
         text_rect = QRectF(self.rect())  # Define a área onde o texto será desenhado
 
         text_option = QTextOption()
-        text_option.setWrapMode(QTextOption.WordWrap)  # Habilita quebra de linha automática
+        text_option.setWrapMode(
+            QTextOption.WordWrap
+        )  # Habilita quebra de linha automática
         text_option.setAlignment(Qt.AlignCenter)  # Alinha o texto no centro
 
         painter.drawText(text_rect, self.name, text_option)
@@ -86,7 +98,6 @@ class PipelineNode(QWidget):
         if event.button() == Qt.LeftButton:
             self.drag_start_position = event.pos()
 
-
     def mouseMoveEvent(self, event):
         if not (event.buttons() & Qt.LeftButton):
             return
@@ -100,18 +111,21 @@ class PipelineNode(QWidget):
         drag.exec_(Qt.MoveAction)
 
     def get_node_data(self):
+        """Retorna os dados do node em formato serializável"""
+
+        dict_params = [
+            param.to_dict() for param in self.inputs
+        ]
         return {
             "name": self.name,
-            "inputs": self.inputs,
+            "inputs": dict_params,
             "outputs": self.outputs,
             "position": (self.pos().x(), self.pos().y()),
-            "id"
-            : self.node_id,
+            "id": self.node_id,
         }
-    
+
     def eventFilter(self, obj, event):
         if obj == self and event.type() == QEvent.MouseButtonRelease:
-            
             # Check if node is already selected, if so, deselect it
             if self.parent().selected_node == self:
                 self.color = self.default_node_color
@@ -119,21 +133,20 @@ class PipelineNode(QWidget):
                 self.update()
                 self.parent().update()
                 return True
-            
+
             if self.parent().selected_node is not None:
                 # Update old selected node
-                self.parent().selected_node.color = self.parent().selected_node.default_node_color
+                self.parent().selected_node.color = (
+                    self.parent().selected_node.default_node_color
+                )
                 self.parent().selected_node.update()
                 self.parent().update()
 
-            
             # Update new selected node
             self.parent().set_selected_node(self)
             self.color = self.selected_node_color
             self.parent().update()
             self.update()
             return True
-        
+
         return super().eventFilter(obj, event)
-    
-    

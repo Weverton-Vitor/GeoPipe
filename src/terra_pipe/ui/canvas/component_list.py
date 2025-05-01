@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
     QListWidgetItem,
 )
 
-from terra_pipe.nodes_registry import find_all_nodes
+from terra_pipe.ui.utils.nodes_registry import find_all_nodes
 
 UI_NODES_NAME = {
     "apply_canny": "Detecção de bordas com Canny",
@@ -14,6 +14,7 @@ UI_NODES_NAME = {
     "apply_deep_water_map": "Detecção de Água com o Deep Water Map",
     "apply_fmask": "Detecção de nuvens e suas sombras com FMask",
     "cloud_removal": "Remoção de nuvens",
+    "donwload_images": "Download de Imagens",
     "LT5": "Landsat 5 TM",
     "LT7": "Landsat 7 ETM+",
     "LT8": "Lansat 8 OLI/TIRS",
@@ -46,11 +47,7 @@ class ComponentList(QListWidget):
         components = [
         ]
 
-        # components.append("Landsat 5 TM")
-        # components.append("Landsat 7 ETM+")
-        # components.append("Lansat 8 OLI/TIRS")
-        # components.append("Landast 9 OLI/TIRS2")
-        # components.append("Sentinel 2")
+
 
         nodes = find_all_nodes("../../")
         for node in nodes:
