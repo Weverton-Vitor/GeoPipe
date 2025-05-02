@@ -4,9 +4,9 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from terra_pipe.ui.utils.nodes_registry import NodeRepresentation
-from terra_pipe.ui.components.arrows.pipeline_arrow import PipelineArrow
-from terra_pipe.ui.components.nodes.pipeline_node import PipelineNode
+from terra_pipe.ui.utils.nodes_registry import NodeRepresentation, ParameterRepresentation
+from terra_pipe.ui.components.arrows.pipeline_arrow_widget import PipelineArrowWidget
+from terra_pipe.ui.components.nodes.pipeline_node_widget import PipelineNodeWidget
 from terra_pipe.ui.dialogues.dependency_dialogue import DependencyDialog
 from PyQt5.QtCore import pyqtSignal
 
@@ -92,9 +92,8 @@ class PipelineCanvas(QWidget):
                     mime_data.data("raw_node")
                 )
 
-                new_node = PipelineNode(
+                new_node = PipelineNodeWidget(
                     name=component_name,
-                    node_raw_representation=node_raw_representation,
                     inputs=node_raw_representation.parameters,
                     parent=self,
                 )
@@ -109,7 +108,7 @@ class PipelineCanvas(QWidget):
 
                 if dlg.accepted:
                     node1, node2 = dlg.node1, dlg.node2
-                    new_arrow = PipelineArrow(node1, node2, parent=self)
+                    new_arrow = PipelineArrowWidget(node1, node2, parent=self)
                     new_arrow.show()
                     self.connections.append(new_arrow)
 
@@ -129,17 +128,17 @@ class PipelineCanvas(QWidget):
     def mousePressEvent(self, event):
         # Verificar se clicou em uma porta de saída para iniciar uma conexão
 
-        for node in self.nodes:
-            node_rect = node.geometry()
-            for i, _ in enumerate(node.outputs):
-                port_y = 30 + i * 15
-                port_rect = QPoint(node_rect.right() - 10, node_rect.top() + port_y)
+        # for node in self.nodes:
+        #     node_rect = node.geometry()
+        #     for i, _ in enumerate(node.outputs):
+        #         port_y = 30 + i * 15
+        #         port_rect = QPoint(node_rect.right() - 10, node_rect.top() + port_y)
 
-                if (event.pos() - port_rect).manhattanLength() < 10:
-                    self.connecting_mode = True
-                    self.current_connection = (node.node_id, i, event.pos())
-                    self.update()
-                    return
+        #         if (event.pos() - port_rect).manhattanLength() < 10:
+        #             self.connecting_mode = True
+        #             self.current_connection = (node.node_id, i, event.pos())
+        #             self.update()
+        #             return
 
         # Verificar se clicou em um node para seleção
         # for node in self.nodes:
@@ -203,7 +202,8 @@ class PipelineCanvas(QWidget):
     def get_pipeline_data(self):
         """Captura os dados do pipeline para gerar código"""
         nodes_data = [node.get_node_data() for node in self.nodes]
-        return {"nodes": nodes_data, "connections": self.connections}
+        connections = [connections.get_arrow_data() for connections in self.connections]
+        return {"nodes": nodes_data, "connections": connections}
 
     def load_pipeline_data(self, data):
         """Carrega um pipeline a partir dos dados salvos"""
@@ -215,14 +215,40 @@ class PipelineCanvas(QWidget):
 
         # Recriar nodes
         for node_data in data["nodes"]:
-            new_node = PipelineNode(
-                node_data["name"], node_data["inputs"], node_data["outputs"], self
+            parameters = []
+            for param in node_data["inputs"]:
+                parameters.append(ParameterRepresentation(name=param["name"], label=param["label"], value=param["value"]))
+
+            new_node = PipelineNodeWidget(                
+                name=node_data["name"],
+                inputs=parameters,
+                outputs=node_data["outputs"],
+                parent=self,
             )
-            new_node.node_id = node_data["id"]
+
+
+            new_node.set_node_id(node_data["id"])
             new_node.move(node_data["position"][0], node_data["position"][1])
             new_node.show()
             self.nodes.append(new_node)
 
         # Recriar conexões
-        self.connections = data["connections"]
+        for conn_data in data["connections"]:
+            start_node = next(
+                (
+                    node
+                    for node in self.nodes
+                    if node.node_id == conn_data["start_node"]
+                ),
+                None,
+            )
+            end_node = next(
+                (node for node in self.nodes if node.node_id == conn_data["end_node"]),
+                None,
+            )
+            if start_node and end_node:
+                new_arrow = PipelineArrowWidget(start_node, end_node, parent=self)
+                new_arrow.show()
+                self.connections.append(new_arrow)
+
         self.update()

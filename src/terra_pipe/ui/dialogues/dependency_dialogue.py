@@ -1,3 +1,4 @@
+from typing import Tuple
 from PyQt5.QtWidgets import (
     QComboBox,
     QDialog,
@@ -7,6 +8,8 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
+from terra_pipe.ui.components.nodes.pipeline_node_widget import PipelineNodeWidget
+
 class DependencyDialog(QDialog):
     """Pop-up para selecionar dois nodes e criar uma dependência."""
 
@@ -14,9 +17,8 @@ class DependencyDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Criar Dependência")
         self.setModal(True)
-        self.selected_nodes = (None, None)
-        self.selected_nodes_widgets = (None, None)
-        self.nodes = nodes  # Armazena os nodes localmente
+        self.selected_nodes_widgets: tuple[PipelineNodeWidget, PipelineNodeWidget] = (None, None)
+        self.nodes: list[PipelineNodeWidget] = nodes  # Armazena os nodes localmente
 
         layout = QVBoxLayout()
 
@@ -72,6 +74,6 @@ class DependencyDialog(QDialog):
         self.select2.setEnabled(self.select2.count() > 0)
 
 
-    def get_selected_nodes(self):
+    def get_selected_nodes(self) -> tuple[str, str]:
         """Retorna os nomes dos nodes selecionados."""
         return self.select1.currentText(), self.select2.currentText()

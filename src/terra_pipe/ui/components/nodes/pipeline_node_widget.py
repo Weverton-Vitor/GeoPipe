@@ -12,16 +12,15 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtWidgets import QWidget
 
-from terra_pipe.ui.utils.nodes_registry import ParameterRepresentation
+from terra_pipe.ui.utils.nodes_registry import NodeRepresentation, ParameterRepresentation
 
 
-class PipelineNode(QWidget):
+class PipelineNodeWidget(QWidget):
     """Widget que representa um node do pipeline Kedro"""
 
     def __init__(
         self,
         name: str,
-        node_raw_representation,
         inputs:list[ParameterRepresentation]=[],
         outputs=None,
         parent=None
@@ -37,7 +36,6 @@ class PipelineNode(QWidget):
         self.default_node_color = QColor(255, 0, 0)
         self.selected_node_color = QColor(0, 0, 200)
         self.color = self.default_node_color
-        self.node_raw_representation = node_raw_representation
 
     def __str__(self):
         return f"Node: {self.name} | ID: {self.node_id} | Inputs: {self.inputs} | Outputs: {self.outputs} | Position: {self.pos()}"
@@ -45,6 +43,9 @@ class PipelineNode(QWidget):
     def initUI(self):
         self.setAcceptDrops(True)
         self.setFont(QFont("Arial", 10, QFont.Bold))
+
+    def set_node_id(self, node_id):
+        self.node_id = node_id
 
     def get_node_color(self):
         if "input" in self.name.lower():

@@ -1,122 +1,110 @@
 {
   "nodes": [
     {
-      "name": "Download de Imagens",
+      "name": "Detec\u00e7\u00e3o de bordas com Canny",
       "inputs": [
         {
-          "name": "collection_ids",
-          "label": "ID das cole\u00e7\u00f5es",
-          "value": ""
+          "name": "images_path",
+          "label": "Diret\u00f3rio de imagens",
+          "param_type": "str",
+          "value": null
+        },
+        {
+          "name": "canny_output_save_path",
+          "label": "Diret\u00f3rio de sa\u00edda do Canny",
+          "param_type": "str",
+          "value": null
         },
         {
           "name": "location_name",
           "label": "Nome do local",
-          "value": ""
+          "param_type": "str",
+          "value": null
         },
         {
-          "name": "dowload_path",
-          "label": "Diret\u00f3rio de download",
-          "value": ""
+          "name": "sigma",
+          "label": "Sigma para o Canny",
+          "param_type": "str",
+          "value": null
         },
         {
-          "name": "init_date",
-          "label": "Data inicial",
-          "value": "s"
+          "name": "lower_factor",
+          "label": "Fator inferior para o Canny",
+          "param_type": "str",
+          "value": null
         },
         {
-          "name": "final_date",
-          "label": "Data final",
-          "value": "s"
-        },
-        {
-          "name": "roi",
-          "label": "Regi\u00e3o de interesse (Shapefile)",
-          "value": ""
-        },
-        {
-          "name": "prefix_images_name",
-          "label": "Prefixo do nome das imagens",
-          "value": ""
-        },
-        {
-          "name": "selected_bands",
-          "label": "Bandas selecionadas",
-          "value": "d"
-        },
-        {
-          "name": "skip_download",
-          "label": "Pular download",
-          "value": ""
-        },
-        {
-          "name": "scale",
-          "label": "Escala (em metros)",
-          "value": ""
+          "name": "upper_factor",
+          "label": "Fator superior para o Canny",
+          "param_type": "str",
+          "value": null
         }
       ],
       "outputs": [],
       "position": [
-        251,
-        197
+        80,
+        54
       ],
-      "id": 2569824336432
+      "id": 2766814411024
     },
     {
-      "name": "Remo\u00e7\u00e3o de nuvens",
+      "name": "Detec\u00e7\u00e3o de \u00c1gua com o Deep Water Map",
       "inputs": [
         {
-          "name": "path_images",
-          "label": "Caminho das imagens",
-          "value": ""
+          "name": "images_path",
+          "label": "Diret\u00f3rio de imagens",
+          "param_type": "str",
+          "value": null
         },
         {
-          "name": "path_masks",
-          "label": "Caminho das m\u00e1scaras",
-          "value": ""
-        },
-        {
-          "name": "output_path",
-          "label": "Caminho de sa\u00edda",
-          "value": "d"
+          "name": "water_masks_save_path",
+          "label": "Diret\u00f3rio de sa\u00edda do Deep Water Map",
+          "param_type": "str",
+          "value": null
         },
         {
           "name": "location_name",
           "label": "Nome do local",
-          "value": ""
+          "param_type": "str",
+          "value": null
         },
         {
-          "name": "cloud_and_cloud_shadow_pixels",
-          "label": "Pixels de nuvens e sombras de nuvens",
-          "value": "s"
+          "name": "scale_factor",
+          "label": "Fator de escala",
+          "param_type": "str",
+          "value": null
         },
         {
-          "name": "init_date",
-          "label": "Data inicial",
-          "value": ""
+          "name": "offset",
+          "label": "Offset",
+          "param_type": "str",
+          "value": null
         },
         {
-          "name": "final_date",
-          "label": "Data final",
-          "value": ""
+          "name": "skip_deepewatermap",
+          "label": "Pular Deep Water Map",
+          "param_type": "str",
+          "value": null
         },
         {
-          "name": "skip_clean",
-          "label": "Pular limpeza",
-          "value": ""
-        },
-        {
-          "name": "color_file_log_path",
-          "label": "Diret\u00f3rio de logs da remo\u00e7\u00e3o de nuvens",
-          "value": ""
+          "name": "threshold",
+          "label": "Limiar para o Deep Water Map",
+          "param_type": "str",
+          "value": null
         }
       ],
       "outputs": [],
       "position": [
-        314,
-        463
+        217,
+        240
       ],
-      "id": 2569825325776
+      "id": 2766814411168
     }
   ],
-  "connections": []
+  "connections": [
+    {
+      "start_node": 2766814411024,
+      "end_node": 2766814411168
+    }
+  ]
 }

@@ -91,6 +91,7 @@ class KedroVisualEditor(QMainWindow):
         self.property_panel.hide()
         main_layout.addWidget(self.property_panel)
 
+    #TODO: Criar novo pipeline
     def new_pipeline(self):
         """Cria um novo pipeline, apagando o atual se necessário"""
         if self.canvas.nodes:
@@ -105,14 +106,14 @@ class KedroVisualEditor(QMainWindow):
         """Abre um pipeline salvo em JSON"""
         filename, _ = QFileDialog.getOpenFileName(self, "Abrir Pipeline", "", "Pipeline (*.json)")
         if filename:
-            try:
+            # try:
                 with open(filename, "r") as f:
                     data = json.load(f)
                 self.canvas.load_pipeline_data(data)
                 self.current_file = filename
                 self.statusBar().showMessage(f"Pipeline carregado de {filename}")
-            except Exception as e:
-                QMessageBox.critical(self, "Erro", f"Não foi possível abrir o arquivo: {str(e)}")
+            # except Exception as e:
+                # QMessageBox.critical(self, "Erro", f"Não foi possível abrir o arquivo: {str(e)}")
 
     def save_pipeline(self):
         """Salva o pipeline atual"""

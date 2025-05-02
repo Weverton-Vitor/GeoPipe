@@ -1,13 +1,16 @@
-from PyQt5.QtCore import QLineF, QPoint, QPointF, Qt
-from PyQt5.QtGui import QPainter, QPen, QBrush, QPolygonF
-from PyQt5.QtWidgets import QWidget
 import math
 
+from PyQt5.QtCore import QLineF, QPoint, QPointF, Qt
+from PyQt5.QtGui import QBrush, QPainter, QPen, QPolygonF
+from PyQt5.QtWidgets import QWidget
 
-class PipelineArrow(QWidget):
+from terra_pipe.ui.components.nodes.pipeline_node_widget import PipelineNodeWidget
+
+
+class PipelineArrowWidget(QWidget):
     """Widget que representa uma seta conectando dois nodes."""
 
-    def __init__(self, start_node, end_node, parent=None):
+    def __init__(self, start_node: PipelineNodeWidget, end_node: PipelineNodeWidget, parent=None):
         super().__init__(parent)
         self.start_node = start_node
         self.end_node = end_node
@@ -67,3 +70,10 @@ class PipelineArrow(QWidget):
 
     def update_position(self):
         self.update()
+
+    def get_arrow_data(self):
+        """Retorna os dados da seta em formato serializável"""
+        return {
+            "start_node": self.start_node.node_id,
+            "end_node": self.end_node.node_id,
+        }

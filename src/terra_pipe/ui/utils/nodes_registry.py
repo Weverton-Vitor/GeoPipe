@@ -59,6 +59,13 @@ class NodeRepresentation:
             output += f"\t{parameter}\n"
 
         return output
+    
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "label": self.label,
+            "parameters": self.parameters,
+        }
 
     def add_parameter(self, parameter):
         self.parameters.append(parameter)
@@ -75,10 +82,11 @@ class ParameterRepresentation:
     def __init__(self, name, label, value=""):
         self.name = name
         self.label = label
+        self.param_type = "str"
         self.value = value
 
     def __str__(self):
-        return f"Parameter: {self.name}, Default Value: {self.name}"
+        return f"Parameter: {self.name}, Default Value: {self.name}, Type: {self.param_type}, Value: {self.value}"
 
     def to_qbytearray(self):
         return QByteArray(pickle.dumps(self))
@@ -87,6 +95,7 @@ class ParameterRepresentation:
         return {
             "name": self.name,
             "label": self.label,
+            "param_type": "str",
             "value": self.value,
         }
 
