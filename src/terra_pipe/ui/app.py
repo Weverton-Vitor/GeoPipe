@@ -101,6 +101,9 @@ class KedroVisualEditor(QMainWindow):
 
         self.canvas.clear()
         self.current_file = None
+        self.update()
+        self.canvas = PipelineCanvas()
+
 
     def open_pipeline(self):
         """Abre um pipeline salvo em JSON"""

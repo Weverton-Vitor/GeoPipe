@@ -18,13 +18,13 @@ class PipelineCanvas(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.nodes = []
-        self.connections = []
+        self.nodes: list[PipelineNodeWidget] = []
+        self.connections: list[PipelineArrowWidget] = []
         self.setAcceptDrops(True)
         self.setMinimumSize(800, 600)
-        self.current_connection = None
+        self.current_connection: PipelineArrowWidget = None
         self.connecting_mode = False
-        self.selected_node = None
+        self.selected_node: PipelineNodeWidget = None
         self.painter = QPainter(self)
 
         # Habilitar acompanhamento do mouse para desenhar conexões
@@ -251,4 +251,17 @@ class PipelineCanvas(QWidget):
                 new_arrow.show()
                 self.connections.append(new_arrow)
 
+        self.update()
+
+    def clear(self):
+        """Limpa o canvas"""
+        for node in self.nodes:
+            del node
+
+        self.nodes = []
+        self.connections = []
+        self.selected_node = None
+        self.current_connection = None
+        self.painter.eraseRect(self.rect())
+        self.painter.end()
         self.update()
