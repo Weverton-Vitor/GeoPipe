@@ -1,5 +1,5 @@
 {
-  "Pipeline": "teste",
+  "Pipeline": "Detec\u00e7\u00e3o De Sombra",
   "nodes": [
     {
       "name": "Download de Imagens",
@@ -67,10 +67,10 @@
       ],
       "outputs": [],
       "position": [
-        265,
-        190
+        77,
+        116
       ],
-      "id": 2248681225184
+      "id": 2757890112192
     },
     {
       "name": "Detec\u00e7\u00e3o de nuvens e suas sombras com FMask",
@@ -114,16 +114,16 @@
       ],
       "outputs": [],
       "position": [
-        529,
-        185
+        363,
+        124
       ],
-      "id": 2248681225328
+      "id": 2757890112336
     }
   ],
   "connections": [
     {
-      "start_node": 2248681225184,
-      "end_node": 2248681225328
+      "start_node": 2757890112192,
+      "end_node": 2757890112336
     }
   ]
 }

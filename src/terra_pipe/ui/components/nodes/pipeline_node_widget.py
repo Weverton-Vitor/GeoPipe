@@ -1,4 +1,3 @@
-from typing import List
 from PyQt5.QtCore import QEvent, QMimeData, QRectF, Qt
 from PyQt5.QtGui import (
     QColor,
@@ -12,7 +11,9 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtWidgets import QWidget
 
-from terra_pipe.ui.utils.nodes_registry import NodeRepresentation, ParameterRepresentation
+from terra_pipe.ui.utils.nodes_registry import (
+    ParameterRepresentation,
+)
 
 
 class PipelineNodeWidget(QWidget):
@@ -21,9 +22,9 @@ class PipelineNodeWidget(QWidget):
     def __init__(
         self,
         name: str,
-        inputs:list[ParameterRepresentation]=[],
+        inputs: list[ParameterRepresentation] = [],
         outputs=None,
-        parent=None
+        parent=None,
     ):
         super().__init__(parent)
         self.name = name
@@ -114,9 +115,7 @@ class PipelineNodeWidget(QWidget):
     def get_node_data(self):
         """Retorna os dados do node em formato serializável"""
 
-        dict_params = [
-            param.to_dict() for param in self.inputs
-        ]
+        dict_params = [param.to_dict() for param in self.inputs]
         return {
             "name": self.name,
             "inputs": dict_params,

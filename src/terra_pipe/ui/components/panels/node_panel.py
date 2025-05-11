@@ -12,14 +12,18 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QToolButton,
     QVBoxLayout,
+    QDateEdit,
     QWidget,
+    QFileDialog
 )
 
 from PyQt5.QtGui import QPalette, QColor
 
 from terra_pipe.ui.utils.nodes_registry import ParameterRepresentation
+from PyQt5.QtCore import QDate
 
-TYPE_MAP = { 
+
+TYPE_MAP = {
     "str": "string",
     "int": "Inteiro",
     "float": "Decimal",
@@ -35,14 +39,18 @@ class ParameterWidget(QWidget):
     """Widget para editar um único parâmetro com nome, tipo e valor"""
 
     def __init__(self, name, label="", param_type="str", value="", parent=None):
-        super().__init__(parent)
-        self.initUI()
+        super().__init__(parent)     
         self.name = name
         self.label = label
+        self.param_type = param_type
+
+        self.file_input = None
+        self.initUI()
 
         self.name_edit.setText(label)
         # self.type_combo.setCurrentText(param_type)
-        self.value_edit.setText(value)
+        # self.value_edit.setText(value)
+
 
     def initUI(self):
         layout = QHBoxLayout()
@@ -58,19 +66,44 @@ class ParameterWidget(QWidget):
         # self.type_combo = QComboBox()
         # self.type_combo.addItems(list(TYPE_MAP.values()))
 
-        # Valor do parâmetro
-        self.value_edit = QLineEdit()
-        self.value_edit.setPlaceholderText("Valor")
-
+        
         # Botão para remover o parâmetro
         # self.remove_btn = QToolButton()
         # self.remove_btn.setText("X")
 
         layout.addWidget(self.name_edit, 3)
         # layout.addWidget(self.type_combo, 2)
-        layout.addWidget(self.value_edit, 3)
         # layout.addWidget(self.remove_btn, 1)
 
+        # Valor do parâmetro
+        self.value_edit = QLineEdit()
+        self.value_edit.setPlaceholderText("Valor")
+
+        if self.param_type == "date":
+            self.value_edit = QDateEdit()
+            self.value_edit.setCalendarPopup(True)  # habilita o calendário popup
+            self.value_edit.setDate(QDate.currentDate())
+            layout.addWidget(self.value_edit, 3)
+
+
+        if self.param_type == "file":
+            self.value_edit = QLineEdit()
+            self.value_edit.setDisabled(True)
+            self.value_edit.setMinimumWidth(100)
+
+
+
+            self.browse_button = QPushButton("Procurar...")
+            layout.addWidget(self.browse_button, 1)
+            self.browse_button.clicked.connect(self.selecionar_arquivo)
+            self.value_edit.mousePressEvent = lambda event: self.selecionar_arquivo()
+
+            print(self.file_input) 
+
+            layout.addWidget(self.value_edit, 3)
+            layout.addWidget(self.browse_button, 1)
+
+            
         self.setLayout(layout)
 
     def get_parameter_data(self):
@@ -81,6 +114,14 @@ class ParameterWidget(QWidget):
             # "type": self.type_combo.currentText(),
             "value": self.value_edit.text(),
         }
+    
+    def selecionar_arquivo(self):
+        caminho, _ = QFileDialog.getOpenFileName(
+            self, "Selecionar Arquivo", "", "Todos os Arquivos (*)"
+        )
+        if caminho:
+            self.file_input = caminho
+            self.value_edit.setPlaceholderText(self.file_input)       
 
 
 class NodePanel(QWidget):
@@ -111,7 +152,6 @@ class NodePanel(QWidget):
         name_group = QGroupBox("Informações do Node")
         name_layout = QFormLayout()
         name_group.setMaximumHeight(100)
-
 
         self.name_edit = QLineEdit()
         self.name_edit.setDisabled(True)
@@ -259,10 +299,20 @@ class NodePanel(QWidget):
 
             # Preencher parâmetros de entrada
             for parameter in node.inputs:
+                p_type = "str"
+                if "data" in parameter.label.lower():
+                    p_type = "date"
+                if "shapefile" in parameter.label.lower():
+                    p_type = "file"
 
                 param_widget = ParameterWidget(
-                    name=parameter.name, label=parameter.label, value=parameter.value, parent=self.input_container
+                    name=parameter.name,
+                    label=parameter.label,
+                    value=parameter.value,
+                    parent=self.input_container,
+                    param_type=p_type,
                 )
+
                 # param_widget.remove_btn.clicked.connect(
                 #     lambda checked=False, w=param_widget: self.remove_parameter(
                 #         w, is_input=True
@@ -297,13 +347,19 @@ class NodePanel(QWidget):
             # Atualizar dados básicos
             self.node.name = self.name_edit.text()
             self.node.func_name = self.func_edit.text()
-            
+
             self.node.inputs = []
 
             for param_widget in self.input_params:
                 param_data = param_widget.get_parameter_data()
-                
-                self.node.inputs.append(ParameterRepresentation(name=param_data["name"], label=param_data["label"], value=param_data["value"]))
+
+                self.node.inputs.append(
+                    ParameterRepresentation(
+                        name=param_data["name"],
+                        label=param_data["label"],
+                        value=param_data["value"],
+                    )
+                )
 
             # for param_widget in self.output_params:
             #     param_data = param_widget.get_parameter_data()

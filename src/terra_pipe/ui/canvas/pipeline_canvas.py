@@ -1,14 +1,16 @@
-from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtCore import QPoint, Qt, pyqtSignal
 from PyQt5.QtGui import QColor, QPainter, QPen
 from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from terra_pipe.ui.utils.nodes_registry import NodeRepresentation, ParameterRepresentation
 from terra_pipe.ui.components.arrows.pipeline_arrow_widget import PipelineArrowWidget
 from terra_pipe.ui.components.nodes.pipeline_node_widget import PipelineNodeWidget
 from terra_pipe.ui.dialogues.dependency_dialogue import DependencyDialog
-from PyQt5.QtCore import pyqtSignal
+from terra_pipe.ui.utils.nodes_registry import (
+    NodeRepresentation,
+    ParameterRepresentation,
+)
 
 
 class PipelineCanvas(QWidget):
