@@ -8,7 +8,7 @@ from kedro.pipeline import Pipeline, node, pipeline
 from .nodes import apply_deep_water_map, create_dirs
 
 
-def create_pipeline(**kwargs) -> Pipeline:
+def create_pipeline(dependencies: list=["created_deep_water_map_dirs_dependency", "cloud_removed_dependency"], **kwargs) -> Pipeline:
     return pipeline(
         [
             node(
@@ -32,8 +32,8 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "offset": "params:configs.offset",
                     "skip_deepewatermap": "params:configs.skip_deepewatermap",
                     "threshold": "params:configs.deepwatermap_threshold",
-                    "cloud_removed_dependency": "cloud_removed_dependency",
-                    "TOA_download_images_dependency": "created_deep_water_map_dirs_dependency",
+                    dependencies[0]: dependencies[0],
+                    dependencies[1]: dependencies[1],
                 },
                 outputs="water_mask_dependency",
                 name="apply_deep_water_map",

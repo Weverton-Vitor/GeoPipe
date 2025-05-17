@@ -1,6 +1,7 @@
 """Project pipelines."""
 
 import logging
+from pathlib import Path
 
 import ee
 from kedro.config import OmegaConfigLoader
@@ -15,6 +16,7 @@ from fmask_pipeline.pipelines.download import (
 )
 from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
 from fmask_pipeline.pipelines.unet import pipeline as unet
+from utils.gee.authenticate import authenticate_earth_engine
 
 logger = logging.getLogger(__name__)
 
@@ -22,29 +24,9 @@ CONF_SOURCE = "conf/"
 conf_loader = OmegaConfigLoader(CONF_SOURCE)
 params = conf_loader["parameters"]
 
-# ee.Authenticate()
-# ee.Initialize(project=params["configs"]["ee_project"])
-# ee.Initialize()
-
-import json
-import ee
-
-key_path = "/home/kedro_docker/key.json"
-# Carregar o arquivo key.json
-with open(key_path, "r") as f:
-    key_data = json.load(f)
-
-# Pegar o email da conta de serviço
-service_account = key_data["client_email"]
-
-# Inicializar Earth Engine com as credenciais
-credentials = ee.ServiceAccountCredentials(
-    service_account, key_path
-)
-ee.Initialize(credentials)
-
-logger.info(f"Autenticado com a conta de serviço: {service_account}")
-
+# key_path = Path("/home/kedro_docker/key.json")
+key_path = Path("C:/Users/weverton.vitor/Documents/faculdade/pibic/fmask-pipeline/key.json")
+authenticate_earth_engine(key_path)
 
 def register_pipelines() -> dict[str, Pipeline]:
     """Register the project's pipelines.
@@ -52,6 +34,12 @@ def register_pipelines() -> dict[str, Pipeline]:
     Returns:
         A mapping from pipeline names to ``Pipeline`` objects.
     """
+
+    water_area_monitoring_sentinel_deepwatermap = pipeline(
+        pipe=download.create_pipeline()
+        + deepwatermap.create_pipeline(["created_deep_water_map_dirs_dependency", "BOA_download_images_dependency"]),
+        parameters=None,
+    )
 
     water_volume_monitoring_sentinel_fmask_deepwatermap = pipeline(
         pipe=download.create_pipeline()
@@ -83,7 +71,6 @@ def register_pipelines() -> dict[str, Pipeline]:
         parameters=None,
     )
 
-    
 
     return {
         "__default__": download.create_pipeline(),
@@ -95,4 +82,5 @@ def register_pipelines() -> dict[str, Pipeline]:
         "water_volume_monitoring_sentinel_unet_deepwatermap": water_volume_monitoring_sentinel_unet_deepwatermap,
         "coastline_fmask_sentinel_deepwatermap": coastline_fmask_sentinel_deepwatermap,
         "coastline_cfmask_landsat_deepwatermap": coastline_cfmask_landsat_deepwatermap,
+        "water_area_monitoring_sentinel_deepwatermap": water_area_monitoring_sentinel_deepwatermap
     }

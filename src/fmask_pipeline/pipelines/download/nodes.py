@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 from utils.download.download import (
     adjust_date,
+    download_image,
     get_original_bands_name,
     is_TOA,
     validate_date,
@@ -38,6 +39,9 @@ def create_dirs(
     # Create directories structure, if not exists
     os.makedirs(f"{toa_dowload_path}{location_name}/", exist_ok=True)
     os.makedirs(f"{boa_dowload_path}{location_name}/", exist_ok=True)
+    os.makedirs(f"{toa_dowload_path}{location_name}/metadata", exist_ok=True)
+    os.makedirs(f"{boa_dowload_path}{location_name}/metadata", exist_ok=True)
+
     os.makedirs(f"{save_masks_path}{location_name}/", exist_ok=True)
     os.makedirs(f"{save_plots_path}{location_name}/", exist_ok=True)
     os.makedirs(f"{cloud_removal_log}{location_name}/", exist_ok=True)
@@ -136,6 +140,7 @@ def donwload_images(
         logger.info(f"Donwload: {collection_id} collection")
         logger.info(f"Collection Date Availability: {min_date} - {max_date}")
 
+        new_selected_bands = None
         if not selected_bands:
             logger.warning("Download All Bands")
         else:
@@ -152,36 +157,14 @@ def donwload_images(
             tqdm(images, desc="Downloading Images", unit="imagem")
         ):
             image_id = image_info["id"]
-            image = ee.Image(image_id)
-
-            # Filter if necessary
-            if new_selected_bands:
-                image = image.select(new_selected_bands)
-
-            url = image.getDownloadURL(
-                {
-                    "scale": scale,  # Resolução espacial
-                    "region": roi.geometry(),  # Região de interesse
-                    "crs": "EPSG:4326",  # Sistema de coordenadas
-                    "format": "GeoTIFF",  # Formato de saída
-                }
+            download_image(
+                image_id=image_id,
+                collection_id=collection_id,
+                location_name=location_name,
+                dowload_path=dowload_path,
+                prefix_images_name=prefix_images_name,
+                selected_bands=new_selected_bands,
+                scale=scale,
             )
-
-            # Get date of image
-            timestamp = image_info["properties"]["system:time_start"]  # Timestamp Unix
-            date = datetime.utcfromtimestamp(timestamp / 1000).strftime(
-                "%Y-%m-%d"
-            )  # Converte para data legível
-
-            # Nome do arquivo de saída
-            output_file = os.path.join(
-                f"{dowload_path}{location_name}/{date[:4]}",
-                f"{prefix_images_name}_{satelite_name}_{location_name}_{date}.tif",
-            )
-
-            # Faz o download da imagem e salva no diretório especificado
-            response = requests.get(url)
-            with open(output_file, "wb") as file:
-                file.write(response.content)
 
     return True
