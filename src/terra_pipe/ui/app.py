@@ -77,7 +77,7 @@ class KedroVisualEditor(QMainWindow):
     # TODO: Criar novo pipeline
     def new_pipeline(self):
         """Cria um novo pipeline, apagando o atual se necessário"""
-        if self.canvas.nodes:
+        if self.canvas_screen.canvas.nodes:
             reply = QMessageBox.question(
                 self,
                 "Confirmar",

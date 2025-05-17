@@ -15,7 +15,7 @@ params_labels = {
         "final_date": "Data final",
         "dowload_path": "Diretório de download",
         "roi": "Região de interesse (Shapefile)",
-        "collection_ids": "ID das coleções",
+        "collection_ids": "Satélite",
         "prefix_images_name": "Prefixo do nome das imagens",
         "selected_bands": "Bandas selecionadas",
         "scale": "Escala (em metros)",
