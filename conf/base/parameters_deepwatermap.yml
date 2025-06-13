@@ -1,8 +1,8 @@
 configs:
 
   # Caminho das imagens baixadas da base da atmosfera BOA
-  # clean_images_paths: "data/04_clean_images/"
-  clean_images_paths: "data/02_boa_images/"
+  clean_images_paths: "data/04_clean_images/"
+  # clean_images_paths: "data/02_boa_images/"
 
   # Caminho onde as máscaras serão salvas
   water_masks_save_path: "data/07_water_masks/"
@@ -17,4 +17,4 @@ configs:
   # 50%	128
   # 75%	191
   # 100%	255
-  deepwatermap_threshold: 217 # 85%
+  deepwatermap_threshold: 128 

@@ -202,10 +202,7 @@ def validate_date(satelite: str, date_str: str):
 
 
 def download_image(image_id: Path,
-                    dowload_path: str,
-                    location_name: str,
-                    prefix_images_name: str,
-                    satelite_name: str,
+                    output_file: str,
                     selected_bands: list,
                     roi: ee.FeatureCollection = None,
                     scale: int = 10,):
@@ -238,24 +235,16 @@ def download_image(image_id: Path,
 
         # Get image information
         image_info = get_image_metadata(image)
-        print(image_info)
-        print(image_info)
-        print(image_info)
-        print(image_info)
-        print(image_info)
-        print(image_info)
-        print(image_info)
-        print(image_info)
 
         # Get date of image and convert to readable format
         timestamp = image_info["properties"]["system:time_start"]  # Timestamp Unix
         date = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc).strftime("%Y-%m-%d")
 
         # Nome do arquivo de saída
-        output_file = os.path.join(
-            f"{dowload_path}{location_name}/{date[:4]}",
-            f"{prefix_images_name}_{satelite_name}_{location_name}_{date}.tif",
-        )
+        # output_file = os.path.join(
+        #     f"{dowload_path}{location_name}/{date[:4]}",
+        #     f"{prefix_images_name}_{satelite_name}_{location_name}_{date}.tif",
+        # )
 
         # Faz o download da imagem e salva no diretório especificado
         response = requests.get(url)

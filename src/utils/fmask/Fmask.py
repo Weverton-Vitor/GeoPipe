@@ -446,12 +446,12 @@ class Fmask:
         # vza_band = bands[12]
 
         # Extract each band sentinel
-        B2 = bands[0] * self.scale_factor  # Blue
-        B3 = bands[1] * self.scale_factor  # Green
-        B4 = bands[2] * self.scale_factor  # Red
-        B8 = bands[3] * self.scale_factor  # NIR
-        B11 = bands[4] * self.scale_factor  # SWIR 1
-        B12 = bands[5] * self.scale_factor  #
+        B2 = bands[1] * self.scale_factor  # Blue
+        B3 = bands[2] * self.scale_factor  # Green
+        B4 = bands[3] * self.scale_factor  # Red
+        B8 = bands[7] * self.scale_factor  # NIR
+        B11 = bands[10] * self.scale_factor  # SWIR 1
+        B12 = bands[11] * self.scale_factor  # SWIR 2
 
         # rgb = [B4/np.max(B4), B3/np.max(B3), B2/np.max(B2)]
 
@@ -500,7 +500,7 @@ class Fmask:
         water_mask = Image.fromarray(water_mask).filter(ImageFilter.MaxFilter(size=3))
         # return ndwi, cloud_mask, shadow_mask
         return (
-            np.transpose(np.array([bands[4], bands[3], bands[2]]), [1, 2, 0]),
+            np.transpose(np.array([bands[3], bands[2], bands[1]]), [1, 2, 0]),
             cloud_mask,
             shadow_mask,
             water_mask,
@@ -511,18 +511,13 @@ if __name__ == "__main__":
     import os
 
     # root = './test_images'
-    root = "./sentinel_scene/6B"
+    # root = "./sentinel_scene/6B"
 
-    inputs = [f"{root}/{img}" for img in os.listdir(root) if "TOA.tif" in img]
-    # inputs = ['./2004/seixas_20041124.tif']
+    # inputs = [f"{root}/{img}" for img in os.listdir(root) if "TOA.tif" in img]
+    inputs = ['./2004/seixas_20041124.tif']
     # inputs = ['./2004/seixas_20040905.tif']
 
     save_dir = "./results/"
-
-    # inputs = ['./Seixas_big_picture/TOA/2004/seixas_20040414.tif']
-    # inputs = ['./Seixas/TOA/2004/seixas_20040905.tif']
-    # inputs = ['seixas_20041124.tif']
-    # save_dir = "./"
 
     fmask = Fmask()
 

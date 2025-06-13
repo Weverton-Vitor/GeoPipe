@@ -1,14 +1,10 @@
-import datetime
-import glob
 import logging
 import os
-from datetime import datetime
+from pathlib import Path
 
 import ee
 import geojson
 import geopandas as gpd
-import rasterio as TIFF
-import requests
 from tqdm import tqdm
 
 from utils.download.download import (
@@ -16,6 +12,7 @@ from utils.download.download import (
     download_image,
     get_original_bands_name,
     is_TOA,
+    save_metadata_as_csv,
     validate_date,
 )
 
@@ -97,7 +94,6 @@ def donwload_images(
             else:
                 satelite_name = "S2"
 
-
         new_init_date, new_final_date = adjust_date(
             satelite=satelite_name, start_date_str=init_date, end_date_str=final_date
         )
@@ -152,19 +148,47 @@ def donwload_images(
             logger.warning(f"Download Bands: {new_selected_bands}")
 
         images = collection.toList(collection.size()).getInfo()
+        image_info_df = []
 
         for i, image_info in enumerate(
             tqdm(images, desc="Downloading Images", unit="imagem")
         ):
             image_id = image_info["id"]
-            download_image(
+            date = None
+
+            if satelite_name == "S2":
+                date = image_id.split("/")[-1].split("_")[0]
+            else:
+                date = image_id.split("/")[-1].split("_")[1]
+
+            path = Path(f"{dowload_path}{location_name}")
+
+            output_file_tif = Path(
+                path
+                / date[:4]
+                / f"{prefix_images_name}_{satelite_name}_{location_name}_{date[:8]}.tif"
+            )
+
+            output_file_csv = Path(
+                path
+                / "metadata"
+                / f"{prefix_images_name}_{satelite_name}_{location_name}.csv"
+            )
+
+            image_info_export = download_image(
                 image_id=image_id,
-                collection_id=collection_id,
-                location_name=location_name,
-                dowload_path=dowload_path,
-                prefix_images_name=prefix_images_name,
+                roi=roi,
                 selected_bands=new_selected_bands,
                 scale=scale,
+                output_file=output_file_tif,
             )
+
+            image_info_export["image_id"] = image_id
+            image_info_export["location_name"] = location_name
+            image_info_export["file_name"] = output_file_tif.resolve()
+            image_info_df.append(image_info_export)
+
+        save_metadata_as_csv(metadata=image_info_df, output_file=output_file_csv)
+        logger.info("Metadata saved as CSV")
 
     return True
