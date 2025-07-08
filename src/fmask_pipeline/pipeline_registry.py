@@ -16,6 +16,7 @@ from fmask_pipeline.pipelines.download import (
 )
 from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
 from fmask_pipeline.pipelines.unet import pipeline as unet
+from fmask_pipeline.pipelines.calculate_spectral_indices import pipeline as calculate_spectral_indices
 from utils.gee.authenticate import authenticate_earth_engine
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,19 @@ def register_pipelines() -> dict[str, Pipeline]:
     Returns:
         A mapping from pipeline names to ``Pipeline`` objects.
     """
+
+    water_area_monitoring_sentinel_spectral_indice = pipeline(
+        pipe=download.create_pipeline()
+        + calculate_spectral_indices.create_pipeline(dependencies=["created_spectral_indice_dirs_dependency", "BOA_download_images_dependency"]),
+        parameters=None,
+    )
+
+    water_area_monitoring_sentinel_fmask_spectral_indice = pipeline(
+        pipe=download.create_pipeline()
+        + fmask_preprocess.create_pipeline()
+        + calculate_spectral_indices.create_pipeline(["created_spectral_indice_dirs_dependency", "BOA_download_images_dependency", "cloud_removed_dependency"]),
+        parameters=None,
+    )
 
     water_area_monitoring_sentinel_deepwatermap = pipeline(
         pipe=download.create_pipeline()
@@ -82,5 +96,8 @@ def register_pipelines() -> dict[str, Pipeline]:
         "water_volume_monitoring_sentinel_unet_deepwatermap": water_volume_monitoring_sentinel_unet_deepwatermap,
         "coastline_fmask_sentinel_deepwatermap": coastline_fmask_sentinel_deepwatermap,
         "coastline_cfmask_landsat_deepwatermap": coastline_cfmask_landsat_deepwatermap,
-        "water_area_monitoring_sentinel_deepwatermap": water_area_monitoring_sentinel_deepwatermap
+        "water_area_monitoring_sentinel_deepwatermap": water_area_monitoring_sentinel_deepwatermap,
+        "water_area_monitoring_sentinel_spectral_indice": water_area_monitoring_sentinel_spectral_indice,
+        "water_area_monitoring_sentinel_fmask_spectral_indice": water_area_monitoring_sentinel_fmask_spectral_indice
     }
+    

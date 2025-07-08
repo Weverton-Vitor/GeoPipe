@@ -4,7 +4,11 @@ import pandas as pd
 import rasterio
 
 
-def plot_tif(tif_path, bandas=None, titulo="Imagem .tif"):
+import numpy as np
+import rasterio
+import matplotlib.pyplot as plt
+
+def plot_tif(tif_path, bandas=None, titulo="Imagem .tif", binarization_gt=None):
     """
     Exibe uma imagem .tif usando rasterio e matplotlib.
 
@@ -13,28 +17,39 @@ def plot_tif(tif_path, bandas=None, titulo="Imagem .tif"):
     - bandas (list[int] ou None): lista com os índices das bandas a exibir (ex: [4, 3, 2] para RGB do Sentinel-2).
                                   Se None, exibe a primeira banda como imagem em escala de cinza.
     - titulo (str): título da imagem exibida
+    - binarization_gt (float): se diferente de 0, aplica binarização na imagem (1 se > binarization_gt, senão 0)
     """
     with rasterio.open(tif_path) as src:
         if bandas:
-            # Ler e empilhar as bandas escolhidas
             img = np.stack([src.read(b) for b in bandas], axis=-1).astype(np.float32)
 
-            # Normalizar para [0, 1] para exibição
+            # Normalizar para [0, 1]
             img -= img.min()
             img /= img.max()
 
-            plt.figure(figsize=(10, 10))
+            if binarization_gt is not None:
+                # Converter imagem para escala de cinza antes de binarizar
+                gray = img.mean(axis=-1)
+                binary = (gray > binarization_gt).astype(np.uint8)
 
-            plt.imshow(img)
+                plt.figure(figsize=(10, 10))
+                plt.imshow(binary, cmap="gray")
+            else:
+                plt.figure(figsize=(10, 10))
+                plt.imshow(img)
         else:
-            # Exibe a primeira banda em escala de cinza
-            plt.figure(figsize=(10, 10))
-            img = src.read(1)
-            plt.imshow(img, cmap="gray")
+            img = src.read(1).astype(np.float32)
+
+            if binarization_gt is not None:
+                binary = (img > binarization_gt).astype(np.uint8)
+                plt.imshow(binary, cmap="gray")
+            else:
+                plt.imshow(img, cmap="gray")
 
         plt.title(titulo)
         plt.axis("off")
         plt.show()
+
 
 
 def plot_year_x_variable(
@@ -157,7 +172,8 @@ def plot_water_x_cloud_percent_over_time(
 def plot_water_over_time(
     data: pd.DataFrame,
     y_variables: list[str] = ['water_area'],  # Altere conforme o nome real da sua variável
-    labels: list[str] = ['water_area']  # Altere conforme o nome real da sua variável
+    labels: list[str] = ['water_area'],  # Altere conforme o nome real da sua variável
+    title: str = 'Média mensal ao longo do tempo'
 ) -> None:
     """
     Plota a média mensal da variável `y_variable` ao longo do tempo (ano + mês).
@@ -182,7 +198,7 @@ def plot_water_over_time(
         # Plot
         plt.plot(monthly_mean.index, monthly_mean.values, marker='o', label=label)
 
-    plt.title(f'Média mensal ao longo do tempo')
+    plt.title(title)
     plt.xlabel('Tempo (Ano/Mês)')
     plt.ylabel(f'Média de ')
     plt.legend(title="Cobertura de Nuvem")

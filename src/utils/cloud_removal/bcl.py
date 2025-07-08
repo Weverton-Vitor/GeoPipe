@@ -87,7 +87,7 @@ class BCL:
         self.resultadoIMGSCL[0][clear_mask] = self.imgSCL[self.idx_class_cloud][
             clear_mask
         ]
-        for i in range(6):
+        for i in range(12):
             self.resultadoIMGNDWI[i][clear_mask] = self.imgNDWI[i][clear_mask]
         self.mask[clear_mask] = [0]
         self.color_file.write("0 is the actual color of the image\n")
@@ -221,7 +221,7 @@ class BCL:
                 self.idx_class_cloud
             ][(self.resultadoIMGSCL[0] == -1)]
 
-            for i in range(6):
+            for i in range(12):
                 self.resultadoIMGNDWI[i][(self.resultadoIMGNDWI[i] == -1)] = (
                     self.imgNDWI[i][(self.resultadoIMGNDWI[i] == -1)]
                 )
