@@ -79,7 +79,7 @@ def main(image_path, save_path, scale_factor, offset, threshold):
         with rasterio.open(save_path, "w", **profile) as dst:
             dst.write(dwm_binary, 1)
 
-            del model
+            # del model
             del image
             del dwm
             del dwm_binary
