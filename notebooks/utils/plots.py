@@ -8,6 +8,7 @@ import numpy as np
 import rasterio
 import matplotlib.pyplot as plt
 
+
 def plot_tif(tif_path, bandas=None, titulo="Imagem .tif", binarization_gt=None):
     """
     Exibe uma imagem .tif usando rasterio e matplotlib.
@@ -49,7 +50,6 @@ def plot_tif(tif_path, bandas=None, titulo="Imagem .tif", binarization_gt=None):
         plt.title(titulo)
         plt.axis("off")
         plt.show()
-
 
 
 def plot_year_x_variable(
@@ -129,8 +129,7 @@ def plot_water_x_cloud_percent(
 
 
 def plot_water_x_cloud_percent_over_time(
-    data: pd.DataFrame,
-    y_variable: str = 'CLOUDY_PIXEL_PERCENTAGE'
+    data: pd.DataFrame, y_variable: str = "CLOUDY_PIXEL_PERCENTAGE"
 ) -> None:
     """
     Plota a média mensal da variável `y_variable` ao longo do tempo (ano + mês),
@@ -142,8 +141,8 @@ def plot_water_x_cloud_percent_over_time(
     """
     # Garante que a coluna de tempo esteja ordenada corretamente
     data = data.copy()
-    data['date'] = pd.to_datetime(data[['year', 'month']].assign(day=1))
-    data.sort_values('date', inplace=True)
+    data["date"] = pd.to_datetime(data[["year", "month"]].assign(day=1))
+    data.sort_values("date", inplace=True)
 
     plt.figure(figsize=(14, 7))
 
@@ -151,19 +150,15 @@ def plot_water_x_cloud_percent_over_time(
         filtered_data = data[data["CLOUDY_PIXEL_PERCENTAGE"] <= cloud_percent]
 
         # Média mensal da variável para essa faixa de nuvem
-        grouped = (
-            filtered_data.groupby('date')[y_variable]
-            .mean()
-            .sort_index()
-        )
+        grouped = filtered_data.groupby("date")[y_variable].mean().sort_index()
 
-        plt.plot(grouped.index, grouped.values, label=f'≤ {cloud_percent}%')
+        plt.plot(grouped.index, grouped.values, label=f"≤ {cloud_percent}%")
 
-    plt.title(f'Média mensal de {y_variable} por faixa de cobertura de nuvens')
-    plt.xlabel('Tempo (Ano/Mês)')
-    plt.ylabel(f'Média de {y_variable}')
+    plt.title(f"Média mensal de {y_variable} por faixa de cobertura de nuvens")
+    plt.xlabel("Tempo (Ano/Mês)")
+    plt.ylabel(f"Média de {y_variable}")
     plt.grid(True)
-    plt.legend(title='Cobertura de Nuvem (%)')
+    plt.legend(title="Cobertura de Nuvem (%)")
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
@@ -171,9 +166,11 @@ def plot_water_x_cloud_percent_over_time(
 
 def plot_water_over_time(
     data: pd.DataFrame,
-    y_variables: list[str] = ['water_area'],  # Altere conforme o nome real da sua variável
-    labels: list[str] = ['water_area'],  # Altere conforme o nome real da sua variável
-    title: str = 'Média mensal ao longo do tempo'
+    y_variables: list[str] = [
+        "water_area"
+    ],  # Altere conforme o nome real da sua variável
+    labels: list[str] = ["water_area"],  # Altere conforme o nome real da sua variável
+    title: str = "Média mensal ao longo do tempo",
 ) -> None:
     """
     Plota a média mensal da variável `y_variable` ao longo do tempo (ano + mês).
@@ -184,33 +181,31 @@ def plot_water_over_time(
     """
     # Cria a coluna de data (1º dia de cada mês)
     data = data.copy()
-    data['date'] = pd.to_datetime(data[['year', 'month']].assign(day=1))
+    data["date"] = pd.to_datetime(data[["year", "month"]].assign(day=1))
 
     plt.figure(figsize=(14, 7))
     for y_variable, label in zip(y_variables, labels):
         # Calcula a média mensal
-        monthly_mean = (
-            data.groupby('date')[y_variable]
-            .mean()
-            .sort_index()
-        )
+        monthly_mean = data.groupby("date")[y_variable].mean().sort_index()
 
         # Plot
-        plt.plot(monthly_mean.index, monthly_mean.values, marker='o', label=label)
+        plt.plot(monthly_mean.index, monthly_mean.values, marker="o", label=label)
 
     plt.title(title)
-    plt.xlabel('Tempo (Ano/Mês)')
-    plt.ylabel(f'Média de ')
+    plt.xlabel("Tempo (Ano/Mês)")
+    plt.ylabel(f"Média de ")
     plt.legend(title="Cobertura de Nuvem")
     plt.grid(True)
     plt.xticks(rotation=45)
-    plt.tight_layout()
+    plt.ticklabel_format(style="plain", axis="y")
+    # plt.tight_layout()
     plt.show()
+
 
 def plot_monthly_water(
     data: pd.DataFrame,
     year: int = None,
-    y_variable: str = 'm2_area'  # Altere para o nome da sua variável de interesse
+    y_variable: str = "m2_area",  # Altere para o nome da sua variável de interesse
 ) -> None:
     """
     Plota a média mensal da variável `y_variable`.
@@ -221,10 +216,10 @@ def plot_monthly_water(
     - y_variable (str): Nome da variável a ser analisada.
     """
     if year is not None:
-        data = data[data['year'] == year]
+        data = data[data["year"] == year]
 
     # Calcula a média mensal da variável
-    monthly_means = data.groupby('month')[y_variable].mean().to_dict()
+    monthly_means = data.groupby("month")[y_variable].mean().to_dict()
 
     # Garante que todos os meses (1 a 12) estejam presentes
     all_months = {month: 0 for month in range(1, 13)}
@@ -232,15 +227,14 @@ def plot_monthly_water(
 
     # Plot
     plt.figure(figsize=(10, 6))
-    plt.plot(
-        list(all_months.keys()), 
-        list(all_months.values()), 
-        marker='o'
-    )
+    plt.plot(list(all_months.keys()), list(all_months.values()), marker="o")
 
-    plt.title(f'Média mensal de {y_variable} ' + (f'(ano {year})' if year else '(todos os anos)'))
-    plt.xlabel('Mês')
-    plt.ylabel(f'Média de {y_variable}')
+    plt.title(
+        f"Média mensal de {y_variable} "
+        + (f"(ano {year})" if year else "(todos os anos)")
+    )
+    plt.xlabel("Mês")
+    plt.ylabel(f"Média de {y_variable}")
     plt.xticks(range(1, 13))
     plt.grid(True)
     plt.tight_layout()

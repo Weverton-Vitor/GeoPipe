@@ -37,7 +37,7 @@ def main(image_path, save_path, scale_factor, offset, threshold):
 
     # load and preprocess the input image
     image = tiff.imread(image_path)
-    image = image[:, :, :6]  # 6 primeiras badnas
+    image = image[:, :, 1:7]  # select bands Blue, Green, Red, NIR, SWIR1, SWIR2
 
     pad_r = find_padding(image.shape[0])
     pad_c = find_padding(image.shape[1])
@@ -77,7 +77,8 @@ def main(image_path, save_path, scale_factor, offset, threshold):
         profile = src.profile
         profile.update(count=1, dtype=rasterio.uint8)
         with rasterio.open(save_path, "w", **profile) as dst:
-            dst.write(dwm_binary, 1)
+            # dst.write(dwm_binary, 1)
+            dst.write(dwm, 1)
 
             # del model
             del image

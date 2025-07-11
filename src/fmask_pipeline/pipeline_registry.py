@@ -26,7 +26,7 @@ conf_loader = OmegaConfigLoader(CONF_SOURCE)
 params = conf_loader["parameters"]
 
 # key_path = Path("/home/kedro_docker/key.json")
-key_path = Path("C:/Users/weverton.vitor/Documents/faculdade/pibic/fmask-pipeline/key.json")
+key_path = Path("/media/weverton/D/Dev/python/Remote Sensing/tcc/GeoPipe/key.json")
 authenticate_earth_engine(key_path)
 
 def register_pipelines() -> dict[str, Pipeline]:

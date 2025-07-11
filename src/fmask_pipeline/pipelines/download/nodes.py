@@ -188,7 +188,7 @@ def donwload_images(
             image_info_export["file_name"] = output_file_tif.resolve()
             image_info_df.append(image_info_export)
 
-        save_metadata_as_csv(metadata=image_info_df, output_file=output_file_csv)
+        save_metadata_as_csv(metadata=image_info_df, output_path=output_file_csv)
         logger.info("Metadata saved as CSV")
 
     return True

@@ -7,11 +7,11 @@
 configs:
   
   # Sigla do indice espectral em maiusculo: NDVI, NDWI, MNDWI, etc
-  spectral_indice: 'MNDWI'
+  spectral_indice: 'NDWI'
 
   # Caminho das imagens baixadas da base da atmosfera BOA
   spectral_indice_target_images_paths: "data/04_clean_images/"
-  # spectral_indice_target_images_paths: "data/02_boa_images/"
+  #spectral_indice_target_images_paths: "data/02_boa_images/"
 
   # Caminho onde as máscaras serão salvas
   spectral_index_save_path: "data/09_spectral_indice/"

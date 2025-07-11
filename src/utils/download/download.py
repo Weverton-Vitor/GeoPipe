@@ -13,6 +13,7 @@ from utils.gee.authenticate import authenticate_earth_engine
 
 logger = logging.getLogger(__name__)
 
+
 def is_TOA(colecao):
     """
     Verifica se a coleção do Google Earth Engine (GEE) é BOA (Bottom of Atmosphere)
@@ -201,11 +202,13 @@ def validate_date(satelite: str, date_str: str):
     return True
 
 
-def download_image(image_id: Path,
-                    output_file: str,
-                    selected_bands: list,
-                    roi: ee.FeatureCollection = None,
-                    scale: int = 10,):
+def download_image(
+    image_id: Path,
+    output_file: str,
+    selected_bands: list,
+    roi: ee.FeatureCollection = None,
+    scale: int = 10,
+):
     try:
         image = ee.Image(image_id)
 
@@ -237,8 +240,10 @@ def download_image(image_id: Path,
         image_info = get_image_metadata(image)
 
         # Get date of image and convert to readable format
-        timestamp = image_info["properties"]["system:time_start"]  # Timestamp Unix
-        date = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc).strftime("%Y-%m-%d")
+        #timestamp = image_info["properties"]["system:time_start"]  # Timestamp Unix
+        #date = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc).strftime(
+        #    "%Y-%m-%d"
+        #)
 
         # Nome do arquivo de saída
         # output_file = os.path.join(
@@ -250,6 +255,8 @@ def download_image(image_id: Path,
         response = requests.get(url)
         with open(output_file, "wb") as file:
             file.write(response.content)
+
+        return image_info
 
     except Exception as e:
         logger.error(f"Erro ao baixar a imagem {image_id}: {e}")
@@ -309,7 +316,7 @@ def get_image_metadata(image):
 
 
 if __name__ == "__main__":
-    key_path = Path("C:/Users/weverton.vitor/Documents/faculdade/pibic/fmask-pipeline/key.json")
+    key_path = Path("/media/weverton/D/Dev/python/Remote Sensing/tcc/GeoPipe/key.json")
     authenticate_earth_engine(key_path)
 
     download_image(
