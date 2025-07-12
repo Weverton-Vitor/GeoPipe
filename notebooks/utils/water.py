@@ -1,11 +1,12 @@
 import numpy as np
+import pandas as pd
 import rasterio
 from rasterio.warp import Resampling, calculate_default_transform, reproject
 
 from .general import crop_raster_with_geojson_obj
 
 
-def calculate_water_area(tif_path, path_shapefile, binarization_gt=0):
+def calculate_water_area(tif_path, path_shapefile, binarization_gt=0, save_path=None):
     """
     Reprojeta uma imagem .tif com CRS geográfico (graus) para UTM (metros),
     e calcula a área de pixels de água (valor > 0).
@@ -24,10 +25,11 @@ def calculate_water_area(tif_path, path_shapefile, binarization_gt=0):
 
         profile = src.profile
         profile.update(count=1)
-        with rasterio.open(
-            f"./data/areas_tif/{tif_path.split('/')[-1]}", "w", **profile
-        ) as dst:
-            dst.write(src.read()[0], 1)
+        if save_path:
+            with rasterio.open(
+                f"./data/areas_tif/{tif_path.split('/')[-1]}", "w", **profile
+            ) as dst:
+                dst.write(src.read()[0], 1)
 
         transform, width, height = calculate_default_transform(
             src.crs, dst_crs, src.width, src.height, *src.bounds
@@ -62,3 +64,53 @@ def calculate_water_area(tif_path, path_shapefile, binarization_gt=0):
                 water_area_km2 = water_area_m2 / 1e6
 
                 return water_area_m2, water_area_km2
+
+
+def calculate_volumes_to_multiple_methods(
+    df_areas: pd.DataFrame,
+    df_cav: pd.DataFrame,
+    cav_area_column="area",
+    cav_volume_column="volume",
+    year_column="year",
+    month_column="month",
+    cloud_percentage_column="CLOUDY_PIXEL_PERCENTAGE",
+    areas_columns=[],
+    escale: float = 1.0,
+):
+    """Calculate volumes based on areas and a CAV (Curva de Armazenamento e Volume).
+    Each column in `df_areas` that contains area values will be processed to
+    generate a corresponding volume column. The volumes are calculated using
+    interpolation based on the provided CAV data.
+
+    Args:
+        df_areas (pd.DataFrame): DataFrame containing area columns.
+        df_cav (pd.DataFrame): DataFrame containing the CAV data with 'area' and 'volume' columns.
+        cav_area_column (str, optional): Name of the column in `df_cav` that contains area values. Defaults to "area".
+        cav_volume_column (str, optional): Name of the column in `df_cav` that contains volume values. Defaults to "volume".
+        escale (float, optional): Escale. Defaults to 1.0.
+
+    Returns:
+        _type_: _description_
+    """
+
+    # 2. Ordena e remove duplicatas na curva CAV
+    df_cav = df_cav.sort_values(cav_area_column).drop_duplicates(
+        subset=[cav_area_column]
+    )
+
+    # 3. Define limites da curva para evitar extrapolação
+    min_area = df_cav[cav_area_column].min()
+    max_area = df_cav[cav_area_column].max()
+
+    df_volumes = pd.DataFrame()
+    df_volumes["year"] = df_areas[year_column]
+    df_volumes["month"] = df_areas[month_column]
+    df_volumes["CLOUDY_PIXEL_PERCENTAGE"] = df_areas[cloud_percentage_column]
+    for column in areas_columns:
+        # Garante que as áreas estejam dentro dos limites da CAV
+        areas = df_areas[column].clip(lower=min_area, upper=max_area)
+        # Interpola e converte para milhões de m³
+        volumes = np.interp(areas, df_cav[cav_area_column], df_cav[cav_volume_column])
+        df_volumes[f"volume_{column}"] = volumes / escale  # volume em 10⁶ m³
+
+    return df_volumes
