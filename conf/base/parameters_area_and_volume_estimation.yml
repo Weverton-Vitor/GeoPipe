@@ -1,5 +1,26 @@
-# This is a boilerplate parameters config generated for pipeline 'area_and_volume_estimation'
-# using Kedro 0.19.10.
-#
-# Documentation for this file format can be found in "Parameters"
-# Link: https://docs.kedro.org/en/0.19.10/configuration/parameters.html
+configs:
+
+  water_masks_path: "data/07_water_masks/"
+
+  save_path: "data/010_areas_volumes/"
+
+  path_shapefile: "data/00_shapefiles/sume_reservatorio.geojson"
+
+  binarization_gt: 1
+
+  # Volume
+  cav_path: "/media/weverton/D/Dev/python/Remote Sensing/tcc/GeoPipe/notebooks/data/sume_cotas.csv"
+  cav_area_column: "area"
+  cav_volume_column: "volume"
+  year_column: "year"
+  month_column: "month"
+  cloud_percentage_column: "CLOUDY_PIXEL_PERCENTAGE"
+  areas_columns: ["m2_area"]
+  escale: 1e6
+
+  # Plots
+  method_name: "DeepWaterMap"
+  ground_truth_name: "AESA"
+  ground_truth_path_df:  "/media/weverton/D/Dev/python/Remote Sensing/tcc/GeoPipe/notebooks/data/sume_aesa.csv"
+  ground_truth_column_volume: "Volume Útil (hm³)"
+  ground_truth_column_date: "Data da Medição"

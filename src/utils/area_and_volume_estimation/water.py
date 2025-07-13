@@ -106,11 +106,11 @@ def calculate_volumes_to_multiple_methods(
     df_volumes["year"] = df_areas[year_column]
     df_volumes["month"] = df_areas[month_column]
     df_volumes["CLOUDY_PIXEL_PERCENTAGE"] = df_areas[cloud_percentage_column]
+
     for column in areas_columns:
         # Garante que as áreas estejam dentro dos limites da CAV
         areas = df_areas[column].clip(lower=min_area, upper=max_area)
         # Interpola e converte para milhões de m³
         volumes = np.interp(areas, df_cav[cav_area_column], df_cav[cav_volume_column])
         df_volumes[f"volume_{column}"] = volumes / escale  # volume em 10⁶ m³
-
     return df_volumes

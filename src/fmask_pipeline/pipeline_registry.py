@@ -16,7 +16,13 @@ from fmask_pipeline.pipelines.download import (
 )
 from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
 from fmask_pipeline.pipelines.unet import pipeline as unet
-from fmask_pipeline.pipelines.calculate_spectral_indices import pipeline as calculate_spectral_indices
+from fmask_pipeline.pipelines.calculate_spectral_indices import (
+    pipeline as calculate_spectral_indices,
+)
+from fmask_pipeline.pipelines.area_and_volume_estimation import (
+    pipeline as area_and_volume_estimation_pipeline,
+)
+
 from utils.gee.authenticate import authenticate_earth_engine
 
 logger = logging.getLogger(__name__)
@@ -29,6 +35,7 @@ params = conf_loader["parameters"]
 key_path = Path("/media/weverton/D/Dev/python/Remote Sensing/tcc/GeoPipe/key.json")
 authenticate_earth_engine(key_path)
 
+
 def register_pipelines() -> dict[str, Pipeline]:
     """Register the project's pipelines.
 
@@ -38,24 +45,46 @@ def register_pipelines() -> dict[str, Pipeline]:
 
     water_area_monitoring_sentinel_spectral_indice = pipeline(
         pipe=download.create_pipeline()
-        + calculate_spectral_indices.create_pipeline(dependencies=["created_spectral_indice_dirs_dependency", "BOA_download_images_dependency"]),
+        + calculate_spectral_indices.create_pipeline(
+            dependencies=[
+                "created_spectral_indice_dirs_dependency",
+                "BOA_download_images_dependency",
+            ]
+        ),
         parameters=None,
     )
 
     water_area_monitoring_sentinel_fmask_spectral_indice = pipeline(
         pipe=download.create_pipeline()
         + fmask_preprocess.create_pipeline()
-        + calculate_spectral_indices.create_pipeline(["created_spectral_indice_dirs_dependency", "BOA_download_images_dependency", "cloud_removed_dependency"]),
+        + calculate_spectral_indices.create_pipeline(
+            [
+                "created_spectral_indice_dirs_dependency",
+                "BOA_download_images_dependency",
+                "cloud_removed_dependency",
+            ]
+        ),
         parameters=None,
     )
 
-    water_area_monitoring_sentinel_deepwatermap = pipeline(
+    water_area_volume_monitoring_sentinel_deepwatermap = pipeline(
         pipe=download.create_pipeline()
-        + deepwatermap.create_pipeline(["created_deep_water_map_dirs_dependency", "BOA_download_images_dependency"]),
+        + deepwatermap.create_pipeline(
+            ["created_deep_water_map_dirs_dependency", "BOA_download_images_dependency"]
+        )
+        + area_and_volume_estimation_pipeline.create_pipeline(),
         parameters=None,
     )
 
-    water_volume_monitoring_sentinel_fmask_deepwatermap = pipeline(
+    water_area_volume_monitoring_sentinel_fmask_deepwatermap = pipeline(
+        pipe=download.create_pipeline()
+        + fmask_preprocess.create_pipeline()
+        + deepwatermap.create_pipeline()
+        + area_and_volume_estimation_pipeline.create_pipeline(),
+        parameters=None,
+    )
+
+    """water_volume_monitoring_sentinel_fmask_deepwatermap = pipeline(
         pipe=download.create_pipeline()
         + fmask_preprocess.create_pipeline()
         + deepwatermap.create_pipeline(),
@@ -67,7 +96,7 @@ def register_pipelines() -> dict[str, Pipeline]:
         + unet.create_pipeline()
         + deepwatermap.create_pipeline(),
         parameters=None,
-    )
+    )"""
 
     coastline_fmask_sentinel_deepwatermap = pipeline(
         pipe=download.create_pipeline()
@@ -85,19 +114,18 @@ def register_pipelines() -> dict[str, Pipeline]:
         parameters=None,
     )
 
-
     return {
         "__default__": download.create_pipeline(),
         "download": download.create_pipeline(),
         "fmask_preprocessing": fmask_preprocess.create_pipeline(),
         "apply_deepwatermap": deepwatermap.create_pipeline(),
         "apply_canny": canny.create_pipeline(),
-        "water_volume_monitoring_sentinel_fmask_deepwatermap": water_volume_monitoring_sentinel_fmask_deepwatermap,
-        "water_volume_monitoring_sentinel_unet_deepwatermap": water_volume_monitoring_sentinel_unet_deepwatermap,
+        # "water_volume_monitoring_sentinel_fmask_deepwatermap": water_volume_monitoring_sentinel_fmask_deepwatermap,
+        # "water_volume_monitoring_sentinel_unet_deepwatermap": water_volume_monitoring_sentinel_unet_deepwatermap,
         "coastline_fmask_sentinel_deepwatermap": coastline_fmask_sentinel_deepwatermap,
         "coastline_cfmask_landsat_deepwatermap": coastline_cfmask_landsat_deepwatermap,
-        "water_area_monitoring_sentinel_deepwatermap": water_area_monitoring_sentinel_deepwatermap,
+        "water_area_volume_monitoring_sentinel_deepwatermap": water_area_volume_monitoring_sentinel_deepwatermap,
+        "water_area_volume_monitoring_sentinel_fmask_deepwatermap": water_area_volume_monitoring_sentinel_fmask_deepwatermap,
         "water_area_monitoring_sentinel_spectral_indice": water_area_monitoring_sentinel_spectral_indice,
-        "water_area_monitoring_sentinel_fmask_spectral_indice": water_area_monitoring_sentinel_fmask_spectral_indice
+        "water_area_monitoring_sentinel_fmask_spectral_indice": water_area_monitoring_sentinel_fmask_spectral_indice,
     }
-    

@@ -47,3 +47,21 @@ def crop_raster_with_geojson_obj(src, geojson_path):
         dataset.write(imagem_cortada)
 
     return memfile.open()  # reabre para leitura
+
+
+def media_mensal_por_ano(df, column="volume_m2"):
+    """
+    Calcula a média de valores para cada mês de cada ano.
+
+    Parâmetros:
+        df (pd.DataFrame): DataFrame com colunas ['ano', 'mes', 'valor'].
+
+    Retorna:
+        pd.DataFrame: Agrupado com média por ano e mês.
+    """
+    return (
+        df.groupby(["year", "month"], as_index=False)
+        .agg({f"{column}": "mean"})
+        .sort_values(["year", "month"])
+        .rename(columns={column: "volume_m2"})
+    )

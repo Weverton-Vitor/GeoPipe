@@ -2,11 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rasterio
-
-
-import numpy as np
-import rasterio
-import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
 
 
 def plot_tif(tif_path, bandas=None, titulo="Imagem .tif", binarization_gt=None):
@@ -239,3 +235,49 @@ def plot_monthly_water(
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+
+
+def plot_series_ano_mes(series_dict, data_inicio, data_fim, titulo=None):
+    """
+    Plota séries temporais com colunas separadas de 'ano' e 'mês' e diferentes comprimentos.
+
+    Parâmetros:
+        series_dict (dict): {'nome_série': DataFrame com colunas ['ano', 'mes', 'valor']}.
+        data_inicio (str): Data inicial no formato "mm/yyyy".
+        data_fim (str): Data final no formato "mm/yyyy".
+        titulo (str): Título do gráfico (opcional).
+    """
+    # Converte as datas para datetime
+    data_inicio = pd.to_datetime(f"01/{data_inicio}", format="%d/%m/%Y")
+    data_fim = pd.to_datetime(
+        f"01/{data_fim}", format="%d/%m/%Y"
+    ) + pd.offsets.MonthEnd(0)
+
+    # Inicia figura
+    figure = plt.figure(figsize=(12, 5))
+
+    for nome, df in series_dict.items():
+        # Cria coluna de datas com ano e mês
+        df = df.copy()
+        df["data"] = pd.to_datetime(dict(year=df["year"], month=df["month"], day=1))
+        df = df.set_index("data")
+
+        # Filtra pelo intervalo
+        df_plot = df[(df.index >= data_inicio) & (df.index <= data_fim)]
+
+        # Plota
+        plt.plot(df_plot.index, df_plot["volume_m2"], label=nome)
+
+    # Formatação
+    plt.xlabel("Data")
+    plt.ylabel("Valor")
+    plt.title(titulo or "Séries Temporais")
+    plt.legend()
+    plt.grid(True)
+
+    # Eixo X no formato mm/yyyy
+    plt.gca().xaxis.set_major_formatter(DateFormatter("%m/%Y"))
+
+    plt.tight_layout()
+    # plt.show()
+    return figure
