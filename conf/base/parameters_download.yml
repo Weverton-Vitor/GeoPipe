@@ -37,7 +37,7 @@ configs:
 
   # Pular o download
   toa_skip_download: True
-  boa_skip_download: True
+  boa_skip_download: False
 
 
 

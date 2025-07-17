@@ -238,12 +238,11 @@ def download_image(
 
         # Get image information
         image_info = get_image_metadata(image)
-
         # Get date of image and convert to readable format
-        #timestamp = image_info["properties"]["system:time_start"]  # Timestamp Unix
-        #date = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc).strftime(
+        # timestamp = image_info["properties"]["system:time_start"]  # Timestamp Unix
+        # date = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc).strftime(
         #    "%Y-%m-%d"
-        #)
+        # )
 
         # Nome do arquivo de saída
         # output_file = os.path.join(
@@ -284,7 +283,14 @@ def save_metadata_as_csv(
     os.makedirs(output_path, exist_ok=True)
 
     # Cria o nome do arquivo CSV
-    file_name = f"{prefix}_metadata_{suffix}.csv"
+    file_name = "metadata.csv"
+    if prefix and suffix:
+        file_name = f"{prefix}_metadata_{suffix}.csv"
+    elif prefix:
+        file_name = f"{prefix}_metadata.csv"
+    elif suffix:
+        file_name = f"metadata_{suffix}.csv"
+
     file_path = os.path.join(output_path, file_name)
 
     # Converte o dicionário de metadados em um DataFrame do pandas

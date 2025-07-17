@@ -47,6 +47,9 @@ def estimate_water_area(
     - Tuple: (area_m2)
     """
 
+    df_metadata = pd.read_csv(
+        f"data/02_boa_images/{location_name}/metadata/{location_name}_metadata.csv"
+    )
     df_areas = pd.DataFrame()
     masks = []
     days = []
@@ -70,9 +73,9 @@ def estimate_water_area(
                 binarization_gt=binarization_gt,
             )
 
-            year = mask_path.split("/")[-1].split("_")[7][:4]
-            month = mask_path.split("/")[-1].split("_")[7][4:6]
-            day = mask_path.split("/")[-1].split("_")[7][6:8]
+            year = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][:4]
+            month = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][4:6]
+            day = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][6:8]
 
             years.append(year)
             months.append(month)
@@ -89,7 +92,7 @@ def estimate_water_area(
     df_areas["day"] = pd.Series(days)
     df_areas["m2_area"] = pd.Series(m2_areas)
     df_areas["km2_area"] = pd.Series(km2_areas)
-    df_areas["CLOUDY_PIXEL_PERCENTAGE"] = 0
+    df_areas["CLOUDY_PIXEL_PERCENTAGE"] = df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
 
     os.makedirs(f"{save_path}{location_name}", exist_ok=True)
     df_areas.to_csv(f"{save_path}{location_name}/df_areas.csv", index=False)
@@ -164,6 +167,7 @@ def plot_results(
     - save_path (str): path to save the plots
     """
 
+    volumes_df = volumes_df.loc[volumes_df["CLOUDY_PIXEL_PERCENTAGE"] < 100]
     final_dir = f"{save_path}{location_name}/plots"
     os.makedirs(f"{final_dir}", exist_ok=True)
 

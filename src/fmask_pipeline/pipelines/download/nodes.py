@@ -169,26 +169,29 @@ def donwload_images(
                 / f"{prefix_images_name}_{satelite_name}_{location_name}_{date[:8]}.tif"
             )
 
-            output_file_csv = Path(
-                path
-                / "metadata"
-                / f"{prefix_images_name}_{satelite_name}_{location_name}.csv"
-            )
+            output_file_csv = Path(path / "metadata")
 
-            image_info_export = download_image(
-                image_id=image_id,
-                roi=roi,
-                selected_bands=new_selected_bands,
-                scale=scale,
-                output_file=output_file_tif,
-            )
+            image_info_export = {}
+            try:
+                image_info_export = download_image(
+                    image_id=image_id,
+                    roi=roi,
+                    selected_bands=new_selected_bands,
+                    scale=scale,
+                    output_file=output_file_tif,
+                )
 
-            image_info_export["image_id"] = image_id
-            image_info_export["location_name"] = location_name
-            image_info_export["file_name"] = output_file_tif.resolve()
-            image_info_df.append(image_info_export)
+                image_info_export["image_id"] = image_id
+                image_info_export["location_name"] = location_name
+                image_info_export["file_name"] = output_file_tif.resolve()
+                image_info_df.append(image_info_export)
+            except Exception as e:
+                logger.error(f"Error downloading image {image_id}: {e}")
+                continue
 
-        save_metadata_as_csv(metadata=image_info_df, output_path=output_file_csv)
+        save_metadata_as_csv(
+            metadata=image_info_df, output_path=output_file_csv, prefix=location_name
+        )
         logger.info("Metadata saved as CSV")
 
     return True
