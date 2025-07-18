@@ -92,7 +92,7 @@ def estimate_water_area(
     df_areas["day"] = pd.Series(days)
     df_areas["m2_area"] = pd.Series(m2_areas)
     df_areas["km2_area"] = pd.Series(km2_areas)
-    df_areas["CLOUDY_PIXEL_PERCENTAGE"] = df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
+    df_areas["CLOUDY_PIXEL_PERCENTAGE"] = 0  # df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
 
     os.makedirs(f"{save_path}{location_name}", exist_ok=True)
     df_areas.to_csv(f"{save_path}{location_name}/df_areas.csv", index=False)
@@ -237,9 +237,25 @@ def plot_results(
     )
 
     volumes_mean_savgol_filter_df = volumes_df.copy()
-    volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
-        volumes_mean_savgol_filter_df["volume_m2"], window_length=10, polyorder=4
-    )
+    try:
+        volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
+            volumes_mean_savgol_filter_df["volume_m2"], window_length=10, polyorder=4
+        )
+    except ValueError as e:
+        logger.error(f"Error applying Savgol filter: {e}")
+        for i in range(10, 0, -1):
+            try:
+                volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
+                    volumes_mean_savgol_filter_df["volume_m2"],
+                    window_length=i,
+                    polyorder=4,
+                )
+                logger.info(f"Applied Savgol filter with window length {i}")
+                break
+            except ValueError as e:
+                logger.error(
+                    f"Error applying Savgol filter with window length {i}: {e}"
+                )
 
     figure3 = plot_series_ano_mes(
         {
@@ -274,11 +290,30 @@ def plot_results(
         volumes_mean_z_index_savgol_filter_df["z"].abs() < 2
     ]  # remove outliers com z > 2
 
-    volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
-        volumes_mean_z_index_savgol_filter_df["volume_m2"],
-        window_length=25,
-        polyorder=4,
-    )
+    try:
+        volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
+            volumes_mean_z_index_savgol_filter_df["volume_m2"],
+            window_length=25,
+            polyorder=4,
+        )
+    except ValueError as e:
+        logger.error(f"Error applying Savgol filter: {e}")
+        for i in range(25, 0, -1):
+            try:
+                poly = 4
+                if i == 4:
+                    poly = 2
+                volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
+                    volumes_mean_z_index_savgol_filter_df["volume_m2"],
+                    window_length=i,
+                    polyorder=2,
+                )
+                logger.info(f"Applied Savgol filter with window length {i}")
+                break
+            except ValueError as e:
+                logger.error(
+                    f"Error applying Savgol filter with window length {i}: {e}"
+                )
 
     figure5 = plot_series_ano_mes(
         {
@@ -318,9 +353,31 @@ def plot_results(
     )
 
     volumes_mean_savgol_filter_df = volumes_mean_df.copy()
-    volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
-        volumes_mean_savgol_filter_df["volume_m2"], window_length=10, polyorder=4
-    )
+    print(volumes_mean_savgol_filter_df["volume_m2"].shape)
+    try:
+        volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
+            volumes_mean_savgol_filter_df["volume_m2"],
+            window_length=25,
+            polyorder=4,
+        )
+    except ValueError as e:
+        logger.error(f"Error applying Savgol filter: {e}")
+        for i in range(25, 0, -1):
+            try:
+                poly = 4
+                if i == 4:
+                    poly = 2
+                volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
+                    volumes_mean_savgol_filter_df["volume_m2"],
+                    window_length=i,
+                    polyorder=2,
+                )
+                logger.info(f"Applied Savgol filter with window length {i}")
+                break
+            except ValueError as e:
+                logger.error(
+                    f"Error applying Savgol filter with window length {i}: {e}"
+                )
 
     figure3_mean = plot_series_ano_mes(
         {
@@ -355,11 +412,27 @@ def plot_results(
         volumes_mean_z_index_savgol_filter_df["z"].abs() < 2
     ]  # remove outliers com z > 2
 
-    volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
-        volumes_mean_z_index_savgol_filter_df["volume_m2"],
-        window_length=25,
-        polyorder=4,
-    )
+    try:
+        volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
+            volumes_mean_z_index_savgol_filter_df["volume_m2"],
+            window_length=25,
+            polyorder=4,
+        )
+    except ValueError as e:
+        logger.error(f"Error applying Savgol filter: {e}")
+        for i in range(25, 0, -1):
+            try:
+                volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
+                    volumes_mean_z_index_savgol_filter_df["volume_m2"],
+                    window_length=i,
+                    polyorder=4,
+                )
+                logger.info(f"Applied Savgol filter with window length {i}")
+                break
+            except ValueError as e:
+                logger.error(
+                    f"Error applying Savgol filter with window length {i}: {e}"
+                )
 
     figure5_mean = plot_series_ano_mes(
         {

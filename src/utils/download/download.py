@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import re
+from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -202,7 +204,68 @@ def validate_date(satelite: str, date_str: str):
     return True
 
 
-def download_image(
+def group_images_by_date(images_info):
+    """
+    Agrupa imagens Sentinel-2 por data (mesmo dia) e retorna listas com as imagens
+    da mesma data, independente do tile.
+    """
+    grouped = defaultdict(list)
+
+    for img in images_info:
+        img_id = img["id"]
+
+        # Extrai a data da imagem do ID
+        match = re.search(r"/(\d{8})T", img_id)
+        if match:
+            date_str = match.group(1)  # Ex: '20230703'
+            date = datetime.strptime(date_str, "%Y%m%d").date()
+            grouped[date].append(img_id)
+        else:
+            print(f"ID inválido: {img_id}")
+
+    return list(grouped.values())
+
+
+def download_mosaic_image(
+    image_ids: list,
+    output_file: str,
+    selected_bands: list,
+    roi: ee.FeatureCollection,
+    scale: int = 10,
+):
+    try:
+        # Carrega as imagens como ee.Image e faz mosaico
+        images = [ee.Image(image_id) for image_id in image_ids]
+        mosaic = ee.ImageCollection(images).mosaic()
+
+        # Seleciona bandas, se necessário
+        if selected_bands:
+            mosaic = mosaic.select(selected_bands)
+
+        # Define a URL para download
+        url = mosaic.getDownloadURL(
+            {
+                "scale": scale,
+                "region": roi.geometry(),
+                "crs": "EPSG:4326",
+                "format": "GeoTIFF",
+            }
+        )
+
+        # Faz download do arquivo
+        response = requests.get(url)
+        with open(output_file, "wb") as file:
+            file.write(response.content)
+
+        # logger.info(f"Imagem salva em: {output_file}")
+        return list(map(lambda img: get_image_metadata(ee.Image(img)), images))
+
+    except Exception as e:
+        logger.error(f"Erro ao baixar o mosaico: {e}")
+        return []
+
+
+def download_scene(
     image_id: Path,
     output_file: str,
     selected_bands: list,
@@ -325,7 +388,7 @@ if __name__ == "__main__":
     key_path = Path("/media/weverton/D/Dev/python/Remote Sensing/tcc/GeoPipe/key.json")
     authenticate_earth_engine(key_path)
 
-    download_image(
+    download_scene(
         image_id="COPERNICUS/S2_SR/20210101T133239_20210101T133237_T22WEB",
         dowload_path="/path/to/download/",
         location_name="location_name",

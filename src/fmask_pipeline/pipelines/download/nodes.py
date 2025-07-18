@@ -9,8 +9,11 @@ from tqdm import tqdm
 
 from utils.download.download import (
     adjust_date,
-    download_image,
+    download_mosaic_image,
+    download_scene,
+    get_image_metadata,
     get_original_bands_name,
+    group_images_by_date,
     is_TOA,
     save_metadata_as_csv,
     validate_date,
@@ -150,10 +153,12 @@ def donwload_images(
         images = collection.toList(collection.size()).getInfo()
         image_info_df = []
 
-        for i, image_info in enumerate(
-            tqdm(images, desc="Downloading Images", unit="imagem")
+        images_ids_group = group_images_by_date(images)
+
+        for i, images_ids in enumerate(
+            tqdm(images_ids_group, desc="Downloading Images", unit="imagem")
         ):
-            image_id = image_info["id"]
+            image_id = images_ids[0]
             date = None
 
             if satelite_name == "S2":
@@ -171,20 +176,21 @@ def donwload_images(
 
             output_file_csv = Path(path / "metadata")
 
-            image_info_export = {}
+            image_info_export = []
             try:
-                image_info_export = download_image(
-                    image_id=image_id,
+                image_info_export = download_mosaic_image(
+                    image_ids=images_ids,
                     roi=roi,
                     selected_bands=new_selected_bands,
                     scale=scale,
                     output_file=output_file_tif,
                 )
 
-                image_info_export["image_id"] = image_id
-                image_info_export["location_name"] = location_name
-                image_info_export["file_name"] = output_file_tif.resolve()
-                image_info_df.append(image_info_export)
+                for image in image_info_export:
+                    image["image_id"] = image_id
+                    image["location_name"] = location_name
+                    image["file_name"] = output_file_tif.resolve()
+                    image_info_df.append(image)
             except Exception as e:
                 logger.error(f"Error downloading image {image_id}: {e}")
                 continue
