@@ -2,14 +2,14 @@ configs:
 
   water_masks_path: "data/07_water_masks/"
 
-  save_path: "data/010_areas_volumes/"
+  area_and_volune_save_path: "data/010_areas_volumes/"
 
-  path_shapefile: "data/00_shapefiles/gramame_mamuaba_reservatorio.geojson"
+  path_shapefile: "data/00_shapefiles/lagoa_do_arroz_reservatorio.geojson"
 
-  binarization_gt: 0
+  binarization_gt: 1
 
   # Volume
-  cav_path: "/media/weverton/D/Dev/python/Remote Sensing/tcc/GeoPipe/notebooks/data/gramame_mamuaba_cotas.csv"
+  cav_path: "notebooks/data/lagoa_do_arroz_cotas.csv"
   cav_area_column: "area"
   cav_volume_column: "volume"
   year_column: "year"
@@ -22,6 +22,6 @@ configs:
   prefix_plot: ""
   method_name: "DeepWaterMap"
   ground_truth_name: "ANA"
-  ground_truth_path_df:  "/media/weverton/D/Dev/python/Remote Sensing/tcc/GeoPipe/notebooks/data/gramame_mamuaba_ana.csv"
+  ground_truth_path_df:  "notebooks/data/lagoa_do_arroz_ana.csv"
   ground_truth_column_volume: "Volume Útil (hm³)"
   ground_truth_column_date: "Data da Medição"

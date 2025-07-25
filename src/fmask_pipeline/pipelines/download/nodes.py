@@ -79,6 +79,7 @@ def donwload_images(
     prefix_images_name: str,
     selected_bands: list = [],
     skip_download: bool = False,
+    save_metadata: bool = True,
     scale: int = 10,
     *args,
     **kwargs,
@@ -195,9 +196,10 @@ def donwload_images(
                 logger.error(f"Error downloading image {image_id}: {e}")
                 continue
 
-        save_metadata_as_csv(
-            metadata=image_info_df, output_path=output_file_csv, prefix=location_name
-        )
-        logger.info("Metadata saved as CSV")
+        if save_metadata:
+            save_metadata_as_csv(
+                metadata=image_info_df, output_path=output_file_csv, prefix=location_name
+            )
+            logger.info("Metadata saved as CSV")
 
     return True

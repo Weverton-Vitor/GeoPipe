@@ -21,6 +21,8 @@ from utils.area_and_volume_estimation.water import (
     calculate_water_area,
 )
 
+from utils.metrics.regression import calculate_metrics_regression
+
 logger = logging.getLogger(__name__)
 
 
@@ -92,7 +94,7 @@ def estimate_water_area(
     df_areas["day"] = pd.Series(days)
     df_areas["m2_area"] = pd.Series(m2_areas)
     df_areas["km2_area"] = pd.Series(km2_areas)
-    df_areas["CLOUDY_PIXEL_PERCENTAGE"] = 0  # df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
+    df_areas["CLOUDY_PIXEL_PERCENTAGE"] = df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
 
     os.makedirs(f"{save_path}{location_name}", exist_ok=True)
     df_areas.to_csv(f"{save_path}{location_name}/df_areas.csv", index=False)
@@ -144,6 +146,58 @@ def estimate_water_volume(
 
     return df_volume
 
+
+def calculate_metrics(
+    path_real_df: str,
+    pred_df: str,
+    save_path: str,
+    col_real: str,
+    # col_pred: str,
+    *args,
+    **kwargs) -> bool:
+
+    logger.info("Calculating metrics")
+    real_df = pd.read_csv(path_real_df)
+
+
+    real_df["year"] = real_df["Data da Medição"].apply(
+        lambda x: x.split("/")[-1]
+    )
+    real_df["month"] = real_df["Data da Medição"].apply(
+        lambda x: x.split("/")[-2]
+    )
+    real_df["Volume Útil (hm³)"] = real_df[
+        "Volume Útil (hm³)"
+    ].apply(lambda x: float(x.replace(",", ".")) if isinstance(x, str) else x)
+
+    real_df["volume_m2"] = real_df["Volume Útil (hm³)"].apply(
+        lambda x: x * 1000000 / 10e6
+    )
+
+    real_df = media_mensal_por_ano(
+        real_df,
+        column="volume_m2",
+    )
+
+    pred_df = media_mensal_por_ano(
+        pred_df,
+        column="volume_m2_area",
+    )
+
+    metrics, df_erros = calculate_metrics_regression(
+        df_real=real_df,
+        df_pred=real_df,
+        col_real="volume_m2",
+        col_pred="volume_m2"
+    )
+
+
+
+    metrics_df = pd.DataFrame(metrics, index=[0])
+    metrics_df.to_csv(f"{save_path}volume_metrics.csv", index=False)
+    df_erros.to_csv(f"{save_path}volume_errors.csv", index=False)
+
+    return True
 
 def plot_results(
     areas_df: DataFrame,
