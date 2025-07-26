@@ -4,23 +4,19 @@ import os
 
 import pandas as pd
 from pandas import DataFrame
-from scipy.ndimage import median_filter
-from scipy.signal import savgol_filter
-from scipy.stats import zscore
 from tqdm import tqdm
 
-from utils.area_and_volume_estimation.general import media_mensal_por_ano
+from utils.area_and_volume_estimation.general import (
+    media_mensal_por_ano,
+    medias_mensais_por_ano,
+)
 from utils.area_and_volume_estimation.plots import (
     plot_series_ano_mes,
-    plot_water_over_time,
-    plot_water_x_cloud_percent_over_time,
-    plot_year_x_variable,
 )
 from utils.area_and_volume_estimation.water import (
     calculate_volumes_to_multiple_methods,
     calculate_water_area,
 )
-
 from utils.metrics.regression import calculate_metrics_regression
 
 logger = logging.getLogger(__name__)
@@ -181,7 +177,7 @@ def calculate_metrics(
 
     pred_df = media_mensal_por_ano(
         pred_df,
-        column="volume_m2_area",
+        column="volume_m2",
     )
 
     metrics, df_erros = calculate_metrics_regression(
@@ -252,131 +248,77 @@ def plot_results(
         column="volume_m2",
     )
 
-    volumes_mean_df = media_mensal_por_ano(
+    volumes_mean_df = medias_mensais_por_ano(
         volumes_df,
-        column=[column for column in list(volumes_df.columns) if "volume" in column][0],
+        # columns=[column for column in list(volumes_df.columns) if "volume" in column][0],
     )
 
-    volumes_df = volumes_df.rename(
-        columns={
-            [column for column in list(volumes_df.columns) if "volume" in column][
-                0
-            ]: "volume_m2"
-        }
-    )
+
+    # volumes_df = volumes_df.rename(
+    #     columns={
+    #         [column for column in list(volumes_df.columns) if "volume" in column][
+    #             0
+    #         ]: "volume_m2"
+    #     }
+    # )
 
     figure1 = plot_series_ano_mes(
         {
             f"{method_name}": volumes_df,
             ground_truth_name: gound_truth_df,
         },
+        volume_columns=["volume_m2", "volume_m2"],
         data_inicio="01/2019",
         data_fim="06/2025",
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo",
     )
 
-    volumes_mean_mean_filter_df = volumes_df.copy()
-    volumes_mean_mean_filter_df["volume_m2"] = (
-        volumes_mean_mean_filter_df["volume_m2"].rolling(window=5, center=True).mean()
-    )
 
     figure2 = plot_series_ano_mes(
         {
-            f"{method_name}": volumes_mean_mean_filter_df,
+            f"{method_name}": volumes_df,
             ground_truth_name: gound_truth_df,
         },
+        volume_columns=["volume_m2_mean", "volume_m2"],
         data_inicio="01/2019",
         data_fim="06/2025",
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro da média)",
     )
 
-    volumes_mean_savgol_filter_df = volumes_df.copy()
-    try:
-        volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
-            volumes_mean_savgol_filter_df["volume_m2"], window_length=10, polyorder=4
-        )
-    except ValueError as e:
-        logger.error(f"Error applying Savgol filter: {e}")
-        for i in range(10, 0, -1):
-            try:
-                volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
-                    volumes_mean_savgol_filter_df["volume_m2"],
-                    window_length=i,
-                    polyorder=4,
-                )
-                logger.info(f"Applied Savgol filter with window length {i}")
-                break
-            except ValueError as e:
-                logger.error(
-                    f"Error applying Savgol filter with window length {i}: {e}"
-                )
 
     figure3 = plot_series_ano_mes(
         {
-            f"{method_name}": volumes_mean_savgol_filter_df,
+            f"{method_name}": volumes_df,
             ground_truth_name: gound_truth_df,
         },
+        volume_columns=["volume_m2_savgol", "volume_m2"],
         data_inicio="01/2019",
         data_fim="06/2025",
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro de savgol)",
     )
 
-    volumes_mean_median_filter_df = volumes_df.copy()
-    volumes_mean_savgol_filter_df["volume_m2"] = median_filter(
-        volumes_mean_median_filter_df["volume_m2"], size=20
-    )
+
 
     figure4 = plot_series_ano_mes(
         {
-            f"{method_name}": volumes_mean_savgol_filter_df,
+            f"{method_name}": volumes_df,
             ground_truth_name: gound_truth_df,
         },
+        volume_columns=["volume_m2_median", "volume_m2"],
         data_inicio="01/2019",
         data_fim="06/2025",
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro da mediana)",
     )
 
-    volumes_mean_z_index_savgol_filter_df = volumes_df.copy()
-    volumes_mean_z_index_savgol_filter_df["z"] = zscore(
-        volumes_mean_z_index_savgol_filter_df["volume_m2"]
-    )
-    volumes_mean_z_index_savgol_filter_df = volumes_mean_z_index_savgol_filter_df[
-        volumes_mean_z_index_savgol_filter_df["z"].abs() < 2
-    ]  # remove outliers com z > 2
-
-    try:
-        volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
-            volumes_mean_z_index_savgol_filter_df["volume_m2"],
-            window_length=25,
-            polyorder=4,
-        )
-    except ValueError as e:
-        logger.error(f"Error applying Savgol filter: {e}")
-        for i in range(25, 0, -1):
-            try:
-                poly = 4
-                if i == 4:
-                    poly = 2
-                volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
-                    volumes_mean_z_index_savgol_filter_df["volume_m2"],
-                    window_length=i,
-                    polyorder=2,
-                )
-                logger.info(f"Applied Savgol filter with window length {i}")
-                break
-            except ValueError as e:
-                logger.error(
-                    f"Error applying Savgol filter with window length {i}: {e}"
-                )
-
     figure5 = plot_series_ano_mes(
         {
-            f"{method_name}": volumes_mean_savgol_filter_df,
-            ground_truth_name: gound_truth_df,
+            f"{method_name}": volumes_df,
+            ground_truth_name: ground_truth_mean_df,
         },
         data_inicio="01/2019",
         data_fim="06/2025",
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro da savgol + zscore)",
+        volume_columns=["volume_m2_zscore", "volume_m2"],
+        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (zscore)",
     )
 
     # Mean
@@ -388,114 +330,57 @@ def plot_results(
         },
         data_inicio="01/2019",
         data_fim="06/2025",
+        volume_columns=["volume_m2", "volume_m2"],
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal)",
     )
 
-    volumes_mean_mean_filter_df = volumes_mean_df.copy()
-    volumes_mean_mean_filter_df["volume_m2"] = (
-        volumes_mean_mean_filter_df["volume_m2"].rolling(window=5, center=True).mean()
-    )
 
     figure2_mean = plot_series_ano_mes(
         {
-            f"{method_name}": volumes_mean_mean_filter_df,
+            f"{method_name}": volumes_mean_df,
             ground_truth_name: ground_truth_mean_df,
         },
         data_inicio="01/2019",
         data_fim="06/2025",
+        volume_columns=["volume_m2_mean", "volume_m2"],
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro da média)",
     )
 
-    volumes_mean_savgol_filter_df = volumes_mean_df.copy()
-    print(volumes_mean_savgol_filter_df["volume_m2"].shape)
-    try:
-        volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
-            volumes_mean_savgol_filter_df["volume_m2"],
-            window_length=25,
-            polyorder=4,
-        )
-    except ValueError as e:
-        logger.error(f"Error applying Savgol filter: {e}")
-        for i in range(25, 0, -1):
-            try:
-                poly = 4
-                if i == 4:
-                    poly = 2
-                volumes_mean_savgol_filter_df["volume_m2"] = savgol_filter(
-                    volumes_mean_savgol_filter_df["volume_m2"],
-                    window_length=i,
-                    polyorder=2,
-                )
-                logger.info(f"Applied Savgol filter with window length {i}")
-                break
-            except ValueError as e:
-                logger.error(
-                    f"Error applying Savgol filter with window length {i}: {e}"
-                )
 
     figure3_mean = plot_series_ano_mes(
         {
-            f"{method_name}": volumes_mean_savgol_filter_df,
+            f"{method_name}": volumes_mean_df,
             ground_truth_name: ground_truth_mean_df,
         },
         data_inicio="01/2019",
         data_fim="06/2025",
+        volume_columns=["volume_m2_savgol", "volume_m2"],
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro de savgol)",
     )
 
-    volumes_mean_median_filter_df = volumes_mean_df.copy()
-    volumes_mean_median_filter_df["volume_m2"] = median_filter(
-        volumes_mean_median_filter_df["volume_m2"], size=20
-    )
+
 
     figure4_mean = plot_series_ano_mes(
         {
-            f"{method_name}": volumes_mean_median_filter_df,
+            f"{method_name}": volumes_mean_df,
             ground_truth_name: ground_truth_mean_df,
         },
         data_inicio="01/2019",
         data_fim="06/2025",
+        volume_columns=["volume_m2_median", "volume_m2"],
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro da mediana)",
     )
 
-    volumes_mean_z_index_savgol_filter_df = volumes_mean_df.copy()
-    volumes_mean_z_index_savgol_filter_df["z"] = zscore(
-        volumes_mean_z_index_savgol_filter_df["volume_m2"]
-    )
-    volumes_mean_z_index_savgol_filter_df = volumes_mean_z_index_savgol_filter_df[
-        volumes_mean_z_index_savgol_filter_df["z"].abs() < 2
-    ]  # remove outliers com z > 2
-
-    try:
-        volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
-            volumes_mean_z_index_savgol_filter_df["volume_m2"],
-            window_length=25,
-            polyorder=4,
-        )
-    except ValueError as e:
-        logger.error(f"Error applying Savgol filter: {e}")
-        for i in range(25, 0, -1):
-            try:
-                volumes_mean_z_index_savgol_filter_df["volume_m2"] = savgol_filter(
-                    volumes_mean_z_index_savgol_filter_df["volume_m2"],
-                    window_length=i,
-                    polyorder=4,
-                )
-                logger.info(f"Applied Savgol filter with window length {i}")
-                break
-            except ValueError as e:
-                logger.error(
-                    f"Error applying Savgol filter with window length {i}: {e}"
-                )
 
     figure5_mean = plot_series_ano_mes(
         {
-            f"{method_name}": volumes_mean_z_index_savgol_filter_df,
+            f"{method_name}": volumes_mean_df,
             ground_truth_name: ground_truth_mean_df,
         },
         data_inicio="01/2019",
         data_fim="06/2025",
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro da savgol + zscore)",
+        volume_columns=["volume_m2_zscore", "volume_m2"],
+        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + zscore)",
     )
 
     # Saving figures
@@ -521,7 +406,7 @@ def plot_results(
     )
 
     figure5.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_zscore_filtro_de_savgol.png",
+        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_z_score.png",
         bbox_inches="tight",
     )
 
@@ -546,7 +431,7 @@ def plot_results(
     )
 
     figure5_mean.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_media_zscore_filtro_da_savgol.png",
+        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_media_zscore_filtro.png",
         bbox_inches="tight",
     )
 

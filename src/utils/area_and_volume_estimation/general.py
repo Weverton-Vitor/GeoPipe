@@ -65,3 +65,25 @@ def media_mensal_por_ano(df, column="volume_m2"):
         .sort_values(["year", "month"])
         .rename(columns={column: "volume_m2"})
     )
+
+
+def medias_mensais_por_ano(df):
+    """
+    Calcula a média de cada coluna numérica para cada mês de cada ano.
+
+    Parâmetros:
+        df (pd.DataFrame): DataFrame com colunas ['year', 'month', ...outras colunas de volume...]
+
+    Retorna:
+        pd.DataFrame: média mensal por ano para todas as colunas (exceto 'year' e 'month').
+    """
+    colunas_para_media = df.select_dtypes(include='number').columns.difference(['year', 'month'])
+
+    df_media = (
+        df.groupby(['year', 'month'], as_index=False)[colunas_para_media]
+        .mean()
+        .sort_values(['year', 'month'])
+    )
+
+    return df_media
+
