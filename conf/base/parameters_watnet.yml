@@ -1,5 +1,14 @@
-# This is a boilerplate parameters config generated for pipeline 'watnet'
-# using Kedro 0.19.10.
-#
-# Documentation for this file format can be found in "Parameters"
-# Link: https://docs.kedro.org/en/0.19.10/configuration/parameters.html
+configs:
+
+  # Caminho das imagens baixadas da base da atmosfera BOA
+  # images_paths: "data/04_clean_images/"
+  images_paths: "data/02_boa_images/"
+
+  # Caminho onde as máscaras serão salvas
+  watnet_masks_save_path: "data/07_water_masks/"
+
+  # Pula a geração de mascaras
+  skip_watnet: False
+
+  # Limiar de confiança (0 - 1), quanto mais perto de 1 mais preciso
+  watnet_threshold: 0.5

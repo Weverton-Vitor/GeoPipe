@@ -8,6 +8,12 @@ from kedro.config import OmegaConfigLoader
 from kedro.framework.project import find_pipelines
 from kedro.pipeline import Pipeline, pipeline
 
+from fmask_pipeline.pipelines.area_and_volume_estimation import (
+    pipeline as area_and_volume_estimation_pipeline,
+)
+from fmask_pipeline.pipelines.calculate_spectral_indices import (
+    pipeline as calculate_spectral_indices,
+)
 from fmask_pipeline.pipelines.canny import pipeline as canny
 from fmask_pipeline.pipelines.cfmask_preprocess import pipeline as cfmask_preprocess
 from fmask_pipeline.pipelines.deepwatermap import pipeline as deepwatermap
@@ -16,13 +22,7 @@ from fmask_pipeline.pipelines.download import (
 )
 from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
 from fmask_pipeline.pipelines.unet import pipeline as unet
-from fmask_pipeline.pipelines.calculate_spectral_indices import (
-    pipeline as calculate_spectral_indices,
-)
-from fmask_pipeline.pipelines.area_and_volume_estimation import (
-    pipeline as area_and_volume_estimation_pipeline,
-)
-
+from fmask_pipeline.pipelines.watnet import pipeline as watnet
 from utils.gee.authenticate import authenticate_earth_engine
 
 logger = logging.getLogger(__name__)
@@ -87,6 +87,14 @@ def register_pipelines() -> dict[str, Pipeline]:
         parameters=None,
     )
 
+    water_area_volume_monitoring_sentinel_fmask_watnet = pipeline(
+        pipe=download.create_pipeline()
+        + fmask_preprocess.create_pipeline()
+        + watnet.create_pipeline()
+        + area_and_volume_estimation_pipeline.create_pipeline(),
+        parameters=None,
+    )
+
     """water_volume_monitoring_sentinel_fmask_deepwatermap = pipeline(
         pipe=download.create_pipeline()
         + fmask_preprocess.create_pipeline()
@@ -129,6 +137,7 @@ def register_pipelines() -> dict[str, Pipeline]:
         "coastline_cfmask_landsat_deepwatermap": coastline_cfmask_landsat_deepwatermap,
         "water_area_volume_monitoring_sentinel_deepwatermap": water_area_volume_monitoring_sentinel_deepwatermap,
         "water_area_volume_monitoring_sentinel_fmask_deepwatermap": water_area_volume_monitoring_sentinel_fmask_deepwatermap,
+        "water_area_volume_monitoring_sentinel_fmask_watnet": water_area_volume_monitoring_sentinel_fmask_watnet,
         "water_area_monitoring_sentinel_spectral_indice": water_area_monitoring_sentinel_spectral_indice,
         "water_area_monitoring_sentinel_fmask_spectral_indice": water_area_monitoring_sentinel_fmask_spectral_indice,
     }

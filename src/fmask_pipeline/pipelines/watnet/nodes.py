@@ -32,8 +32,6 @@ def apply_watnet(
     images_path: str,
     water_masks_save_path: str,
     location_name: str,
-    scale_factor,
-    offset,
     skip_watnet,
     threshold,
     *args,
