@@ -17,7 +17,7 @@ from utils.area_and_volume_estimation.water import (
     calculate_volumes_to_multiple_methods,
     calculate_water_area,
 )
-from utils.metrics.regression import calculate_metrics_regression
+from utils.metrics.regression import calculate_metrics_regression_by_month
 
 logger = logging.getLogger(__name__)
 
@@ -145,34 +145,30 @@ def estimate_water_volume(
 
 def calculate_metrics(
     path_real_df: str,
-    pred_df: str,
+    pred_df: pd.DataFrame,
     save_path: str,
     col_real: str,
+    location_name: str,
     # col_pred: str,
     *args,
-    **kwargs) -> bool:
-
+    **kwargs,
+) -> bool:
     logger.info("Calculating metrics")
     real_df = pd.read_csv(path_real_df)
 
-
-    real_df["year"] = real_df["Data da Medição"].apply(
-        lambda x: x.split("/")[-1]
+    real_df["year"] = real_df["Data da Medição"].apply(lambda x: x.split("/")[-1])
+    real_df["month"] = real_df["Data da Medição"].apply(lambda x: x.split("/")[-2])
+    real_df["Volume Útil (hm³)"] = real_df["Volume Útil (hm³)"].apply(
+        lambda x: float(x.replace(",", ".")) if isinstance(x, str) else x
     )
-    real_df["month"] = real_df["Data da Medição"].apply(
-        lambda x: x.split("/")[-2]
-    )
-    real_df["Volume Útil (hm³)"] = real_df[
-        "Volume Útil (hm³)"
-    ].apply(lambda x: float(x.replace(",", ".")) if isinstance(x, str) else x)
 
-    real_df["volume_m2"] = real_df["Volume Útil (hm³)"].apply(
+    real_df["volume_m2_real"] = real_df["Volume Útil (hm³)"].apply(
         lambda x: x * 1000000 / 10e6
     )
 
     real_df = media_mensal_por_ano(
         real_df,
-        column="volume_m2",
+        column="volume_m2_real",
     )
 
     pred_df = media_mensal_por_ano(
@@ -180,20 +176,20 @@ def calculate_metrics(
         column="volume_m2",
     )
 
-    metrics, df_erros = calculate_metrics_regression(
+    metrics, df_erros = calculate_metrics_regression_by_month(
         df_real=real_df,
-        df_pred=real_df,
-        col_real="volume_m2",
-        col_pred="volume_m2"
+        df_pred=pred_df,
+        col_real="volume_m2_real",
+        col_pred="volume_m2",
+        on=["year", "month"],
     )
 
-
-
     metrics_df = pd.DataFrame(metrics, index=[0])
-    metrics_df.to_csv(f"{save_path}volume_metrics.csv", index=False)
-    df_erros.to_csv(f"{save_path}volume_errors.csv", index=False)
+    metrics_df.to_csv(f"{save_path}{location_name}/volume_metrics.csv", index=False)
+    df_erros.to_csv(f"{save_path}{location_name}/volume_errors.csv", index=False)
 
     return True
+
 
 def plot_results(
     areas_df: DataFrame,
@@ -253,7 +249,6 @@ def plot_results(
         # columns=[column for column in list(volumes_df.columns) if "volume" in column][0],
     )
 
-
     # volumes_df = volumes_df.rename(
     #     columns={
     #         [column for column in list(volumes_df.columns) if "volume" in column][
@@ -273,7 +268,6 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo",
     )
 
-
     figure2 = plot_series_ano_mes(
         {
             f"{method_name}": volumes_df,
@@ -285,7 +279,6 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro da média)",
     )
 
-
     figure3 = plot_series_ano_mes(
         {
             f"{method_name}": volumes_df,
@@ -296,8 +289,6 @@ def plot_results(
         data_fim="06/2025",
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro de savgol)",
     )
-
-
 
     figure4 = plot_series_ano_mes(
         {
@@ -334,7 +325,6 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal)",
     )
 
-
     figure2_mean = plot_series_ano_mes(
         {
             f"{method_name}": volumes_mean_df,
@@ -345,7 +335,6 @@ def plot_results(
         volume_columns=["volume_m2_mean", "volume_m2"],
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro da média)",
     )
-
 
     figure3_mean = plot_series_ano_mes(
         {
@@ -358,8 +347,6 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro de savgol)",
     )
 
-
-
     figure4_mean = plot_series_ano_mes(
         {
             f"{method_name}": volumes_mean_df,
@@ -370,7 +357,6 @@ def plot_results(
         volume_columns=["volume_m2_median", "volume_m2"],
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro da mediana)",
     )
-
 
     figure5_mean = plot_series_ano_mes(
         {

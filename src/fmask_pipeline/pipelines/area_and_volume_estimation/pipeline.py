@@ -44,9 +44,11 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "pred_df": "water_volumes_df",
                     "save_path": "params:configs.area_and_volune_save_path",
                     "col_real": "params:configs.ground_truth_column_volume",
-                    },
+                    "location_name": "params:configs.location_name",
+                },
                 outputs="metrics_df",
-                name="Calculate_Metrics"),
+                name="Calculate_Metrics",
+            ),
             node(
                 func=plot_results,
                 inputs={
