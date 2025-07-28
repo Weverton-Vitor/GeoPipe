@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import rasterio
 from rasterio.warp import Resampling, calculate_default_transform, reproject
+from scipy.signal import savgol_filter
+from scipy.stats import zscore
 
 from .general import crop_raster_with_geojson_obj
 
@@ -66,6 +68,9 @@ def calculate_water_area(tif_path, path_shapefile, binarization_gt=0, save_path=
                 return water_area_m2, water_area_km2
 
 
+
+
+
 def calculate_volumes_to_multiple_methods(
     df_areas: pd.DataFrame,
     df_cav: pd.DataFrame,
@@ -76,29 +81,12 @@ def calculate_volumes_to_multiple_methods(
     cloud_percentage_column="CLOUDY_PIXEL_PERCENTAGE",
     areas_columns=[],
     escale: float = 1.0,
+    window_size: int = 6,  # usado para média, mediana e savgol
+    savgol_poly: int = 2   # grau do polinômio para Savitzky-Golay
 ):
-    """Calculate volumes based on areas and a CAV (Curva de Armazenamento e Volume).
-    Each column in `df_areas` that contains area values will be processed to
-    generate a corresponding volume column. The volumes are calculated using
-    interpolation based on the provided CAV data.
+    """Calcula volumes e aplica filtros (média, mediana, Savgol, Z-score)."""
 
-    Args:
-        df_areas (pd.DataFrame): DataFrame containing area columns.
-        df_cav (pd.DataFrame): DataFrame containing the CAV data with 'area' and 'volume' columns.
-        cav_area_column (str, optional): Name of the column in `df_cav` that contains area values. Defaults to "area".
-        cav_volume_column (str, optional): Name of the column in `df_cav` that contains volume values. Defaults to "volume".
-        escale (float, optional): Escale. Defaults to 1.0.
-
-    Returns:
-        _type_: _description_
-    """
-
-    # 2. Ordena e remove duplicatas na curva CAV
-    df_cav = df_cav.sort_values(cav_area_column).drop_duplicates(
-        subset=[cav_area_column]
-    )
-
-    # 3. Define limites da curva para evitar extrapolação
+    df_cav = df_cav.sort_values(cav_area_column).drop_duplicates(subset=[cav_area_column])
     min_area = df_cav[cav_area_column].min()
     max_area = df_cav[cav_area_column].max()
 
@@ -108,9 +96,29 @@ def calculate_volumes_to_multiple_methods(
     df_volumes["CLOUDY_PIXEL_PERCENTAGE"] = df_areas[cloud_percentage_column]
 
     for column in areas_columns:
-        # Garante que as áreas estejam dentro dos limites da CAV
         areas = df_areas[column].clip(lower=min_area, upper=max_area)
-        # Interpola e converte para milhões de m³
-        volumes = np.interp(areas, df_cav[cav_area_column], df_cav[cav_volume_column])
-        df_volumes[f"volume_{column}"] = volumes / escale  # volume em 10⁶ m³
+        volumes = np.interp(areas, df_cav[cav_area_column], df_cav[cav_volume_column]) / escale
+        volume_col = f"volume_{column.replace('_area', '')}"
+        df_volumes[volume_col] = volumes
+
+        # Média móvel
+        df_volumes[f"{volume_col}_mean"] = df_volumes[volume_col].rolling(window=window_size, min_periods=1, center=True).mean()
+
+        # Mediana móvel
+        df_volumes[f"{volume_col}_median"] = df_volumes[volume_col].rolling(window=window_size, min_periods=1, center=True).median()
+
+        # Savitzky-Golay
+        if len(df_volumes) >= window_size:
+            df_volumes[f"{volume_col}_savgol"] = savgol_filter(df_volumes[volume_col], window_length=window_size, polyorder=savgol_poly, mode='interp')
+        else:
+            df_volumes[f"{volume_col}_savgol"] = df_volumes[volume_col]  # fallback
+
+        # Z-score (com outliers substituídos por NaN)
+        z_scores = zscore(df_volumes[volume_col], nan_policy="omit")
+        mask = np.abs(z_scores) > 3
+        filtered = df_volumes[volume_col].copy()
+        filtered[mask] = np.nan
+        df_volumes[f"{volume_col}_zscore"] = filtered
+
     return df_volumes
+

@@ -27,8 +27,8 @@ configs:
 
   # Selecionar as bandas, se for vazio todas as bandas são selecionadas
   # selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2", "QA_PIXEL"]
-  #selected_bands: ["coastal", "blue","green","red","rededge1","rededge2","rededge3","nir","nir_narrow","water_vapour","swir1","swir2","cirrus"]
-  selected_bands: ["blue","green","red","nir", "swir1","swir2"]
+  selected_bands: ["coastal", "blue","green","red","rededge1","rededge2","rededge3","nir","nir_narrow","water_vapour","swir1","swir2","cirrus"]
+  # selected_bands: ["blue","green","red", "nir", "swir1","swir2"]
 
   # selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2"]
 

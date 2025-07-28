@@ -1,8 +1,12 @@
+import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rasterio
 from matplotlib.dates import DateFormatter
+
+logger = logging.getLogger(__name__)
 
 
 def plot_tif(tif_path, bandas=None, titulo="Imagem .tif", binarization_gt=None):
@@ -237,7 +241,7 @@ def plot_monthly_water(
     plt.show()
 
 
-def plot_series_ano_mes(series_dict, data_inicio, data_fim, titulo=None):
+def plot_series_ano_mes(series_dict, volume_columns, data_inicio, data_fim, titulo=None):
     """
     Plota séries temporais com colunas separadas de 'ano' e 'mês' e diferentes comprimentos.
 
@@ -256,7 +260,7 @@ def plot_series_ano_mes(series_dict, data_inicio, data_fim, titulo=None):
     # Inicia figura
     figure = plt.figure(figsize=(12, 5))
 
-    for nome, df in series_dict.items():
+    for i, (nome, df) in enumerate(series_dict.items()):
         # Cria coluna de datas com ano e mês
         df = df.copy()
         df["data"] = pd.to_datetime(dict(year=df["year"], month=df["month"], day=1))
@@ -265,12 +269,15 @@ def plot_series_ano_mes(series_dict, data_inicio, data_fim, titulo=None):
         # Filtra pelo intervalo
         df_plot = df[(df.index >= data_inicio) & (df.index <= data_fim)]
 
-        # Plota
-        plt.plot(df_plot.index, df_plot["volume_m2"], label=nome)
+        try:
+            # Plota
+            plt.plot(df_plot.index, df_plot[volume_columns[i]], label=nome)
+        except:
+            logger.warning(f"Error to plot {volume_columns[i]} of {nome}")
 
     # Formatação
     plt.xlabel("Data")
-    plt.ylabel("Valor")
+    plt.ylabel("Volume de água (10⁶ m³)")
     plt.title(titulo or "Séries Temporais")
     plt.legend()
     plt.grid(True)
