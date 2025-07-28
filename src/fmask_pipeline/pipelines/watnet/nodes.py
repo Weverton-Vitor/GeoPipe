@@ -4,8 +4,7 @@ import os
 
 from tqdm import tqdm
 
-import utils.deepwatermap.inference as deep_water_map
-from utils.watnet. watnet_infer import watnet_infer
+from utils.watnet.watnet_infer import watnet_infer
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +31,6 @@ def apply_watnet(
     images_path: str,
     water_masks_save_path: str,
     location_name: str,
-    scale_factor,
-    offset,
     skip_watnet,
     threshold,
     *args,
@@ -52,9 +49,11 @@ def apply_watnet(
     ) as pbar:
         for path in tif_files:
             tif_path = path.replace("\\", "/")
-            watnet_infer(image_path=tif_path,
-                         save_path=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
-                         threshold=threshold)
+            watnet_infer(
+                image_path=tif_path,
+                save_path=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
+                # threshold=threshold,
+            )
             pbar.update(1)
 
     return True
