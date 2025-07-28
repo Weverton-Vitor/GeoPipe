@@ -68,9 +68,6 @@ def calculate_water_area(tif_path, path_shapefile, binarization_gt=0, save_path=
                 return water_area_m2, water_area_km2
 
 
-
-
-
 def calculate_volumes_to_multiple_methods(
     df_areas: pd.DataFrame,
     df_cav: pd.DataFrame,
@@ -82,11 +79,13 @@ def calculate_volumes_to_multiple_methods(
     areas_columns=[],
     escale: float = 1.0,
     window_size: int = 6,  # usado para média, mediana e savgol
-    savgol_poly: int = 2   # grau do polinômio para Savitzky-Golay
+    savgol_poly: int = 2,  # grau do polinômio para Savitzky-Golay
 ):
     """Calcula volumes e aplica filtros (média, mediana, Savgol, Z-score)."""
 
-    df_cav = df_cav.sort_values(cav_area_column).drop_duplicates(subset=[cav_area_column])
+    df_cav = df_cav.sort_values(cav_area_column).drop_duplicates(
+        subset=[cav_area_column]
+    )
     min_area = df_cav[cav_area_column].min()
     max_area = df_cav[cav_area_column].max()
 
@@ -97,19 +96,36 @@ def calculate_volumes_to_multiple_methods(
 
     for column in areas_columns:
         areas = df_areas[column].clip(lower=min_area, upper=max_area)
-        volumes = np.interp(areas, df_cav[cav_area_column], df_cav[cav_volume_column]) / escale
+
+        volumes = (
+            np.interp(areas, df_cav[cav_area_column], df_cav[cav_volume_column])
+            / escale
+        )
         volume_col = f"volume_{column.replace('_area', '')}"
         df_volumes[volume_col] = volumes
 
         # Média móvel
-        df_volumes[f"{volume_col}_mean"] = df_volumes[volume_col].rolling(window=window_size, min_periods=1, center=True).mean()
+        df_volumes[f"{volume_col}_mean"] = (
+            df_volumes[volume_col]
+            .rolling(window=window_size, min_periods=1, center=True)
+            .mean()
+        )
 
         # Mediana móvel
-        df_volumes[f"{volume_col}_median"] = df_volumes[volume_col].rolling(window=window_size, min_periods=1, center=True).median()
+        df_volumes[f"{volume_col}_median"] = (
+            df_volumes[volume_col]
+            .rolling(window=window_size, min_periods=1, center=True)
+            .median()
+        )
 
         # Savitzky-Golay
         if len(df_volumes) >= window_size:
-            df_volumes[f"{volume_col}_savgol"] = savgol_filter(df_volumes[volume_col], window_length=window_size, polyorder=savgol_poly, mode='interp')
+            df_volumes[f"{volume_col}_savgol"] = savgol_filter(
+                df_volumes[volume_col],
+                window_length=window_size,
+                polyorder=savgol_poly,
+                mode="interp",
+            )
         else:
             df_volumes[f"{volume_col}_savgol"] = df_volumes[volume_col]  # fallback
 
@@ -121,4 +137,3 @@ def calculate_volumes_to_multiple_methods(
         df_volumes[f"{volume_col}_zscore"] = filtered
 
     return df_volumes
-
