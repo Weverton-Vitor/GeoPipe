@@ -1,10 +1,10 @@
 configs:
 
   # Pula o processo de limpeza das imagens
-  skip_clean: False
+  skip_clean: True
 
   # Pular geração das máscaras
-  skip_masks: False
+  skip_masks: True
 
   # Valores da máscara que representam nuvem e sombra de nuvem
   cloud_and_cloud_shadow_pixels: [1, 2]

@@ -13,10 +13,10 @@ configs:
   boa_dowload_path: "data/02_boa_images/"
 
   # Datas para filtrar a coleção
-  init_date: "2017-01-01"
-  final_date: "2025-05-21"
-  # init_date: "2023-03-02"
-  # final_date: "2023-03-04"
+  #init_date: "2017-01-01"
+  #final_date: "2025-05-21"
+  init_date: "2023-12-02"
+  final_date: "2023-12-04"
 
   # Primeira parte do nome das imagens
   # toa_prefix_images_name: "landsat_6B_TOA"
@@ -27,18 +27,19 @@ configs:
 
   # Selecionar as bandas, se for vazio todas as bandas são selecionadas
   # selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2", "QA_PIXEL"]
-  selected_bands: ["coastal", "blue","green","red","rededge1","rededge2","rededge3","nir","nir_narrow","water_vapour","swir1","swir2","cirrus"]
+  #selected_bands: ["coastal", "blue","green","red","rededge1","rededge2","rededge3","nir","nir_narrow","water_vapour","swir1","swir2","cirrus"]
+  selected_bands: ["blue","green","red","nir", "swir1","swir2"]
 
   # selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2"]
 
   # Escala da imagem a ser salva
   scale: 10
 
-  save_metadata: True
+  save_metadata: False
 
   # Pular o download
-  toa_skip_download: False
-  boa_skip_download: False
+  toa_skip_download: True
+  boa_skip_download: True
 
 
 
