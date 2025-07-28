@@ -2,11 +2,8 @@ import glob
 import logging
 import os
 
-import numpy as np
 from tqdm import tqdm
 
-import utils.deepwatermap.inference as deep_water_map
-from utils.watnet.utils.geotif_io import readTiff, writeTiff
 from utils.watnet.watnet_infer import watnet_infer
 
 logger = logging.getLogger(__name__)
@@ -52,24 +49,10 @@ def apply_watnet(
     ) as pbar:
         for path in tif_files:
             tif_path = path.replace("\\", "/")
-            #watnet_infer(
-               # image_path=tif_path,
-              #  save_path=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
-             #   threshold=threshold,
-            #)
-
-            sen2_img, img_info = readTiff(path_in=tif_path)
-            sen2_img = np.float32(
-                np.clip(sen2_img / 10000, a_min=0, a_max=1)
-            )  ## normalization
-            ## surface water mapping by using watnet
-            water_map = watnet_infer(rsimg=sen2_img)
-            # write out the result
-            writeTiff(
-                im_data=water_map.astype(np.int8),
-                im_geotrans=img_info["geotrans"],
-                im_geosrs=img_info["geosrs"],
-                path_out=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
+            watnet_infer(
+                image_path=tif_path,
+                save_path=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
+                # threshold=threshold,
             )
             pbar.update(1)
 

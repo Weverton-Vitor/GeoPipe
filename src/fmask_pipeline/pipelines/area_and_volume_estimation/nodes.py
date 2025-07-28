@@ -45,9 +45,9 @@ def estimate_water_area(
     - Tuple: (area_m2)
     """
 
-    df_metadata = pd.read_csv(
-        f"data/02_boa_images/{location_name}/metadata/{location_name}_metadata.csv"
-    )
+    # df_metadata = pd.read_csv(
+    #     f"data/02_boa_images/{location_name}/metadata/{location_name}_metadata.csv"
+    # )
     df_areas = pd.DataFrame()
     masks = []
     days = []
@@ -90,7 +90,7 @@ def estimate_water_area(
     df_areas["day"] = pd.Series(days)
     df_areas["m2_area"] = pd.Series(m2_areas)
     df_areas["km2_area"] = pd.Series(km2_areas)
-    df_areas["CLOUDY_PIXEL_PERCENTAGE"] = df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
+    df_areas["CLOUDY_PIXEL_PERCENTAGE"] = 0 # df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
 
     os.makedirs(f"{save_path}{location_name}", exist_ok=True)
     df_areas.to_csv(f"{save_path}{location_name}/df_areas.csv", index=False)
