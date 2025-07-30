@@ -54,7 +54,7 @@ def get_args():
 
 
 
-def watnet_infer(image_path, save_path, path_model = path_watnet):
+def watnet_infer(image_path, save_path, path_model = path_watnet, patch_size=512):
 
     ''' des: surface water mapping by using pretrained watnet
         arg:
@@ -70,7 +70,7 @@ def watnet_infer(image_path, save_path, path_model = path_watnet):
     image = tiff.imread(image_path) / 10000.0  # normalize the image data to [0, 1]
     image = image[:, :, 1:7]  # select bands Blue, Green, Red, NIR, SWIR1, SWIR2
 
-    imgPatch_ins = imgPatch(image, patch_size=512, edge_overlay=80)
+    imgPatch_ins = imgPatch(image, patch_size=patch_size, edge_overlay=80)
     patch_list, start_list, img_patch_row, img_patch_col = imgPatch_ins.toPatch()
     result_patch_list = [model(patch[np.newaxis, :]) for patch in patch_list]
     result_patch_list = [np.squeeze(patch, axis = 0) for patch in result_patch_list]

@@ -3,9 +3,7 @@
 import logging
 from pathlib import Path
 
-import ee
 from kedro.config import OmegaConfigLoader
-from kedro.framework.project import find_pipelines
 from kedro.pipeline import Pipeline, pipeline
 
 from fmask_pipeline.pipelines.area_and_volume_estimation import (
@@ -21,7 +19,9 @@ from fmask_pipeline.pipelines.download import (
     pipeline as download,
 )
 from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
-from fmask_pipeline.pipelines.unet import pipeline as unet
+from fmask_pipeline.pipelines.water_segmentation_tensorflow_model import (
+    pipeline as tensorflow_model,
+)
 from fmask_pipeline.pipelines.watnet import pipeline as watnet
 from utils.gee.authenticate import authenticate_earth_engine
 
@@ -57,7 +57,7 @@ def register_pipelines() -> dict[str, Pipeline]:
         parameters=None,
     )
 
-    water_area_monitoring_sentinel_fmask_spectral_indice = pipeline(
+    water_area_volume_monitoring_sentinel_fmask_spectral_indice = pipeline(
         pipe=download.create_pipeline()
         + fmask_preprocess.create_pipeline()
         + calculate_spectral_indices.create_pipeline(
@@ -66,7 +66,8 @@ def register_pipelines() -> dict[str, Pipeline]:
                 "BOA_download_images_dependency",
                 "cloud_removed_dependency",
             ]
-        ),
+        )
+        + area_and_volume_estimation_pipeline.create_pipeline(dependencies=['spectral_dependency']),
         parameters=None,
     )
 
@@ -91,6 +92,14 @@ def register_pipelines() -> dict[str, Pipeline]:
         pipe=download.create_pipeline()
         + fmask_preprocess.create_pipeline()
         + watnet.create_pipeline()
+        + area_and_volume_estimation_pipeline.create_pipeline(),
+        parameters=None,
+    )
+
+    water_area_volume_monitoring_sentinel_fmask_tensorflow_model = pipeline(
+        pipe=download.create_pipeline()
+        + fmask_preprocess.create_pipeline()
+        + tensorflow_model.create_pipeline()
         + area_and_volume_estimation_pipeline.create_pipeline(),
         parameters=None,
     )
@@ -139,5 +148,6 @@ def register_pipelines() -> dict[str, Pipeline]:
         "water_area_volume_monitoring_sentinel_fmask_deepwatermap": water_area_volume_monitoring_sentinel_fmask_deepwatermap,
         "water_area_volume_monitoring_sentinel_fmask_watnet": water_area_volume_monitoring_sentinel_fmask_watnet,
         "water_area_monitoring_sentinel_spectral_indice": water_area_monitoring_sentinel_spectral_indice,
-        "water_area_monitoring_sentinel_fmask_spectral_indice": water_area_monitoring_sentinel_fmask_spectral_indice,
+        "water_area_volume_monitoring_sentinel_fmask_spectral_indice": water_area_volume_monitoring_sentinel_fmask_spectral_indice,
+        "water_area_volume_monitoring_sentinel_fmask_tensorflow_model": water_area_volume_monitoring_sentinel_fmask_tensorflow_model,
     }

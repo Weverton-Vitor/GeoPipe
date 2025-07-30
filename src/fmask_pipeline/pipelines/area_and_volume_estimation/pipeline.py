@@ -3,7 +3,7 @@ from kedro.pipeline import Pipeline, node, pipeline
 from .nodes import calculate_metrics, estimate_water_area, estimate_water_volume, plot_results
 
 
-def create_pipeline(**kwargs) -> Pipeline:
+def create_pipeline(dependencies=['water_mask_dependency'], **kwargs) -> Pipeline:
     return pipeline(
         [
             node(
@@ -14,7 +14,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "path_shapefile": "params:configs.path_shapefile",
                     "location_name": "params:configs.location_name",
                     "binarization_gt": "params:configs.binarization_gt",
-                    "dependency1": "water_mask_dependency",
+                    "dependency1": dependencies[0],
                 },
                 outputs="water_areas_df",
                 name="Estimate_Water_Area",
@@ -37,18 +37,18 @@ def create_pipeline(**kwargs) -> Pipeline:
                 outputs="water_volumes_df",
                 name="Estimate_Water_Volume",
             ),
-            node(
-                func=calculate_metrics,
-                inputs={
-                    "path_real_df": "params:configs.ground_truth_path_df",
-                    "pred_df": "water_volumes_df",
-                    "save_path": "params:configs.area_and_volune_save_path",
-                    "col_real": "params:configs.ground_truth_column_volume",
-                    "location_name": "params:configs.location_name",
-                },
-                outputs="metrics_df",
-                name="Calculate_Metrics",
-            ),
+            # node(
+            #     func=calculate_metrics,
+            #     inputs={
+            #         "path_real_df": "params:configs.ground_truth_path_df",
+            #         "pred_df": "water_volumes_df",
+            #         "save_path": "params:configs.area_and_volune_save_path",
+            #         "col_real": "params:configs.ground_truth_column_volume",
+            #         "location_name": "params:configs.location_name",
+            #     },
+            #     outputs="metrics_df",
+            #     name="Calculate_Metrics",
+            # ),
             node(
                 func=plot_results,
                 inputs={

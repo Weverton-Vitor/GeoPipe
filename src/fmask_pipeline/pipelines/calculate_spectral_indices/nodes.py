@@ -50,10 +50,10 @@ def create_dirs(
 ):
     logger.info("Create Spectral Indices Pipeline Directories")
     # Create directories structure, if not exists
-    os.makedirs(f"{spectral_index_save_path}{location_name}/{spectral_indice}", exist_ok=True)
+    os.makedirs(f"{spectral_index_save_path}{spectral_indice}/{location_name}", exist_ok=True)
 
     for year in range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1):
-        os.makedirs(f"{spectral_index_save_path}{location_name}/{year}/{spectral_indice}", exist_ok=True)
+        os.makedirs(f"{spectral_index_save_path}{spectral_indice}/{location_name}/{year}", exist_ok=True)
 
     return True
 
@@ -80,7 +80,7 @@ def calculate_spectral_indices(
     ) as pbar:
         for tif_path in tif_files:
             tif_path = tif_path.replace("\\", "/")
-            output_path = f"{spectral_index_save_path}{location_name}/{tif_path.split('/')[-2]}/{spectral_indice_name}/{tif_path.split('/')[-1].replace('.tif', f'_{spectral_indice_name}.tif')}"
+            output_path = f"{spectral_index_save_path}{spectral_indice_name}/{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}"
             with rasterio.open(tif_path) as src:
                 bands = src.read()
                 setelite_name = tif_path.split("/")[-1].split("_")[3]
