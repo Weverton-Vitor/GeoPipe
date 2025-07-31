@@ -37,7 +37,7 @@ def main(image_path, save_path, scale_factor, offset, threshold):
 
     # load and preprocess the input image
     image = tiff.imread(image_path)
-    image = image[:, :, 1:7]  # select bands Blue, Green, Red, NIR, SWIR1, SWIR2
+    image = image[:, :, [1, 2, 3, 7, 10, 11]]  # select bands Blue, Green, Red, NIR, SWIR1, SWIR2
 
     pad_r = find_padding(image.shape[0])
     pad_c = find_padding(image.shape[1])

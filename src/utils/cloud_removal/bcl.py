@@ -185,6 +185,7 @@ class BCL:
             if not np.any(mask2):
                 break
 
+            #TODO otimizar urgentimente
             self.resultadoIMGSCL[0][(mask1 & mask2)] = array_image_more_close_scl[
                 (mask1 & mask2)
             ]
@@ -204,6 +205,25 @@ class BCL:
                 (mask1 & mask2)
             ]
             self.resultadoIMGNDWI[5][(mask1 & mask2)] = image_more_close_6b[5][
+                (mask1 & mask2)
+            ]
+
+            self.resultadoIMGNDWI[6][(mask1 & mask2)] = image_more_close_6b[6][
+                (mask1 & mask2)
+            ]
+            self.resultadoIMGNDWI[7][(mask1 & mask2)] = image_more_close_6b[7][
+                (mask1 & mask2)
+            ]
+            self.resultadoIMGNDWI[8][(mask1 & mask2)] = image_more_close_6b[8][
+                (mask1 & mask2)
+            ]
+            self.resultadoIMGNDWI[9][(mask1 & mask2)] = image_more_close_6b[9][
+                (mask1 & mask2)
+            ]
+            self.resultadoIMGNDWI[10][(mask1 & mask2)] = image_more_close_6b[10][
+                (mask1 & mask2)
+            ]
+            self.resultadoIMGNDWI[11][(mask1 & mask2)] = image_more_close_6b[11][
                 (mask1 & mask2)
             ]
 

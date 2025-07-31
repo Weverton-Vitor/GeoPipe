@@ -27,7 +27,7 @@ def estimate_water_area(
     path_shapefile: str,
     save_path: str,
     location_name: str,
-    binarization_gt: int = 0,
+    thresholds: int = 0,
     *args,
     **kwargs,
 ) -> tuple:
@@ -63,12 +63,14 @@ def estimate_water_area(
     logger.info(f"Found {len(water_masks)} tif files in {water_masks_path}")
     total_tifs = len(water_masks)
 
+    logger.info(f"Threshold: {thresholds}")
+
     with tqdm(total=total_tifs, desc="Estimate Volume", unit="images") as pbar:
         for mask_path in water_masks:
             area_m2, area_km2 = calculate_water_area(
                 tif_path=mask_path,
                 path_shapefile=path_shapefile,
-                binarization_gt=binarization_gt,
+                binarization_gt=thresholds,
             )
 
             year = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][:4]

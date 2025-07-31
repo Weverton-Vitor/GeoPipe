@@ -68,7 +68,7 @@ def watnet_infer(image_path, save_path, path_model = path_watnet, patch_size=512
     model = tf.keras.models.load_model(path_model, compile=False)
     ### ------ apply the pre-trained model
     image = tiff.imread(image_path) / 10000.0  # normalize the image data to [0, 1]
-    image = image[:, :, 1:7]  # select bands Blue, Green, Red, NIR, SWIR1, SWIR2
+    image = image[:, :, [1, 2, 3, 7, 10, 11]]  # select bands Blue, Green, Red, NIR, SWIR1, SWIR2
 
     imgPatch_ins = imgPatch(image, patch_size=patch_size, edge_overlay=80)
     patch_list, start_list, img_patch_row, img_patch_col = imgPatch_ins.toPatch()
@@ -81,9 +81,9 @@ def watnet_infer(image_path, save_path, path_model = path_watnet, patch_size=512
 
     with rasterio.open(image_path) as src:
         profile = src.profile
-        profile.update(count=1, dtype=rasterio.uint8)
+        profile.update(count=1, dtype=rasterio.float32)
         with rasterio.open(save_path, "w", **profile) as output:
-            output.write(np.squeeze(pro_map_uint8), 1)
+            output.write(np.squeeze(pro_map), 1)
 
             # del model
             del image
