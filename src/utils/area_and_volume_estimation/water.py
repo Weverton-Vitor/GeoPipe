@@ -8,7 +8,7 @@ from scipy.stats import zscore
 from .general import crop_raster_with_geojson_obj
 
 
-def calculate_water_area(tif_path, path_shapefile, binarization_gt=0, save_path=None):
+def calculate_water_area(tif_path, path_shapefile, threshold=0, save_path=None):
     """
     Reprojeta uma imagem .tif com CRS geográfico (graus) para UTM (metros),
     e calcula a área de pixels de água (valor > 0).
@@ -61,7 +61,7 @@ def calculate_water_area(tif_path, path_shapefile, binarization_gt=0, save_path=
                 pixel_area = pixel_width * pixel_height
                 # pixel_area = 100
 
-                water_pixels = np.sum(image > binarization_gt)
+                water_pixels = np.sum(image > threshold)
                 water_area_m2 = water_pixels * pixel_area
                 water_area_km2 = water_area_m2 / 1e6
 

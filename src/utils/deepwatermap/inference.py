@@ -67,7 +67,8 @@ def main(image_path, save_path, scale_factor, offset, threshold):
 
     # soft threshold
     dwm = 1.0 / (1 + np.exp(-(16 * (dwm - 0.5))))
-    dwm = np.clip(dwm, 0, 1) * 255
+    # dwm = np.clip(dwm, 0, 1) * 255
+    dwm = np.clip(dwm, 0, 1)
 
     dwm_binary = (dwm >= threshold).astype(np.uint8)
 
@@ -75,7 +76,7 @@ def main(image_path, save_path, scale_factor, offset, threshold):
     # cv2.imwrite(save_path, dwm * 255)
     with rasterio.open(image_path) as src:
         profile = src.profile
-        profile.update(count=1, dtype=rasterio.uint8)
+        profile.update(count=1, dtype=rasterio.float32)
         with rasterio.open(save_path, "w", **profile) as dst:
             # dst.write(dwm_binary, 1)
             dst.write(dwm, 1)

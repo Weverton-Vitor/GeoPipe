@@ -25,6 +25,7 @@ import numpy as np
 import rasterio
 import tensorflow as tf
 import tifffile as tiff
+from collections import defaultdict
 
 from utils.watnet.utils.imgPatch import imgPatch
 
@@ -94,3 +95,65 @@ def watnet_infer(image_path, save_path, path_model = path_watnet, patch_size=512
 
     return pro_map
 
+
+def watnet_infer_optimized(image_paths, save_path, path_model = path_watnet, patch_size=512):
+    all_patches = []           # lista com todos os patches
+    metadata = []              # lista com informações do patch
+
+    model = tf.keras.models.load_model(path_model, compile=False)
+
+    for img_path in image_paths:
+        image = tiff.imread(img_path) / 10000.0
+        image = image[:, :, [1,2,3,7,10,11]]
+        
+        patcher = imgPatch(image, patch_size=512, edge_overlay=80)
+        patches, starts, n_rows, n_cols = patcher.toPatch()
+        
+        for idx, patch in enumerate(patches):
+            all_patches.append(patch)
+            metadata.append({
+                "image_name": os.path.basename(img_path),
+                "index": idx,
+                "n_rows": n_rows,
+                "n_cols": n_cols,
+                "start_coords": starts[idx],
+                "patcher": patcher,  # salvar referência para reconstrução
+            })
+
+
+    batch_size = 32
+    all_preds = []
+
+    for i in range(0, len(all_patches), batch_size):
+        batch = np.stack(all_patches[i:i+batch_size], axis=0)
+        preds = model(batch, training=False).numpy()
+        all_preds.extend(preds)
+
+
+    results_by_image = defaultdict(list)
+
+    for i, meta in enumerate(metadata):
+        key = meta["image_name"]
+        results_by_image[key].append((meta["index"], all_preds[i], meta))
+
+
+    for image_name, results in results_by_image.items():
+        # Ordenar os patches para garantir ordem correta
+        results.sort(key=lambda x: x[0])  # x[0] é o índice do patch
+        
+        patches = [r[1] for r in results]
+        patcher = results[0][2]["patcher"]
+        n_rows = results[0][2]["n_rows"]
+        n_cols = results[0][2]["n_cols"]
+
+        full_image = patcher.toImage(patches, n_rows, n_cols)
+
+        # Salvar com rasterio
+        original_path = [p for p in image_paths if os.path.basename(p) == image_name][0]
+        file_path = os.path.join(save_path, image_name)
+        
+        with rasterio.open(original_path) as src:
+            profile = src.profile
+            profile.update(count=1, dtype=rasterio.float32)
+            with rasterio.open(file_path, "w", **profile) as dst:
+                dst.write(np.squeeze(full_image), 1)

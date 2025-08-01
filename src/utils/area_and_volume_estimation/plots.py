@@ -272,8 +272,8 @@ def plot_series_ano_mes(series_dict, volume_columns, data_inicio, data_fim, titu
         try:
             # Plota
             plt.plot(df_plot.index, df_plot[volume_columns[i]], label=nome)
-        except:
-            logger.warning(f"Error to plot {volume_columns[i]} of {nome}")
+        except Exception as e:
+            logger.warning(f"Error to plot {volume_columns[i]} of {nome}: {e}")
 
     # Formatação
     plt.xlabel("Data")

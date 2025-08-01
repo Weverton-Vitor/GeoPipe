@@ -37,12 +37,6 @@ def calculate_metrics_regression_by_month(
         df_real[on + [col_real]], df_pred[on + [col_pred]], on=on, how="inner"
     )
 
-    print(df_merged.columns)
-    print(df_merged.columns)
-    print(df_merged.columns)
-    print(df_merged.columns)
-    print(df_merged.columns)
-    print(df_merged.columns)
 
     # Extrair vetores
     y_true = df_merged[col_real].values
