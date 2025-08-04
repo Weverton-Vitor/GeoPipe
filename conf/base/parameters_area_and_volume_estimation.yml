@@ -23,9 +23,9 @@ configs:
 
   # Plots
   prefix_plot: ""
-  # method_name: "WatNet"
+  method_name: "WatNet"
   # method_name: "ArianeNet"
-  method_name: "DeepWaterMap"
+  # method_name: "DeepWaterMap"
   # method_name: "NDWI"
   # method_name: "MNDWI"
   ground_truth_name: "ANA"
