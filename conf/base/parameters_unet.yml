@@ -1,12 +1,169 @@
 configs:
-  skip_unet_masks: False
+  # Se True, pula a geração das máscaras pela UNet.
+  skip_unet_masks: false
 
-  # Parâmetros do Unet
+  # Parâmetros da UNet para detecção de nuvens/sombras.
   unet:
-    model_weights: "UNetMobV2_V2.pt"   # Atualize com o caminho real, se necessário
-    input_size: [512, 512, 13]           # Exemplo para Sentinel-2 com 13 canais
-    threshold: 0.5    
-    cloud_clear_class: 0                  # Classe que representa pixels sem nuvens                 
-    cloud_thick_class: 1                     # Classe que representa nuvens grossas
-    cloud_thin_class: 2                      # Classe que representa nuvens finas
-    cloud_shadow_class: 3              # Classe que representa sombras de nuvens
+    # Escolha do backbone do modelo.
+    # "regnetz_d8" usa UNet (segmentation_models_pytorch) com encoder RegNetZ D8.
+    # "mobilenet_v2" mantém o comportamento anterior.
+    architecture: regnetz_d8
+
+    # Arquivo local de pesos. Se não existir, o loader baixa automaticamente.
+    model_weights: "unet_regnetz_d8.pth"
+
+    # Tamanho de entrada esperado pelo modelo: H×W×C (C=13 bandas Sentinel-2 L1C).
+    input_size: [512, 512, 13]
+
+    # Mapeamento de classes do modelo (CloudSEN12/CloudSEN12+):
+    # 0=clear, 1=thick cloud, 2=thin cloud, 3=cloud shadow.
+    classes:
+      clear: 0
+      cloud_thick: 1
+      cloud_thin: 2
+      cloud_shadow: 3
+
+    # Índices usados na composição das máscaras (compatível com nodes.py / inferência).
+    cloud_thick_class: 1
+    cloud_thin_class: 2
+    cloud_shadow_class: 3
+
+    # Mantido por compatibilidade (a inferência usa argmax sem threshold).
+    threshold: 0.5
+
+    # Metadados do dataset / bandas.
+    data:
+      # Sentinel-2 Nível 1C (13 bandas).
+      product: "COPERNICUS/S2"
+      level: "L1C"
+
+      # Resolução-alvo (m). Se necessário, reamostrar bandas nativas 20m/60m para 10m.
+      target_resolution_m: 10
+
+      # Normalização de entrada (refletância em float) — dividir por 10.000.
+      input_normalization:
+        type: "scale_divide"
+        scale_factor: 0.0001
+
+      # Ordem das bandas no cubo (C=13), mapeando índices 0..12.
+      # Esta ordem precisa casar com a ordem dos canais no .tif de entrada.
+      band_order: [B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12]
+
+      # Metadados das bandas Sentinel-2 L1C.
+      bands:
+        - id: B01
+          common_name: "Coastal aerosol"
+          description: "Band 1 - Coastal aerosol - 60m"
+          center_wavelength_nm: 443.5
+          fwhm_nm: 17.0
+          index: 0
+          native_resolution_m: 60
+          scale_factor: 0.0001
+
+        - id: B02
+          common_name: "Blue"
+          description: "Band 2 - Blue - 10m"
+          center_wavelength_nm: 496.5
+          fwhm_nm: 53.0
+          index: 1
+          native_resolution_m: 10
+          scale_factor: 0.0001
+
+        - id: B03
+          common_name: "Green"
+          description: "Band 3 - Green - 10m"
+          center_wavelength_nm: 560.0
+          fwhm_nm: 34.0
+          index: 2
+          native_resolution_m: 10
+          scale_factor: 0.0001
+
+        - id: B04
+          common_name: "Red"
+          description: "Band 4 - Red - 10m"
+          center_wavelength_nm: 664.5
+          fwhm_nm: 29.0
+          index: 3
+          native_resolution_m: 10
+          scale_factor: 0.0001
+
+        - id: B05
+          common_name: "Red edge 1"
+          description: "Band 5 - Vegetation red edge 1 - 20m"
+          center_wavelength_nm: 704.5
+          fwhm_nm: 13.0
+          index: 4
+          native_resolution_m: 20
+          scale_factor: 0.0001
+
+        - id: B06
+          common_name: "Red edge 2"
+          description: "Band 6 - Vegetation red edge 2 - 20m"
+          center_wavelength_nm: 740.5
+          fwhm_nm: 13.0
+          index: 5
+          native_resolution_m: 20
+          scale_factor: 0.0001
+
+        - id: B07
+          common_name: "Red edge 3"
+          description: "Band 7 - Vegetation red edge 3 - 20m"
+          center_wavelength_nm: 783.0
+          fwhm_nm: 18.0
+          index: 6
+          native_resolution_m: 20
+          scale_factor: 0.0001
+
+        - id: B08
+          common_name: "NIR"
+          description: "Band 8 - Near infrared - 10m"
+          center_wavelength_nm: 840.0
+          fwhm_nm: 114.0
+          index: 7
+          native_resolution_m: 10
+          scale_factor: 0.0001
+
+        - id: B8A
+          common_name: "Red edge 4"
+          description: "Band 8A - Vegetation red edge 4 - 20m"
+          center_wavelength_nm: 864.5
+          fwhm_nm: 19.0
+          index: 8
+          native_resolution_m: 20
+          scale_factor: 0.0001
+
+        - id: B09
+          common_name: "Water vapor"
+          description: "Band 9 - Water vapor - 60m"
+          center_wavelength_nm: 945.0
+          fwhm_nm: 18.0
+          index: 9
+          native_resolution_m: 60
+          scale_factor: 0.0001
+
+        - id: B10
+          common_name: "Cirrus"
+          description: "Band 10 - Cirrus - 60m"
+          center_wavelength_nm: 1375.5
+          fwhm_nm: 31.0
+          index: 10
+          native_resolution_m: 60
+          scale_factor: null  # N/A no produto original
+
+        - id: B11
+          common_name: "SWIR 1"
+          description: "Band 11 - Shortwave infrared 1 - 20m"
+          center_wavelength_nm: 1613.5
+          fwhm_nm: 89.0
+          index: 11
+          native_resolution_m: 20
+          scale_factor: 0.0001
+
+        - id: B12
+          common_name: "SWIR 2"
+          description: "Band 12 - Shortwave infrared 2 - 20m"
+          center_wavelength_nm: 2199.5
+          fwhm_nm: 173.0
+          index: 12
+          native_resolution_m: 20
+          scale_factor: 0.0001
