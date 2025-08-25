@@ -28,7 +28,7 @@ configs:
     cloud_thin_class: 2
     cloud_shadow_class: 3
 
-    # Mantido por compatibilidade (a inferência usa argmax sem threshold).
+    # Mantido por compatibilidade (a inferência dos modelos usa argmax sem threshold).
     threshold: 0.5
 
     # Metadados do dataset / bandas.
