@@ -61,6 +61,7 @@ def create_pipeline(dependencies=['water_mask_dependency'], **kwargs) -> Pipelin
                     "ground_truth_column_volume": "params:configs.ground_truth_column_volume",
                     "ground_truth_column_date": "params:configs.ground_truth_column_date",
                     "location_name": "params:configs.location_name",
+                    "raw_thresholds": "params:configs.raw_thresholds",
                     "escale": "params:configs.escale",
                 },
                 outputs="plot_results",

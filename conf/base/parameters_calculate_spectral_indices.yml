@@ -17,4 +17,4 @@ configs:
   spectral_index_save_path: "data/09_spectral_indice/"
 
   # Pula a geração de mascaras
-  skip_spectral_indice: False
+  skip_spectral_indice: True

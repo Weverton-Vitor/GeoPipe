@@ -8,8 +8,8 @@ configs:
 
   path_shapefile: "data/00_shapefiles/sume_reservatorio.geojson"
 
-  thresholds: [0.01, 0.25, 0.5, 0.75, 0.95]
-  # thresholds: [0, 0.1, 0.2, 0.3, 0.4]
+  thresholds: [0.005, 0.01, 0.05, 0.1, 0.15, 0.25, 0.5, 0.75, 0.8, 0.95, 0.99]
+  # thresholds: [-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
   # Volume
   cav_path: "notebooks/data/sume_cotas.csv"
@@ -22,6 +22,7 @@ configs:
   escale: 1e6
 
   # Plots
+  raw_thresholds: False
   prefix_plot: ""
   method_name: "WatNet"
   # method_name: "ArianeNet"

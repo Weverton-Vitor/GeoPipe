@@ -244,7 +244,7 @@ def plot_monthly_water(
 def plot_series_ano_mes(series_dict, volume_columns, data_inicio, data_fim, titulo=None):
     """
     Plota séries temporais com colunas separadas de 'ano' e 'mês' e diferentes comprimentos.
-
+     
     Parâmetros:
         series_dict (dict): {'nome_série': DataFrame com colunas ['ano', 'mes', 'valor']}.
         data_inicio (str): Data inicial no formato "mm/yyyy".
@@ -256,35 +256,54 @@ def plot_series_ano_mes(series_dict, volume_columns, data_inicio, data_fim, titu
     data_fim = pd.to_datetime(
         f"01/{data_fim}", format="%d/%m/%Y"
     ) + pd.offsets.MonthEnd(0)
-
+    
+    # Define uma paleta de cores distinta
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
+              '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+              '#aec7e8', "#000000", '#98df8a', '#ff9896', '#c5b0d5',
+              '#c49c94', '#f7b6d3', '#c7c7c7', '#dbdb8d', '#9edae5']
+    
     # Inicia figura
     figure = plt.figure(figsize=(12, 5))
-
+    
     for i, (nome, df) in enumerate(series_dict.items()):
         # Cria coluna de datas com ano e mês
         df = df.copy()
         df["data"] = pd.to_datetime(dict(year=df["year"], month=df["month"], day=1))
         df = df.set_index("data")
-
+        
         # Filtra pelo intervalo
         df_plot = df[(df.index >= data_inicio) & (df.index <= data_fim)]
-
+        
         try:
-            # Plota
-            plt.plot(df_plot.index, df_plot[volume_columns[i]], label=nome)
+            # Seleciona cor baseada no índice (com repetição cíclica se necessário)
+            cor = colors[i % len(colors)]
+            
+            # Plota com cor específica
+            plt.plot(df_plot.index, df_plot[volume_columns[i]], 
+                    label=nome, color=cor, linewidth=2)
         except Exception as e:
             logger.warning(f"Error to plot {volume_columns[i]} of {nome}: {e}")
-
-    # Formatação
+    
+       # Formatação
     plt.xlabel("Data")
     plt.ylabel("Volume de água (10⁶ m³)")
     plt.title(titulo or "Séries Temporais")
-    plt.legend()
-    plt.grid(True)
 
+    # Legenda fora do gráfico (lado direito, centralizada)
+    plt.legend(
+        loc="center left",
+        bbox_to_anchor=(1.02, 0.5),   # move a legenda para fora (x=1.02 é logo após o eixo)
+        borderaxespad=0,
+        fontsize=9
+    )
+
+    plt.grid(True, alpha=0.3)
+    
     # Eixo X no formato mm/yyyy
     plt.gca().xaxis.set_major_formatter(DateFormatter("%m/%Y"))
+    
+    # Ajusta layout deixando espaço para a legenda à direita
+    plt.tight_layout(rect=[0, 0, 0.85, 1])
 
-    plt.tight_layout()
-    # plt.show()
     return figure

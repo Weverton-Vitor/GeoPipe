@@ -18,7 +18,7 @@ def calculate_water_area(tif_path, path_shapefile, binarization_gt=0, save_path=
     - Tuple: (area_m2, area_km2)
     """
     with rasterio.open(tif_path) as src:
-        dst_crs = "EPSG:31984"  # SIRGAS 2000 / UTM zone 24S (Paraíba)
+        dst_crs = "EPSG:31985"  # SIRGAS 2000 / UTM zone 25S (Paraíba)
         src = crop_raster_with_geojson_obj(
             src, geojson_path=path_shapefile
         )  # Assuming you have a function to crop the raster

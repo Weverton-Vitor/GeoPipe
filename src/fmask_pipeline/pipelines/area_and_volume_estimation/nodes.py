@@ -216,6 +216,7 @@ def plot_results(
     ground_truth_path_df: str,
     ground_truth_column_volume: str = "Volume Útil (hm³)",
     ground_truth_column_date: str = "Data da Medição",
+    raw_thresholds: bool = False,
     escale: int = 1e6,
 ) -> bool:
     """
@@ -281,6 +282,9 @@ def plot_results(
     # )
 
     methods = {f"{method_name} ({float(key.replace('df_volumes_trh_', ''))*100}%)": dataframe for key, dataframe in volumes_dfs.items()}
+    if raw_thresholds:
+        methods = {f"{method_name} ({float(key.replace('df_volumes_trh_', ''))})": dataframe for key, dataframe in volumes_dfs.items()}
+
     methods[ground_truth_name] = gound_truth_df
     volume_columns = ['volume_m2' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
 
@@ -330,6 +334,9 @@ def plot_results(
 
     # Mean
     methods = {f"{method_name} ({float(key.replace('df_volumes_trh_', ''))*100}%) ": dataframe for key, dataframe in volumes_mean_dfs.items()}
+    if raw_thresholds:
+        methods = {f"{method_name} ({float(key.replace('df_volumes_trh_', ''))})": dataframe for key, dataframe in volumes_mean_dfs.items()}
+
     methods[ground_truth_name] = ground_truth_mean_df
     volume_columns = ['volume_m2' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
 
