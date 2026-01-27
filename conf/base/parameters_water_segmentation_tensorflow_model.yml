@@ -13,8 +13,8 @@ configs:
   patch_size: 512
 
   # Caminho das imagens baixadas da base da atmosfera BOA
-  tensorflow_model_images_paths: "data/04_clean_images/"
-  # tensorflow_model_images_paths: "data/02_boa_images/"
+  #tensorflow_model_images_paths: "data/04_clean_images/"
+  tensorflow_model_images_paths: "data/02_boa_images/"
 
   # Caminho onde as máscaras serão salvas
   tensorflow_model_masks_save_path: "data/07_water_masks/"

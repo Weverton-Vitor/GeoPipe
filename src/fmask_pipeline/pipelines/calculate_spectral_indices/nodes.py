@@ -6,37 +6,34 @@ import rasterio
 from tqdm import tqdm
 
 import utils.deepwatermap.inference as deep_water_map
-from utils.calculate_spectral_indices import spectral_indices 
+from utils.calculate_spectral_indices import spectral_indices
 
 map_strategies_sentinel = {
     # "EVI": spectral_indices.EVI(),
-    "NDVI": spectral_indices.GenericSpectralIndex(7, 3),   # NIR (B8) / RED (B4)
+    "NDVI": spectral_indices.GenericSpectralIndex(7, 3),  # NIR (B8) / RED (B4)
     "NDBI": spectral_indices.GenericSpectralIndex(11, 7),  # SWIR1 (B11) / NIR (B8)
-    "NDWI": spectral_indices.GenericSpectralIndex(2, 7),   # GREEN (B3) / NIR (B8)
-    "MNDWI": spectral_indices.GenericSpectralIndex(2, 11), # GREEN (B3) / SWIR1 (B11)
+    "NDWI": spectral_indices.GenericSpectralIndex(1, 3),  # GREEN (B3) / NIR (B8)
+    "MNDWI": spectral_indices.GenericSpectralIndex(1, 4),  # GREEN (B3) / SWIR1 (B11)
 }
 
 map_strategies_landsat_8_9 = {
     "EVI": spectral_indices.EVI,
-    "NDVI": spectral_indices.GenericSpectralIndex(4, 3),    # NIR / RED
-    "NDBI": spectral_indices.GenericSpectralIndex(5, 4),    # SWIR1 / NIR
-    "NDWI": spectral_indices.GenericSpectralIndex(2, 4),    # GREEN / NIR
-    "MNDWI": spectral_indices.GenericSpectralIndex(2, 5),   # GREEN / SWIR1
+    "NDVI": spectral_indices.GenericSpectralIndex(4, 3),  # NIR / RED
+    "NDBI": spectral_indices.GenericSpectralIndex(5, 4),  # SWIR1 / NIR
+    "NDWI": spectral_indices.GenericSpectralIndex(2, 4),  # GREEN / NIR
+    "MNDWI": spectral_indices.GenericSpectralIndex(2, 5),  # GREEN / SWIR1
 }
 
 map_strategies_landsat_5_7 = {
     "EVI": spectral_indices.EVI,
-    "NDVI": spectral_indices.GenericSpectralIndex(3, 2),    # NIR / RED
-    "NDBI": spectral_indices.GenericSpectralIndex(4, 3),    # SWIR1 / NIR
-    "NDWI": spectral_indices.GenericSpectralIndex(1, 3),    # GREEN / NIR
-    "MNDWI": spectral_indices.GenericSpectralIndex(1, 4),   # GREEN / SWIR1
+    "NDVI": spectral_indices.GenericSpectralIndex(3, 2),  # NIR / RED
+    "NDBI": spectral_indices.GenericSpectralIndex(4, 3),  # SWIR1 / NIR
+    "NDWI": spectral_indices.GenericSpectralIndex(1, 3),  # GREEN / NIR
+    "MNDWI": spectral_indices.GenericSpectralIndex(1, 4),  # GREEN / SWIR1
 }
 
 
-
 logger = logging.getLogger(__name__)
-
-
 
 
 def create_dirs(
@@ -50,10 +47,15 @@ def create_dirs(
 ):
     logger.info("Create Spectral Indices Pipeline Directories")
     # Create directories structure, if not exists
-    os.makedirs(f"{spectral_index_save_path}{spectral_indice}/{location_name}", exist_ok=True)
+    os.makedirs(
+        f"{spectral_index_save_path}{spectral_indice}/{location_name}", exist_ok=True
+    )
 
     for year in range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1):
-        os.makedirs(f"{spectral_index_save_path}{spectral_indice}/{location_name}/{year}", exist_ok=True)
+        os.makedirs(
+            f"{spectral_index_save_path}{spectral_indice}/{location_name}/{year}",
+            exist_ok=True,
+        )
 
     return True
 
@@ -87,11 +89,17 @@ def calculate_spectral_indices(
                 spectral_strategy_obj = None
 
                 if setelite_name in ["LC08", "LC09"]:
-                    spectral_strategy_obj = map_strategies_landsat_8_9[spectral_indice_name]
+                    spectral_strategy_obj = map_strategies_landsat_8_9[
+                        spectral_indice_name
+                    ]
                 elif setelite_name in ["LC05", "LC07"]:
-                    spectral_strategy_obj = map_strategies_landsat_5_7[spectral_indice_name]
+                    spectral_strategy_obj = map_strategies_landsat_5_7[
+                        spectral_indice_name
+                    ]
                 elif setelite_name in ["S2"]:
-                    spectral_strategy_obj = map_strategies_sentinel[spectral_indice_name]
+                    spectral_strategy_obj = map_strategies_sentinel[
+                        spectral_indice_name
+                    ]
                 else:
                     logger.error(f"Unknown satellite name: {setelite_name}")
                     continue
@@ -99,8 +107,7 @@ def calculate_spectral_indices(
                 spectral_indice = spectral_strategy_obj.calculate(bands)
                 profile = src.profile
                 profile.update(
-                    count=1,
-                    dtype=rasterio.float32
+                    count=1, dtype=rasterio.float32
                 )  # Atualize o tipo de dados e o número de bandas
                 with rasterio.open(output_path, "w", **profile) as dst:
                     dst.write(spectral_indice, 1)

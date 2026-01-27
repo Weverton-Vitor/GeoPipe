@@ -1,7 +1,7 @@
 import glob
 import logging
 import os
-
+import gc
 import pandas as pd
 from pandas import DataFrame
 from tqdm import tqdm
@@ -20,6 +20,95 @@ from utils.area_and_volume_estimation.water import (
 from utils.metrics.regression import calculate_metrics_regression_by_month
 
 logger = logging.getLogger(__name__)
+
+
+def estimate_water_area_old(
+    water_masks_path: str,
+    path_shapefile: str,
+    save_path: str,
+    location_name: str,
+    thresholds: list,
+    *args,
+    **kwargs,
+) -> tuple:
+    """
+    Reproject a .tif image with geographic CRS (degrees) to UTM (meters),
+    and calculates the area of water pixels (value > 0).
+
+    parameters:
+    - tif_path (str): path to the .tif file
+    - path_shapefile (str): path to the GeoJSON clipping file
+    - binarization_gt (int): threshold value to consider a pixel as water
+    - save_path (str): path to save the reprojected raster
+
+    returns:
+    - Tuple: (area_m2)
+    """
+    dfs = {}
+
+    masks_path = water_masks_path + f"{location_name}/"
+    water_masks = glob.glob(os.path.join(masks_path, "**", "*.tif"), recursive=True)
+    logger.info(f"Found {len(water_masks)} tif files in {masks_path}")
+    total_tifs = len(water_masks)
+
+    for threshold in thresholds:
+        # df_metadata = pd.read_csv(
+        #     f"data/02_boa_images/{location_name}/metadata/{location_name}_metadata.csv"
+        # )
+        df_areas = pd.DataFrame()
+        masks = []
+        days = []
+        months = []
+        years = []
+        m2_areas = []
+        km2_areas = []
+
+        logger.info(f"Threshold: {threshold}")
+
+        with tqdm(total=total_tifs, desc="Estimate Area", unit="images") as pbar:
+            for mask_path in water_masks:
+                area_m2, area_km2 = calculate_water_area(
+                    tif_path=mask_path,
+                    path_shapefile=path_shapefile,
+                    threshold=threshold,
+                )
+
+                year = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][:4]
+                month = (
+                    mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][4:6]
+                )
+                day = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][6:8]
+
+                years.append(year)
+                months.append(month)
+                days.append(day)
+
+                masks.append(mask_path)
+                m2_areas.append(area_m2)
+                km2_areas.append(area_km2)
+                pbar.update(1)
+
+        df_areas["water_masks"] = pd.Series(water_masks)
+        df_areas["year"] = pd.Series(years)
+        df_areas["month"] = pd.Series(months)
+        df_areas["day"] = pd.Series(days)
+        df_areas["m2_area"] = pd.Series(m2_areas)
+        df_areas["km2_area"] = pd.Series(km2_areas)
+        df_areas["CLOUDY_PIXEL_PERCENTAGE"] = (
+            0  # df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
+        )
+
+        os.makedirs(f"{save_path}{location_name}", exist_ok=True)
+        df_areas.to_csv(
+            f"{save_path}{location_name}/df_areas_trh_{threshold}.csv", index=False
+        )
+        dfs[f"df_areas_trh_{threshold}"] = df_areas
+
+        import gc
+
+        gc.collect()
+
+    return dfs
 
 
 def estimate_water_area(
@@ -44,30 +133,29 @@ def estimate_water_area(
     returns:
     - Tuple: (area_m2)
     """
-    dfs = {}
-    for threshold in thresholds:
-        # df_metadata = pd.read_csv(
-        #     f"data/02_boa_images/{location_name}/metadata/{location_name}_metadata.csv"
-        # )
-        df_areas = pd.DataFrame()
-        masks = []
-        days = []
-        months = []
-        years = []
-        m2_areas = []
-        km2_areas = []
 
-        masks_path = water_masks_path + f"{location_name}/"
-        water_masks = glob.glob(
-            os.path.join(masks_path, "**", "*.tif"), recursive=True
-        )
-        logger.info(f"Found {len(water_masks)} tif files in {masks_path}")
-        total_tifs = len(water_masks)
+    masks_path = water_masks_path + f"{location_name}/"
+    water_masks = glob.glob(os.path.join(masks_path, "**", "*.tif"), recursive=True)
+    total_tifs = len(water_masks)
+    logger.info(f"Found {total_tifs} tif files in {masks_path}")
 
-        logger.info(f"Threshold: {threshold}")
+    # Create list of dataframes, one for each threshold
+    thresholds_results_dict = {
+        f"{threshold}": {
+            "water_masks": [],
+            "year": [],
+            "month": [],
+            "day": [],
+            "m2_area": [],
+            "km2_area": [],
+            "CLOUDY_PIXEL_PERCENTAGE": [],
+        }
+        for threshold in thresholds
+    }
 
-        with tqdm(total=total_tifs, desc="Estimate Volume", unit="images") as pbar:
-            for mask_path in water_masks:
+    with tqdm(total=total_tifs, desc="Estimate Area", unit="images") as pbar:
+        for mask_path in water_masks:  # iterating over each mask
+            for threshold in thresholds:
                 area_m2, area_km2 = calculate_water_area(
                     tif_path=mask_path,
                     path_shapefile=path_shapefile,
@@ -75,31 +163,134 @@ def estimate_water_area(
                 )
 
                 year = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][:4]
-                month = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][4:6]
+                month = (
+                    mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][4:6]
+                )
                 day = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][6:8]
 
-                years.append(year)
-                months.append(month)
-                days.append(day)
+                thresholds_results_dict[f"{threshold}"]["water_masks"].append(mask_path)
+                thresholds_results_dict[f"{threshold}"]["year"].append(year)
+                thresholds_results_dict[f"{threshold}"]["month"].append(month)
+                thresholds_results_dict[f"{threshold}"]["day"].append(day)
+                thresholds_results_dict[f"{threshold}"]["m2_area"].append(area_m2)
+                thresholds_results_dict[f"{threshold}"]["km2_area"].append(area_km2)
+                thresholds_results_dict[f"{threshold}"][
+                    "CLOUDY_PIXEL_PERCENTAGE"
+                ].append(0)  # df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
 
-                masks.append(mask_path)
-                m2_areas.append(area_m2)
-                km2_areas.append(area_km2)
-                pbar.update(1)
+            pbar.update(1)
 
-        df_areas["water_masks"] = pd.Series(water_masks)
-        df_areas["year"] = pd.Series(years)
-        df_areas["month"] = pd.Series(months)
-        df_areas["day"] = pd.Series(days)
-        df_areas["m2_area"] = pd.Series(m2_areas)
-        df_areas["km2_area"] = pd.Series(km2_areas)
-        df_areas["CLOUDY_PIXEL_PERCENTAGE"] = 0 # df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
+    thresholds_results_df = {
+        f"df_areas_trh_{threshold}": pd.DataFrame(threshold_dict)
+        for threshold, threshold_dict in thresholds_results_dict.items()
+    }
 
-        os.makedirs(f"{save_path}{location_name}", exist_ok=True)
-        df_areas.to_csv(f"{save_path}{location_name}/df_areas_trh_{threshold}.csv", index=False)
-        dfs[f"df_areas_trh_{threshold}"] = df_areas
+    os.makedirs(f"{save_path}{location_name}", exist_ok=True)
+    for threshold, df_areas in thresholds_results_df.items():
+        df_areas.to_csv(f"{save_path}{location_name}/{threshold}.csv", index=False)
 
-    return dfs
+    return thresholds_results_df
+
+
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from tqdm import tqdm
+import pandas as pd
+import os, glob
+
+
+def _process_mask_threshold(mask_path, threshold, path_shapefile):
+    """Função auxiliar para ser executada em paralelo"""
+    area_m2, area_km2 = calculate_water_area(
+        tif_path=mask_path,
+        path_shapefile=path_shapefile,
+        threshold=threshold,
+    )
+
+    year = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][:4]
+    month = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][4:6]
+    day = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][6:8]
+
+    return {
+        "threshold": threshold,
+        "mask_path": mask_path,
+        "year": year,
+        "month": month,
+        "day": day,
+        "m2_area": area_m2,
+        "km2_area": area_km2,
+        "CLOUDY_PIXEL_PERCENTAGE": 0,
+    }
+
+
+def estimate_water_area_threads(
+    water_masks_path: str,
+    path_shapefile: str,
+    save_path: str,
+    location_name: str,
+    thresholds: list,
+    *args,
+    **kwargs,
+) -> dict:
+    masks_path = water_masks_path + f"{location_name}/"
+    water_masks = glob.glob(os.path.join(masks_path, "**", "*.tif"), recursive=True)
+    total_tifs = len(water_masks)
+    logger.info(f"Found {total_tifs} tif files in {masks_path}")
+
+    # Estrutura inicial de resultados
+    thresholds_results_dict = {
+        f"{threshold}": {
+            "water_masks": [],
+            "year": [],
+            "month": [],
+            "day": [],
+            "m2_area": [],
+            "km2_area": [],
+            "CLOUDY_PIXEL_PERCENTAGE": [],
+        }
+        for threshold in thresholds
+    }
+
+    # Criar lista de tarefas
+    tasks = [
+        (mask_path, threshold, path_shapefile)
+        for mask_path in water_masks
+        for threshold in thresholds
+    ]
+
+    # Paralelizar
+    with ProcessPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(_process_mask_threshold, *task) for task in tasks]
+        for future in tqdm(
+            as_completed(futures),
+            total=len(futures),
+            desc="Estimate Area",
+            unit="tasks",
+        ):
+            result = future.result()
+            t = str(result["threshold"])
+            thresholds_results_dict[t]["water_masks"].append(result["mask_path"])
+            thresholds_results_dict[t]["year"].append(result["year"])
+            thresholds_results_dict[t]["month"].append(result["month"])
+            thresholds_results_dict[t]["day"].append(result["day"])
+            thresholds_results_dict[t]["m2_area"].append(result["m2_area"])
+            thresholds_results_dict[t]["km2_area"].append(result["km2_area"])
+            thresholds_results_dict[t]["CLOUDY_PIXEL_PERCENTAGE"].append(
+                result["CLOUDY_PIXEL_PERCENTAGE"]
+            )
+
+            gc.collect()
+
+    # Converter para DataFrame e salvar
+    thresholds_results_df = {
+        f"df_areas_trh_{threshold}": pd.DataFrame(threshold_dict)
+        for threshold, threshold_dict in thresholds_results_dict.items()
+    }
+
+    os.makedirs(f"{save_path}{location_name}", exist_ok=True)
+    for threshold, df_areas in thresholds_results_df.items():
+        df_areas.to_csv(f"{save_path}{location_name}/{threshold}.csv", index=False)
+
+    return thresholds_results_df
 
 
 def estimate_water_volume(
@@ -143,8 +334,11 @@ def estimate_water_volume(
             escale=escale,
         )
 
-        df_volume.to_csv(f"{save_path}{location_name}/{key.replace('areas', 'volumes')}.csv", index=False)
-        dfs[key.replace('areas', 'volumes')] = df_volume
+        df_volume.to_csv(
+            f"{save_path}{location_name}/{key.replace('areas', 'volumes')}.csv",
+            index=False,
+        )
+        dfs[key.replace("areas", "volumes")] = df_volume
     return dfs
 
 
@@ -180,7 +374,6 @@ def calculate_metrics(
 
     global_metrics_df = []
     for key, df in pred_dfs.items():
-        
         df = media_mensal_por_ano(
             df,
             column="volume_m2",
@@ -194,11 +387,13 @@ def calculate_metrics(
             on=["year", "month"],
         )
 
-        metrics['threshold'] = float(key.replace('df_volumes_trh_', ''))
+        metrics["threshold"] = float(key.replace("df_volumes_trh_", ""))
 
         global_metrics_df.append(metrics)
-        df_erros.to_csv(f"{save_path}{location_name}/volume_errors_{float(key.replace('df_volumes_trh_', ''))}.csv", index=False)
-
+        df_erros.to_csv(
+            f"{save_path}{location_name}/volume_errors_{float(key.replace('df_volumes_trh_', ''))}.csv",
+            index=False,
+        )
 
     metrics_df = pd.DataFrame(global_metrics_df)
     metrics_df.to_csv(f"{save_path}{location_name}/volume_metrics.csv", index=False)
@@ -246,7 +441,7 @@ def plot_results(
     gound_truth_df["year"] = gound_truth_df[ground_truth_column_date].apply(
         lambda x: x.split("/")[-1]
     )
-    
+
     gound_truth_df["month"] = gound_truth_df[ground_truth_column_date].apply(
         lambda x: x.split("/")[-2]
     )
@@ -269,8 +464,8 @@ def plot_results(
         volumes_mean_dfs[key] = medias_mensais_por_ano(dataframe)
 
     # volumes_mean_df = medias_mensais_por_ano(
-        # volumes_df,
-            # columns=[column for column in list(volumes_df.columns) if "volume" in column][0],
+    # volumes_df,
+    # columns=[column for column in list(volumes_df.columns) if "volume" in column][0],
     # )
 
     # volumes_df = volumes_df.rename(
@@ -281,12 +476,20 @@ def plot_results(
     #     }
     # )
 
-    methods = {f"{method_name} ({float(key.replace('df_volumes_trh_', ''))*100}%)": dataframe for key, dataframe in volumes_dfs.items()}
+    methods = {
+        f"{method_name} ({float(key.replace('df_volumes_trh_', '')) * 100}%)": dataframe
+        for key, dataframe in volumes_dfs.items()
+    }
     if raw_thresholds:
-        methods = {f"{method_name} ({float(key.replace('df_volumes_trh_', ''))})": dataframe for key, dataframe in volumes_dfs.items()}
+        methods = {
+            f"{method_name} ({float(key.replace('df_volumes_trh_', ''))})": dataframe
+            for key, dataframe in volumes_dfs.items()
+        }
 
     methods[ground_truth_name] = gound_truth_df
-    volume_columns = ['volume_m2' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2" if "%)" in key else "volume_m2" for key in list(methods.keys())
+    ]
 
     figure1 = plot_series_ano_mes(
         methods,
@@ -296,7 +499,9 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo",
     )
 
-    volume_columns = [ 'volume_m2_mean' if "%)" in key  else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2_mean" if "%)" in key else "volume_m2" for key in list(methods.keys())
+    ]
     figure2 = plot_series_ano_mes(
         methods,
         volume_columns=volume_columns,
@@ -305,7 +510,10 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro da média)",
     )
 
-    volume_columns = ['volume_m2_savgol' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2_savgol" if "%)" in key else "volume_m2"
+        for key in list(methods.keys())
+    ]
     figure3 = plot_series_ano_mes(
         methods,
         volume_columns=volume_columns,
@@ -314,7 +522,10 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro de savgol)",
     )
 
-    volume_columns = ['volume_m2_median' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2_median" if "%)" in key else "volume_m2"
+        for key in list(methods.keys())
+    ]
     figure4 = plot_series_ano_mes(
         methods,
         volume_columns=volume_columns,
@@ -323,7 +534,10 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro da mediana)",
     )
 
-    volume_columns = ['volume_m2_zscore' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2_zscore" if "%)" in key else "volume_m2"
+        for key in list(methods.keys())
+    ]
     figure5 = plot_series_ano_mes(
         methods,
         data_inicio="01/2019",
@@ -333,12 +547,20 @@ def plot_results(
     )
 
     # Mean
-    methods = {f"{method_name} ({float(key.replace('df_volumes_trh_', ''))*100}%) ": dataframe for key, dataframe in volumes_mean_dfs.items()}
+    methods = {
+        f"{method_name} ({float(key.replace('df_volumes_trh_', '')) * 100}%) ": dataframe
+        for key, dataframe in volumes_mean_dfs.items()
+    }
     if raw_thresholds:
-        methods = {f"{method_name} ({float(key.replace('df_volumes_trh_', ''))})": dataframe for key, dataframe in volumes_mean_dfs.items()}
+        methods = {
+            f"{method_name} ({float(key.replace('df_volumes_trh_', ''))})": dataframe
+            for key, dataframe in volumes_mean_dfs.items()
+        }
 
     methods[ground_truth_name] = ground_truth_mean_df
-    volume_columns = ['volume_m2' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2" if "%)" in key else "volume_m2" for key in list(methods.keys())
+    ]
 
     figure1_mean = plot_series_ano_mes(
         methods,
@@ -348,7 +570,9 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal)",
     )
 
-    volume_columns = ['volume_m2_mean' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2_mean" if "%)" in key else "volume_m2" for key in list(methods.keys())
+    ]
     figure2_mean = plot_series_ano_mes(
         methods,
         data_inicio="01/2019",
@@ -357,7 +581,10 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro da média)",
     )
 
-    volume_columns = ['volume_m2_savgol' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2_savgol" if "%)" in key else "volume_m2"
+        for key in list(methods.keys())
+    ]
     figure3_mean = plot_series_ano_mes(
         methods,
         data_inicio="01/2019",
@@ -366,7 +593,10 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro de savgol)",
     )
 
-    volume_columns = ['volume_m2_median' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2_median" if "%)" in key else "volume_m2"
+        for key in list(methods.keys())
+    ]
     figure4_mean = plot_series_ano_mes(
         methods,
         data_inicio="01/2019",
@@ -375,7 +605,10 @@ def plot_results(
         titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro da mediana)",
     )
 
-    volume_columns = ['volume_m2_zscore' if "%)" in key else 'volume_m2' for key in list(methods.keys())]
+    volume_columns = [
+        "volume_m2_zscore" if "%)" in key else "volume_m2"
+        for key in list(methods.keys())
+    ]
     figure5_mean = plot_series_ano_mes(
         methods,
         data_inicio="01/2019",

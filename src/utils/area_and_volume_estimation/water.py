@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import rasterio
+import gc
 from rasterio.warp import Resampling, calculate_default_transform, reproject
 from scipy.signal import savgol_filter
 from scipy.stats import zscore
@@ -19,10 +20,10 @@ def calculate_water_area(tif_path, path_shapefile, threshold=0, save_path=None):
     Retorna:
     - Tuple: (area_m2, area_km2)
     """
-    with rasterio.open(tif_path) as src:
+    with rasterio.open(tif_path) as src_file:
         dst_crs = "EPSG:31984"  # SIRGAS 2000 / UTM zone 24S (Paraíba)
-        src = crop_raster_with_geojson_obj(
-            src, geojson_path=path_shapefile
+        src, memfile_src = crop_raster_with_geojson_obj(
+            src_file, geojson_path=path_shapefile
         )  # Assuming you have a function to crop the raster
 
         profile = src.profile
@@ -32,6 +33,8 @@ def calculate_water_area(tif_path, path_shapefile, threshold=0, save_path=None):
                 f"./data/areas_tif/{tif_path.split('/')[-1]}", "w", **profile
             ) as dst:
                 dst.write(src.read()[0], 1)
+            # del dst
+            # gc.collect()
 
         transform, width, height = calculate_default_transform(
             src.crs, dst_crs, src.width, src.height, *src.bounds
@@ -42,6 +45,7 @@ def calculate_water_area(tif_path, path_shapefile, threshold=0, save_path=None):
             {"crs": dst_crs, "transform": transform, "width": width, "height": height}
         )
 
+        water_area_m2, water_area_km2 = 0, 0
         with rasterio.MemoryFile() as memfile:
             with memfile.open(**kwargs) as dst:
                 for i in range(1, src.count + 1):
@@ -65,7 +69,8 @@ def calculate_water_area(tif_path, path_shapefile, threshold=0, save_path=None):
                 water_area_m2 = water_pixels * pixel_area
                 water_area_km2 = water_area_m2 / 1e6
 
-                return water_area_m2, water_area_km2
+        memfile_src.close()
+        return water_area_m2, water_area_km2
 
 
 def calculate_volumes_to_multiple_methods(

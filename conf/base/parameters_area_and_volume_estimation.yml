@@ -1,18 +1,18 @@
 configs:
 
   water_masks_path: "data/07_water_masks/"
-  # water_masks_path: "data/09_spectral_indice/NDWI/"
-  # water_masks_path: "data/09_spectral_indice/MNDWI/"
+  #water_masks_path: "data/09_spectral_indice/NDWI/"
+  #water_masks_path: "data/09_spectral_indice/MNDWI/"
 
   area_and_volune_save_path: "data/010_areas_volumes/"
 
-  path_shapefile: "data/00_shapefiles/sume_reservatorio.geojson"
+  path_shapefile: "data/00_shapefiles/engenheiro_avidos_reservatorio.geojson"
 
   thresholds: [0.005, 0.01, 0.05, 0.1, 0.15, 0.25, 0.5, 0.75, 0.8, 0.95, 0.99]
-  # thresholds: [-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+  #thresholds: [-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
   # Volume
-  cav_path: "notebooks/data/sume_cotas.csv"
+  cav_path: "notebooks/data/engenheiro_avidos_cotas.csv"
   cav_area_column: "area"
   cav_volume_column: "volume"
   year_column: "year"
@@ -24,12 +24,13 @@ configs:
   # Plots
   raw_thresholds: False
   prefix_plot: ""
-  method_name: "WatNet"
-  # method_name: "ArianeNet"
-  # method_name: "DeepWaterMap"
-  # method_name: "NDWI"
+  #method_name: "WatNet"
+  #method_name: "ArianeNet"
+  #method_name: "DeepWaterMap"
+  #method_name: "NDWI"
   # method_name: "MNDWI"
+  method_name: "VGG-UNet"
   ground_truth_name: "ANA"
-  ground_truth_path_df:  "notebooks/data/sume_ana.csv"
+  ground_truth_path_df:  "notebooks/data/engenheiro_avidos_ana.csv"
   ground_truth_column_volume: "Volume Útil (hm³)"
   ground_truth_column_date: "Data da Medição"
