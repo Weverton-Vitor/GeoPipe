@@ -57,6 +57,8 @@ def create_pipeline(dependencies=['water_mask_dependency'], **kwargs) -> Pipelin
                     "volumes_dfs": "water_volumes_dfs",
                     "save_path": "params:configs.area_and_volune_save_path",
                     "method_name": "params:configs.method_name",
+                    "initial_date": "params:configs.initial_date",
+                    "end_date": "params:configs.end_date",
                     "ground_truth_name": "params:configs.ground_truth_name",
                     "ground_truth_path_df": "params:configs.ground_truth_path_df",
                     "ground_truth_column_volume": "params:configs.ground_truth_column_volume",

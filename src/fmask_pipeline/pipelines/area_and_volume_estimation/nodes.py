@@ -208,13 +208,14 @@ def calculate_metrics(
 
     return True
 
-
 def plot_results(
     areas_df: DataFrame,
     volumes_dfs: dict,
     location_name: str,
     save_path: str,
     method_name: str,
+    initial_date: str,
+    end_date: str,
     ground_truth_name: str,
     ground_truth_path_df: str,
     ground_truth_column_volume: str = "Volume Útil (hm³)",
@@ -223,249 +224,175 @@ def plot_results(
     escale: int = 1e6,
 ) -> bool:
     """
-    Plot the results of water area and volume estimation.
+    Generate and save comparison plots between estimated water volumes
+    (derived from satellite imagery) and ground truth measurements.
 
-    parameters:
-    - df_areas (DataFrame): DataFrame containing water areas
-    - df_volumes (DataFrame): DataFrame containing water volumes
-    - location (str): location name for saving plots
-    - save_path (str): path to save the plots
+    This function:
+    - Loads and preprocesses ground truth data
+    - Computes monthly statistics
+    - Organizes multiple estimation methods
+    - Generates time series plots with different filters
+    - Saves all figures to disk
+
+    Returns:
+        bool: True if plots were successfully generated
     """
 
-    # volumes_df = dataframe.loc[dataframe["CLOUDY_PIXEL_PERCENTAGE"] < 100]
-    final_dir = f"{save_path}{location_name}/plots"
-
-    os.makedirs(f"{final_dir}", exist_ok=True)
+    # ======================================================
+    # 1. DEFINE OUTPUT DIRECTORY
+    # ======================================================
+    # All plots will be saved under:
+    # {save_path}/{location_name}/plots/
+    final_dir = os.path.join(save_path, location_name, "plots")
+    os.makedirs(final_dir, exist_ok=True)
 
     logger.info(f"Saving plots to {final_dir}")
 
-    logger.info("Plotting areas...")
-    # areas_mean_df = media_mensal_por_ano(areas_df, column="m2_area")
+    # ======================================================
+    # 2. LOAD AND PREPROCESS GROUND TRUTH DATA
+    # ======================================================
+    # Load CSV containing in-situ or official measurements
+    gt_df = pd.read_csv(ground_truth_path_df)
 
-    logger.info("Plotting volumes...")
+    # Extract year and month from the measurement date column
+    # Assumes date format like: DD/MM/YYYY
+    gt_df["year"] = gt_df[ground_truth_column_date].str.split("/").str[-1]
+    gt_df["month"] = gt_df[ground_truth_column_date].str.split("/").str[-2]
 
-    gound_truth_df = pd.read_csv(ground_truth_path_df)
-
-    gound_truth_df["year"] = gound_truth_df[ground_truth_column_date].apply(
-        lambda x: x.split("/")[-1]
+    # Convert volume column to float
+    # Handles decimal commas used in Brazilian datasets
+    gt_df[ground_truth_column_volume] = (
+        gt_df[ground_truth_column_volume]
+        .astype(str)
+        .str.replace(",", ".")
+        .astype(float)
     )
 
-    gound_truth_df["month"] = gound_truth_df[ground_truth_column_date].apply(
-        lambda x: x.split("/")[-2]
-    )
+    # Convert volume from hm³ to m² (scaled if necessary)
+    # 1 hm³ = 1,000,000 m³
+    gt_df["volume_m2"] = gt_df[ground_truth_column_volume] * 1_000_000 / escale
 
-    gound_truth_df[ground_truth_column_volume] = gound_truth_df[
-        ground_truth_column_volume
-    ].apply(lambda x: float(x.replace(",", ".")) if isinstance(x, str) else x)
-
-    gound_truth_df["volume_m2"] = gound_truth_df[ground_truth_column_volume].apply(
-        lambda x: x * 1000000 / escale
-    )
-
-    ground_truth_mean_df = media_mensal_por_ano(
-        gound_truth_df,
+    # Compute monthly mean values for ground truth
+    gt_mean_df = media_mensal_por_ano(
+        gt_df,
         column="volume_m2",
     )
 
-    volumes_mean_dfs = {}
-    for key, dataframe in volumes_dfs.items():
-        volumes_mean_dfs[key] = medias_mensais_por_ano(dataframe)
-
-    # volumes_mean_df = medias_mensais_por_ano(
-    # volumes_df,
-    # columns=[column for column in list(volumes_df.columns) if "volume" in column][0],
-    # )
-
-    # volumes_df = volumes_df.rename(
-    #     columns={
-    #         [column for column in list(volumes_df.columns) if "volume" in column][
-    #             0
-    #         ]: "volume_m2"
-    #     }
-    # )
-
-    methods = {
-        f"{method_name} ({float(key.replace('df_volumes_trh_', '')) * 100}%)": dataframe
-        for key, dataframe in volumes_dfs.items()
+    # ======================================================
+    # 3. COMPUTE MONTHLY MEANS FOR ESTIMATED VOLUMES
+    # ======================================================
+    # Each entry in volumes_dfs corresponds to a threshold/method
+    volumes_mean_dfs = {
+        key: medias_mensais_por_ano(df)
+        for key, df in volumes_dfs.items()
     }
-    if raw_thresholds:
-        methods = {
-            f"{method_name} ({float(key.replace('df_volumes_trh_', ''))})": dataframe
-            for key, dataframe in volumes_dfs.items()
-        }
 
-    methods[ground_truth_name] = gound_truth_df
-    volume_columns = [
-        "volume_m2" if "%)" in key else "volume_m2" for key in list(methods.keys())
+    # ======================================================
+    # 4. HELPER FUNCTION TO BUILD METHODS DICTIONARY
+    # ======================================================
+    # This function creates a dictionary like:
+    # {
+    #   "Method (30%)": dataframe,
+    #   "Method (40%)": dataframe,
+    #   "Ground Truth": dataframe
+    # }
+    def build_methods(dataframes: dict, include_ground_truth=True):
+        methods = {}
+
+        for key, df in dataframes.items():
+            # Extract numeric threshold from key name
+            threshold = key.replace("df_volumes_trh_", "")
+
+            # Format label depending on configuration
+            label = (
+                f"{method_name} ({float(threshold) * 100}%)"
+                if not raw_thresholds
+                else f"{method_name} ({threshold})"
+            )
+
+            methods[label] = df
+
+        # Optionally append ground truth to the comparison
+        if include_ground_truth:
+            methods[ground_truth_name] = gt_df
+
+        return methods
+
+    # ======================================================
+    # 5. PLOT CONFIGURATION
+    # ======================================================
+    # Each tuple defines:
+    # (column to plot, filename suffix)
+    plot_configs = [
+        ("volume_m2", "ao_longo_do_tempo"),
+        ("volume_m2_mean", "filtro_da_media"),
+        ("volume_m2_savgol", "filtro_da_savgol"),
+        ("volume_m2_median", "filtro_da_mediana"),
+        ("volume_m2_zscore", "z_score"),
     ]
 
-    figure1 = plot_series_ano_mes(
-        methods,
-        volume_columns=volume_columns,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo",
-    )
+    # Store all figures and filenames before saving
+    figures = []
 
-    volume_columns = [
-        "volume_m2_mean" if "%)" in key else "volume_m2" for key in list(methods.keys())
-    ]
-    
-    figure2 = plot_series_ano_mes(
-        methods,
-        volume_columns=volume_columns,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro da média)",
-    )
+    # ======================================================
+    # 6. GENERATE RAW TIME SERIES PLOTS
+    # ======================================================
+    methods = build_methods(volumes_dfs)
 
-    volume_columns = [
-        "volume_m2_savgol" if "%)" in key else "volume_m2"
-        for key in list(methods.keys())
-    ]
-    figure3 = plot_series_ano_mes(
-        methods,
-        volume_columns=volume_columns,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro de savgol)",
-    )
+    for column, suffix in plot_configs:
+        # Ground truth always uses raw "volume_m2"
+        # Estimated methods may use filtered columns
+        volume_columns = [
+            column if method_name in key else "volume_m2"
+            for key in methods.keys()
+        ]
 
-    volume_columns = [
-        "volume_m2_median" if "%)" in key else "volume_m2"
-        for key in list(methods.keys())
-    ]
-    figure4 = plot_series_ano_mes(
-        methods,
-        volume_columns=volume_columns,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (filtro da mediana)",
-    )
+        fig = plot_series_ano_mes(
+            methods,
+            volume_columns=volume_columns,
+            data_inicio=initial_date,
+            data_fim=end_date,
+            titulo=f"{method_name} X {ground_truth_name} ({suffix})",
+        )
 
-    volume_columns = [
-        "volume_m2_zscore" if "%)" in key else "volume_m2"
-        for key in list(methods.keys())
-    ]
-    figure5 = plot_series_ano_mes(
-        methods,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        volume_columns=volume_columns,
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (zscore)",
-    )
+        figures.append(
+            (fig, f"{method_name}_vs_{ground_truth_name}_{suffix}.png")
+        )
 
-    # Mean
-    methods = {
-        f"{method_name} ({float(key.replace('df_volumes_trh_', '')) * 100}%) ": dataframe
-        for key, dataframe in volumes_mean_dfs.items()
-    }
-    if raw_thresholds:
-        methods = {
-            f"{method_name} ({float(key.replace('df_volumes_trh_', ''))})": dataframe
-            for key, dataframe in volumes_mean_dfs.items()
-        }
+    # ======================================================
+    # 7. GENERATE MONTHLY MEAN PLOTS
+    # ======================================================
+    methods_mean = build_methods(volumes_mean_dfs)
 
-    methods[ground_truth_name] = ground_truth_mean_df
-    volume_columns = [
-        "volume_m2" if "%)" in key else "volume_m2" for key in list(methods.keys())
-    ]
+    # Replace raw ground truth with its monthly mean version
+    methods_mean[ground_truth_name] = gt_mean_df
 
-    figure1_mean = plot_series_ano_mes(
-        methods,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        volume_columns=volume_columns,
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal)",
-    )
+    for column, suffix in plot_configs:
+        volume_columns = [
+            column if method_name in key else "volume_m2"
+            for key in methods_mean.keys()
+        ]
 
-    volume_columns = [
-        "volume_m2_mean" if "%)" in key else "volume_m2" for key in list(methods.keys())
-    ]
-    figure2_mean = plot_series_ano_mes(
-        methods,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        volume_columns=volume_columns,
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro da média)",
-    )
+        fig = plot_series_ano_mes(
+            methods_mean,
+            volume_columns=volume_columns,
+            data_inicio=initial_date,
+            data_fim=end_date,
+            titulo=f"{method_name} X {ground_truth_name} (média mensal + {suffix})",
+        )
 
-    volume_columns = [
-        "volume_m2_savgol" if "%)" in key else "volume_m2"
-        for key in list(methods.keys())
-    ]
-    figure3_mean = plot_series_ano_mes(
-        methods,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        volume_columns=volume_columns,
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro de savgol)",
-    )
+        figures.append(
+            (fig, f"{method_name}_vs_{ground_truth_name}_media_{suffix}.png")
+        )
 
-    volume_columns = [
-        "volume_m2_median" if "%)" in key else "volume_m2"
-        for key in list(methods.keys())
-    ]
-    figure4_mean = plot_series_ano_mes(
-        methods,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        volume_columns=volume_columns,
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + filtro da mediana)",
-    )
+    # ======================================================
+    # 8. SAVE ALL GENERATED FIGURES
+    # ======================================================
+    for fig, filename in figures:
+        fig.savefig(
+            os.path.join(final_dir, filename),
+            bbox_inches="tight",
+        )
 
-    volume_columns = [
-        "volume_m2_zscore" if "%)" in key else "volume_m2"
-        for key in list(methods.keys())
-    ]
-    figure5_mean = plot_series_ano_mes(
-        methods,
-        data_inicio="01/2019",
-        data_fim="06/2025",
-        volume_columns=volume_columns,
-        titulo=f"{method_name} X {ground_truth_name} ao longo do tempo (média mensal + zscore)",
-    )
-
-    # Saving figures
-
-    figure1.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo.png",
-        bbox_inches="tight",
-    )
-    figure2.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_filtro_da_media.png",
-        bbox_inches="tight",
-    )
-    figure3.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_filtro_da_savgol.png",
-        bbox_inches="tight",
-    )
-    figure4.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_filtro_da_mediana.png",
-        bbox_inches="tight",
-    )
-    figure5.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_z_score.png",
-        bbox_inches="tight",
-    )
-    figure1_mean.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_media.png",
-        bbox_inches="tight",
-    )
-    figure2_mean.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_media_filtro_da_media.png",
-        bbox_inches="tight",
-    )
-    figure3_mean.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_media_filtro_da_savgol.png",
-        bbox_inches="tight",
-    )
-    figure4_mean.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_media_filtro_da_mediana.png",
-        bbox_inches="tight",
-    )
-    figure5_mean.savefig(
-        f"{final_dir}/{method_name}_vs_{ground_truth_name}_ao_longo_do_tempo_media_zscore_filtro.png",
-        bbox_inches="tight",
-    )
+    logger.info("All plots generated successfully.")
     return True
