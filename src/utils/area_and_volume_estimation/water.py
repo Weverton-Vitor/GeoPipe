@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import rasterio
@@ -7,6 +8,96 @@ from scipy.signal import savgol_filter
 from scipy.stats import zscore
 
 from .general import crop_raster_with_geojson_obj
+
+def process_single_mask(args):
+    mask_path, path_shapefile, thresholds = args
+
+    filename = os.path.basename(mask_path).replace("_clean", "")
+    date_str = filename.split("_")[-1][:8]
+    year, month, day = date_str[:4], date_str[4:6], date_str[6:8]
+
+    image, pixel_area = preprocess_raster(
+        tif_path=mask_path,
+        path_shapefile=path_shapefile
+    )
+
+    areas = calculate_areas_from_array(
+        image=image,
+        pixel_area=pixel_area,
+        thresholds=thresholds
+    )
+
+    # Resultado compacto (retorno único)
+    results = []
+    for threshold, (area_m2, area_km2) in areas.items():
+        results.append({
+            "threshold": threshold,
+            "water_masks": mask_path,
+            "year": year,
+            "month": month,
+            "day": day,
+            "m2_area": area_m2,
+            "km2_area": area_km2,
+            "CLOUDY_PIXEL_PERCENTAGE": 0,
+        })
+
+    return results
+
+
+
+def preprocess_raster(tif_path, path_shapefile):
+    with rasterio.open(tif_path) as src_file:
+
+        src, memfile_src = crop_raster_with_geojson_obj(
+            src_file, geojson_path=path_shapefile
+        )
+
+        dst_crs = "EPSG:31984"
+
+        transform, width, height = calculate_default_transform(
+            src.crs, dst_crs, src.width, src.height, *src.bounds
+        )
+
+        kwargs = src.meta.copy()
+        kwargs.update(
+            {
+                "crs": dst_crs,
+                "transform": transform,
+                "width": width,
+                "height": height,
+                "count": 1,
+            }
+        )
+
+        with rasterio.MemoryFile() as memfile:
+            with memfile.open(**kwargs) as dst:
+                reproject(
+                    source=rasterio.band(src, 1),
+                    destination=rasterio.band(dst, 1),
+                    src_transform=src.transform,
+                    src_crs=src.crs,
+                    dst_transform=transform,
+                    dst_crs=dst_crs,
+                    resampling=Resampling.nearest,
+                )
+
+                image = dst.read(1)
+
+        memfile_src.close()
+
+    pixel_area = abs(transform.a) * abs(transform.e)
+    return image, pixel_area
+
+def calculate_areas_from_array(image, pixel_area, thresholds):
+    results = {}
+
+    for t in thresholds:
+        water_pixels = np.count_nonzero(image > t)
+        area_m2 = water_pixels * pixel_area
+        results[t] = (area_m2, area_m2 / 1e6)
+
+    return results
+
 
 
 def calculate_water_area(tif_path, path_shapefile, threshold=0, save_path=None):

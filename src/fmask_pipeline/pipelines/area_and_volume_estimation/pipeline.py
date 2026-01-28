@@ -14,6 +14,7 @@ def create_pipeline(dependencies=['water_mask_dependency'], **kwargs) -> Pipelin
                     "path_shapefile": "params:configs.path_shapefile",
                     "location_name": "params:configs.location_name",
                     "thresholds": "params:configs.thresholds",
+                    "max_workers": "params:configs.max_workers",
                     "dependency1": dependencies[0],
                 },
                 outputs="water_areas_dfs",

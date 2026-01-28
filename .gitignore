@@ -4,6 +4,7 @@ sentinel_scenes
 sentinel_scenes_SL
 .venv
 venv
+.venv_win
 .ipynb_*
 
 *key.*

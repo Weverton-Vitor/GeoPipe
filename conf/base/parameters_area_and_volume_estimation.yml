@@ -1,5 +1,8 @@
 configs:
 
+  # Processing
+  max_workers: 7
+
   water_masks_path: "data/07_water_masks/"
   #water_masks_path: "data/09_spectral_indice/NDWI/"
   #water_masks_path: "data/09_spectral_indice/MNDWI/"

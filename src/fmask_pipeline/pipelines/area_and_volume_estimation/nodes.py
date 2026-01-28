@@ -1,7 +1,10 @@
+import gc
 import glob
 import logging
 import os
-import gc
+from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
 import pandas as pd
 from pandas import DataFrame
 from tqdm import tqdm
@@ -16,132 +19,28 @@ from utils.area_and_volume_estimation.plots import (
 from utils.area_and_volume_estimation.water import (
     calculate_volumes_to_multiple_methods,
     calculate_water_area,
+    process_single_mask,
 )
 from utils.metrics.regression import calculate_metrics_regression_by_month
 
 logger = logging.getLogger(__name__)
 
 
-def estimate_water_area_old(
-    water_masks_path: str,
-    path_shapefile: str,
-    save_path: str,
-    location_name: str,
-    thresholds: list,
-    *args,
-    **kwargs,
-) -> tuple:
-    """
-    Reproject a .tif image with geographic CRS (degrees) to UTM (meters),
-    and calculates the area of water pixels (value > 0).
-
-    parameters:
-    - tif_path (str): path to the .tif file
-    - path_shapefile (str): path to the GeoJSON clipping file
-    - binarization_gt (int): threshold value to consider a pixel as water
-    - save_path (str): path to save the reprojected raster
-
-    returns:
-    - Tuple: (area_m2)
-    """
-    dfs = {}
-
-    masks_path = water_masks_path + f"{location_name}/"
-    water_masks = glob.glob(os.path.join(masks_path, "**", "*.tif"), recursive=True)
-    logger.info(f"Found {len(water_masks)} tif files in {masks_path}")
-    total_tifs = len(water_masks)
-
-    for threshold in thresholds:
-        # df_metadata = pd.read_csv(
-        #     f"data/02_boa_images/{location_name}/metadata/{location_name}_metadata.csv"
-        # )
-        df_areas = pd.DataFrame()
-        masks = []
-        days = []
-        months = []
-        years = []
-        m2_areas = []
-        km2_areas = []
-
-        logger.info(f"Threshold: {threshold}")
-
-        with tqdm(total=total_tifs, desc="Estimate Area", unit="images") as pbar:
-            for mask_path in water_masks:
-                area_m2, area_km2 = calculate_water_area(
-                    tif_path=mask_path,
-                    path_shapefile=path_shapefile,
-                    threshold=threshold,
-                )
-
-                year = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][:4]
-                month = (
-                    mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][4:6]
-                )
-                day = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][6:8]
-
-                years.append(year)
-                months.append(month)
-                days.append(day)
-
-                masks.append(mask_path)
-                m2_areas.append(area_m2)
-                km2_areas.append(area_km2)
-                pbar.update(1)
-
-        df_areas["water_masks"] = pd.Series(water_masks)
-        df_areas["year"] = pd.Series(years)
-        df_areas["month"] = pd.Series(months)
-        df_areas["day"] = pd.Series(days)
-        df_areas["m2_area"] = pd.Series(m2_areas)
-        df_areas["km2_area"] = pd.Series(km2_areas)
-        df_areas["CLOUDY_PIXEL_PERCENTAGE"] = (
-            0  # df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
-        )
-
-        os.makedirs(f"{save_path}{location_name}", exist_ok=True)
-        df_areas.to_csv(
-            f"{save_path}{location_name}/df_areas_trh_{threshold}.csv", index=False
-        )
-        dfs[f"df_areas_trh_{threshold}"] = df_areas
-
-        import gc
-
-        gc.collect()
-
-    return dfs
-
 
 def estimate_water_area(
     water_masks_path: str,
     path_shapefile: str,
+    thresholds: list,
     save_path: str,
     location_name: str,
-    thresholds: list,
-    *args,
-    **kwargs,
-) -> tuple:
-    """
-    Reproject a .tif image with geographic CRS (degrees) to UTM (meters),
-    and calculates the area of water pixels (value > 0).
+    dependency1=None,
+    max_workers: int | None = None,
+):
 
-    parameters:
-    - tif_path (str): path to the .tif file
-    - path_shapefile (str): path to the GeoJSON clipping file
-    - binarization_gt (int): threshold value to consider a pixel as water
-    - save_path (str): path to save the reprojected raster
-
-    returns:
-    - Tuple: (area_m2)
-    """
-
-    masks_path = water_masks_path + f"{location_name}/"
-    water_masks = glob.glob(os.path.join(masks_path, "**", "*.tif"), recursive=True)
-    total_tifs = len(water_masks)
-    logger.info(f"Found {total_tifs} tif files in {masks_path}")
-
-    # Create list of dataframes, one for each threshold
-    thresholds_results_dict = {
-        f"{threshold}": {
+    logger.info(f"Estimating water area using {max_workers} workers...")
+    # Estrutura final
+    results = {
+        threshold: {
             "water_masks": [],
             "year": [],
             "month": [],
@@ -153,142 +52,51 @@ def estimate_water_area(
         for threshold in thresholds
     }
 
-    with tqdm(total=total_tifs, desc="Estimate Area", unit="images") as pbar:
-        for mask_path in water_masks:  # iterating over each mask
-            for threshold in thresholds:
-                area_m2, area_km2 = calculate_water_area(
-                    tif_path=mask_path,
-                    path_shapefile=path_shapefile,
-                    threshold=threshold,
-                )
+    masks_path = os.path.join(water_masks_path, location_name)
+    save_dir = os.path.join(save_path, location_name)
+    os.makedirs(save_dir, exist_ok=True)
 
-                year = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][:4]
-                month = (
-                    mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][4:6]
-                )
-                day = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][6:8]
-
-                thresholds_results_dict[f"{threshold}"]["water_masks"].append(mask_path)
-                thresholds_results_dict[f"{threshold}"]["year"].append(year)
-                thresholds_results_dict[f"{threshold}"]["month"].append(month)
-                thresholds_results_dict[f"{threshold}"]["day"].append(day)
-                thresholds_results_dict[f"{threshold}"]["m2_area"].append(area_m2)
-                thresholds_results_dict[f"{threshold}"]["km2_area"].append(area_km2)
-                thresholds_results_dict[f"{threshold}"][
-                    "CLOUDY_PIXEL_PERCENTAGE"
-                ].append(0)  # df_metadata["CLOUDY_PIXEL_PERCENTAGE"]
-
-            pbar.update(1)
-
-    thresholds_results_df = {
-        f"df_areas_trh_{threshold}": pd.DataFrame(threshold_dict)
-        for threshold, threshold_dict in thresholds_results_dict.items()
-    }
-
-    os.makedirs(f"{save_path}{location_name}", exist_ok=True)
-    for threshold, df_areas in thresholds_results_df.items():
-        df_areas.to_csv(f"{save_path}{location_name}/{threshold}.csv", index=False)
-
-    return thresholds_results_df
-
-
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from tqdm import tqdm
-import pandas as pd
-import os, glob
-
-
-def _process_mask_threshold(mask_path, threshold, path_shapefile):
-    """Função auxiliar para ser executada em paralelo"""
-    area_m2, area_km2 = calculate_water_area(
-        tif_path=mask_path,
-        path_shapefile=path_shapefile,
-        threshold=threshold,
+    water_masks = glob.glob(
+        os.path.join(masks_path, "**", "*.tif"),
+        recursive=True
     )
 
-    year = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][:4]
-    month = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][4:6]
-    day = mask_path.replace("_clean", "").split("/")[-1].split("_")[-1][6:8]
-
-    return {
-        "threshold": threshold,
-        "mask_path": mask_path,
-        "year": year,
-        "month": month,
-        "day": day,
-        "m2_area": area_m2,
-        "km2_area": area_km2,
-        "CLOUDY_PIXEL_PERCENTAGE": 0,
-    }
-
-
-def estimate_water_area_threads(
-    water_masks_path: str,
-    path_shapefile: str,
-    save_path: str,
-    location_name: str,
-    thresholds: list,
-    *args,
-    **kwargs,
-) -> dict:
-    masks_path = water_masks_path + f"{location_name}/"
-    water_masks = glob.glob(os.path.join(masks_path, "**", "*.tif"), recursive=True)
-    total_tifs = len(water_masks)
-    logger.info(f"Found {total_tifs} tif files in {masks_path}")
-
-    # Estrutura inicial de resultados
-    thresholds_results_dict = {
-        f"{threshold}": {
-            "water_masks": [],
-            "year": [],
-            "month": [],
-            "day": [],
-            "m2_area": [],
-            "km2_area": [],
-            "CLOUDY_PIXEL_PERCENTAGE": [],
-        }
-        for threshold in thresholds
-    }
-
-    # Criar lista de tarefas
     tasks = [
-        (mask_path, threshold, path_shapefile)
+        (mask_path, path_shapefile, thresholds)
         for mask_path in water_masks
-        for threshold in thresholds
     ]
 
-    # Paralelizar
-    with ProcessPoolExecutor(max_workers=4) as executor:
-        futures = [executor.submit(_process_mask_threshold, *task) for task in tasks]
-        for future in tqdm(
-            as_completed(futures),
-            total=len(futures),
-            desc="Estimate Area",
-            unit="tasks",
-        ):
-            result = future.result()
-            t = str(result["threshold"])
-            thresholds_results_dict[t]["water_masks"].append(result["mask_path"])
-            thresholds_results_dict[t]["year"].append(result["year"])
-            thresholds_results_dict[t]["month"].append(result["month"])
-            thresholds_results_dict[t]["day"].append(result["day"])
-            thresholds_results_dict[t]["m2_area"].append(result["m2_area"])
-            thresholds_results_dict[t]["km2_area"].append(result["km2_area"])
-            thresholds_results_dict[t]["CLOUDY_PIXEL_PERCENTAGE"].append(
-                result["CLOUDY_PIXEL_PERCENTAGE"]
-            )
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(process_single_mask, task) for task in tasks]
 
-            gc.collect()
+        with tqdm(total=len(futures), desc="Estimate Area", unit="images") as pbar:
+            for future in as_completed(futures):
+                batch_results = future.result()
 
-    # Converter para DataFrame e salvar
+                for r in batch_results:
+                    tr = r["threshold"]
+                    results[tr]["water_masks"].append(r["water_masks"])
+                    results[tr]["year"].append(r["year"])
+                    results[tr]["month"].append(r["month"])
+                    results[tr]["day"].append(r["day"])
+                    results[tr]["m2_area"].append(r["m2_area"])
+                    results[tr]["km2_area"].append(r["km2_area"])
+                    results[tr]["CLOUDY_PIXEL_PERCENTAGE"].append(
+                        r["CLOUDY_PIXEL_PERCENTAGE"]
+                    )
+
+                pbar.update(1)
+
+    # ---------- DATAFRAME BUILD ----------
     thresholds_results_df = {
-        f"df_areas_trh_{threshold}": pd.DataFrame(threshold_dict)
-        for threshold, threshold_dict in thresholds_results_dict.items()
+        f"df_areas_trh_{threshold}": pd.DataFrame(data)
+        for threshold, data in results.items()
     }
 
-    os.makedirs(f"{save_path}{location_name}", exist_ok=True)
-    for threshold, df_areas in thresholds_results_df.items():
-        df_areas.to_csv(f"{save_path}{location_name}/{threshold}.csv", index=False)
+    # ---------- SAVE ----------
+    os.makedirs(save_dir, exist_ok=True)
+    for name, df in thresholds_results_df.items():
+        df.to_csv(os.path.join(save_dir, f"{name}.csv"), index=False)
 
     return thresholds_results_df
 
@@ -502,6 +310,7 @@ def plot_results(
     volume_columns = [
         "volume_m2_mean" if "%)" in key else "volume_m2" for key in list(methods.keys())
     ]
+    
     figure2 = plot_series_ano_mes(
         methods,
         volume_columns=volume_columns,
