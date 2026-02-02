@@ -1,5 +1,8 @@
 configs:
 
+  # Processing
+  max_workers: 7
+
   water_masks_path: "data/07_water_masks/"
   #water_masks_path: "data/09_spectral_indice/NDWI/"
   #water_masks_path: "data/09_spectral_indice/MNDWI/"
@@ -30,6 +33,8 @@ configs:
   #method_name: "NDWI"
   # method_name: "MNDWI"
   method_name: "VGG-UNet"
+  initial_date: "01/2019"
+  end_date: "06/2025"
   ground_truth_name: "ANA"
   ground_truth_path_df:  "notebooks/data/engenheiro_avidos_ana.csv"
   ground_truth_column_volume: "Volume Útil (hm³)"
