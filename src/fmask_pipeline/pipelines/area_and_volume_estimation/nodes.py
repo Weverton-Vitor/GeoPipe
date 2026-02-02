@@ -304,6 +304,7 @@ def plot_results(
             threshold = key.replace("df_volumes_trh_", "")
 
             # Format label depending on configuration
+            # TODO adapt to ndwi e mndwi thresholds
             label = (
                 f"{method_name} ({float(threshold) * 100}%)"
                 if not raw_thresholds
