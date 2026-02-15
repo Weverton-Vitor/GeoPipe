@@ -1,10 +1,5 @@
 import uvicorn
-from api.routes import (
-    # artifacts,
-    images,
-    runs,
-    timeseries,
-)
+from api.routes import images, runs, timeseries, artifacts
 from config import API_TITLE, API_VERSION
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,11 +32,12 @@ def create_app() -> FastAPI:
         prefix="/images",
         tags=["Images"],
     )
-    # app.include_router(
-    #     artifacts.router,
-    #     prefix="/artifacts",
-    #     tags=["Artifacts"],
-    # )
+
+    app.include_router(
+        artifacts.router,
+        prefix="/artifacts",
+        tags=["Artifacts"],
+    )
 
     return app
 
@@ -52,7 +48,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # Vite
-        "*",
     ],
     allow_credentials=True,
     allow_methods=["*"],

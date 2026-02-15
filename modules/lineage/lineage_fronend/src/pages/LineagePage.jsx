@@ -3,6 +3,7 @@ import {
   getRuns,
   getVolumeTimeSeries,
   getImagesForDay,
+  getImagesArtifacts,
 } from "../api/geopipeApi";
 
 import { RunSelect } from "../components/RunSelect";
@@ -16,7 +17,10 @@ export function LineagePage() {
   const [selectedRun, setSelectedRun] = useState(null);
   const [timeseries, setTimeseries] = useState([]);
   const [images, setImages] = useState([]);          // ⬅ array
-  const [selectedImage, setSelectedImage] = useState({"url": ""}); // ⬅ objeto
+  const [selectedImage, setSelectedImage] = useState({ "url": "" }); // ⬅ objeto
+  const [selectedDate, setSelectedDate] = useState({ "month": "", "year": "", "day": "" }); // ⬅ objeto
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [artifacts, setIsArtifacts] = useState(null);
 
   useEffect(() => {
     getRuns().then(setRuns);
@@ -34,16 +38,28 @@ export function LineagePage() {
     loadTimeseries();
   }, [selectedRun]);
 
-  const selectImage = (image) => {
+  async function selectImage(image) {
     console.log("Imagem selecionada:", image);
     setSelectedImage(image);
+
+    const response = await getImagesArtifacts(
+      selectedRun,
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day
+    );
+
+    setIsArtifacts(response);
+    setIsModalOpen(true);
+    console.log(isModalOpen)
   }
 
   async function handleSelectMonth(year, month, day) {
     if (!selectedRun) return;
 
     try {
-      setSelectedImage({"url": ""});
+      setSelectedImage({ "url": "" }); // Atualiza o estado com a imagem selecionada
+      setSelectedDate({ "month": month, "year": year, "day": day });
       setImages([]);
 
       const paddedMonth = String(month).padStart(2, "0");
@@ -60,6 +76,8 @@ export function LineagePage() {
       console.error("Erro ao buscar imagens:", err);
     }
   }
+
+
 
   return (
     <div style={{ width: "90vw" }}>
@@ -81,9 +99,14 @@ export function LineagePage() {
         onSelect={selectImage}
       />
 
-      <ImageViewer imageUrl={selectedImage.url} onClose={() => {}}/>
+      {isModalOpen && (<ImageViewer
+        imageUrl={selectedImage.url} 
+        onClose={() => setIsModalOpen(false)} 
+        artifacts={artifacts}
+        />
+        
+        )}
 
     </div>
   );
 }
-    

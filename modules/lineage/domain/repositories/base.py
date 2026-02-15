@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 import pandas as pd
-from domain.entities.image import ImageBOA
+from domain.entities.artifact import Artifact
 
 
 class VolumeRepository(ABC):
@@ -13,4 +13,9 @@ class VolumeRepository(ABC):
 class ImageRepository(ABC):
     @abstractmethod
     def get_images(self, run_name, segmentation_method) -> pd.DataFrame:
+        pass
+
+class ArtifactRepository(ABC):
+    @abstractmethod
+    def get_artifacts(self, run_name, segmentation_method) -> list[Artifact]:
         pass

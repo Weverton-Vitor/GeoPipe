@@ -2,11 +2,18 @@ class Artifact:
     def __init__(
         self,
         name: str,
-        artifact_type: str,
-        stage: str,
-        path: str,
+        value: float,
     ):
         self.name = name
-        self.type = artifact_type  # image, mask, metric
-        self.stage = stage  # raw, fmask, water, clean
+        self.value = value
+
+class ArtifactImage(Artifact):
+    def __init__(
+        self,
+        name: str,
+        path: str,
+        image_type: str,
+    ):
+        super().__init__(name, 0.0)  # Call parent constructor with default value
         self.path = path
+        self.image_type = image_type

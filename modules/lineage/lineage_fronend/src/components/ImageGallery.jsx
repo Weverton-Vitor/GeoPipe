@@ -3,6 +3,7 @@ import styles from "./ImageGallery.module.css";
 export function ImageGallery({ images, onSelect }) {
   if (!images || images.length === 0) return null;
 
+
   return (
     <div className={styles.gallery}>
       {images.map((img) => (
@@ -10,8 +11,7 @@ export function ImageGallery({ images, onSelect }) {
           key={img.url}
           className={styles.thumbWrapper}
           onClick={() => {
-    console.log("CLIQUEI", img);
-    onSelect(img);
+          onSelect(img);
   }}
         >
           <img

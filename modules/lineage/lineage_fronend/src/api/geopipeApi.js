@@ -29,3 +29,12 @@ export async function getImagesForDay(runId, year, month, day) {
 
     return res.json();
 }
+
+export async function getImagesArtifacts(runId, year, month, day) {
+    console.log("Fetching images for:", runId, year, month, day);
+    const res = await fetch(
+        `${BASE_URL}/artifacts/get_artifacts?year=${year}&month=${month}&day=${day}&run_name=${runId}`
+    );
+
+    return res.json();
+}

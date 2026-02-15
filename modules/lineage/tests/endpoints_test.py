@@ -1,6 +1,7 @@
-from fastapi.testclient import TestClient
-from main import app
 from pathlib import Path
+
+from fastapi.testclient import TestClient
+from modules.lineage.main import app
 
 client = TestClient(app)
 
@@ -37,6 +38,15 @@ def test_get_volume_temporal_serie():
 def test_get_image():
     response = client.get(
         "/images/get_for_month?run_name=argemiro_reservatorio&year=2020&month=06"
+    )
+    print(response.json())
+
+    assert response.status_code == 200
+
+
+def test_get_image_artifacts():
+    response = client.get(
+        "/artifacts/get_artifacts?run_name=engenheiro_avidos_reservatorio&year=2020&month=01&day=04"
     )
     print(response.json())
 
