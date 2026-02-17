@@ -1,11 +1,11 @@
 export function adaptTimeseriesResponse(raw) {
-    if (!raw || !raw.year) return [];
+    if (!raw || !raw.volume || !raw.year) return [];
 
-    const size = raw.year.length;
-    const result = [];
+    let size = raw.year.length;
+    const result_volumes = [];
 
     for (let i = 0; i < size; i++) {
-        result.push({
+        result_volumes.push({
             day: raw.day[i],
             year: raw.year[i],
             month: raw.month[i],
@@ -15,5 +15,6 @@ export function adaptTimeseriesResponse(raw) {
         });
     }
 
-    return result;
+
+    return result_volumes
 }

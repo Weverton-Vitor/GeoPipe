@@ -1,17 +1,15 @@
-from fastapi import APIRouter, Depends, Query
 from api.dependencies import get_timeseries_service
-from domain.repositories.filesystem_volume_repository import (
-    FileSystemVolumeRepository,
-)
+from domain.services.timeseries_service import TimeSeriesService
+from fastapi import APIRouter, Depends, Query
 
 router = APIRouter()
 
 
 @router.get("/volume")
 def get_volume_timeseries(
-    service: FileSystemVolumeRepository = Depends(get_timeseries_service),
-    run_name=Query(alias="run_name"),
-    segmentation_method=Query(alias="segmentation_method"),
+    service:  TimeSeriesService= Depends(get_timeseries_service),
+    run_name: str = Query(alias="run_name"),
+    segmentation_method="vggunet",
 ):
     """
     Retorna a série temporal mensal (média) do volume de água.

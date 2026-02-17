@@ -8,8 +8,8 @@ class TimeSeriesService:
         self.volume_repository = volume_repository
 
     def get_volume(self, run_name: str, segmentation_method: str):
-        volumes_df = self.volume_repository.get_volume(
+        volumes = self.volume_repository.get_volume(
             run_name=run_name, segmentation_method=segmentation_method
         )
 
-        return volumes_df.to_dict(orient="list")
+        return volumes

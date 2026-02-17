@@ -31,8 +31,9 @@ export function LineagePage() {
 
     async function loadTimeseries() {
       const raw = await getVolumeTimeSeries("vggunet", selectedRun);
-      const adapted = adaptTimeseriesResponse(raw);
-      setTimeseries(adapted);
+      // const adapted = adaptTimeseriesResponse(raw);
+      setTimeseries(raw.data);
+      console.log("Timeseries raw:", raw.data);
     }
 
     loadTimeseries();
@@ -51,7 +52,7 @@ export function LineagePage() {
 
     setIsArtifacts(response);
     setIsModalOpen(true);
-    console.log(isModalOpen)
+    (isModalOpen)
   }
 
   async function handleSelectMonth(year, month, day) {
