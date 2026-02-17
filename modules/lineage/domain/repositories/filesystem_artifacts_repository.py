@@ -1,13 +1,13 @@
 import io
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
-from domain.entities.image import ImageBOA
-from domain.repositories.base import ArtifactRepository
-from PIL import Image
-
 from domain.entities.artifact import ArtifactImage
+from domain.repositories.base import ArtifactRepository
+from matplotlib import cm
+from PIL import Image
 
 
 class FileSystemArtifactRepository(ArtifactRepository):
@@ -16,7 +16,7 @@ class FileSystemArtifactRepository(ArtifactRepository):
 
         self.source_root_cloud_mask = self.base_path / "data" / "03_masks"
         self.source_root_cloud_free = self.base_path / "data" / "04_clean_images"
-        self.source_root_water_mask = self.base_path / "data" / "07_water_mask"
+        self.source_root_water_mask = self.base_path / "data" / "07_water_masks"
 
         # onde vamos salvar os PNGs para o frontend
         self.output_root = self.base_path / "public" / "images"
@@ -24,12 +24,42 @@ class FileSystemArtifactRepository(ArtifactRepository):
     # ==========================
     # API pública do repository
     # ==========================
+    def get_binary_artifact(self, run: str, year: str, month: str, day: str, threshold):
+        """
+        Retorna o conteúdo binário do artefato (ex: imagem TIFF) para download
+        """
+        source_dirs = self._get_source_dirs(run, year)
+        output_dir = self._get_output_dir(run, year, month)
+
+        if not any(source_dirs.values()):
+            return []
+
+        tif_paths = list(source_dirs["water_mask"].glob("*.tif"))
+        if not tif_paths:
+            return []
+
+        tif_path = tif_paths[0]
+
+        png_path = output_dir / "water_mask" / f"{tif_path.stem}_water_mask_{threshold}.png"
+
+        (output_dir / "water_mask").mkdir(parents=True, exist_ok=True)
+
+        if not png_path.exists():
+            self._generate_binary_mask_image(tif_path, png_path, threshold=threshold)
+
+        path = f"/static/images/{run}/{year}/{month}/artifacts/water_mask/{Path(png_path).name}"
+
+        return ArtifactImage(
+            name=tif_path.name,
+            path=path,
+            image_type="water_mask",
+        )
+
     def get_artifacts(
         self, run: str, year: str, month: str, day: str = ""
     ) -> list[ArtifactImage]:
         source_dirs = self._get_source_dirs(run, year)
         output_dir = self._get_output_dir(run, year, month)
-        
 
         if not any(source_dirs.values()):
             return []
@@ -37,6 +67,7 @@ class FileSystemArtifactRepository(ArtifactRepository):
         artifacs: list[ArtifactImage] = []
 
         for source_dir_key in source_dirs.keys():
+            print(f"Processando {source_dir_key} em {source_dirs[source_dir_key]}")
             (output_dir / source_dir_key).mkdir(parents=True, exist_ok=True)
             for tif_path in source_dirs[source_dir_key].glob("*.tif"):
                 if not self._matches_date(tif_path.name, year, month, day):
@@ -46,7 +77,7 @@ class FileSystemArtifactRepository(ArtifactRepository):
                     png_path = output_dir / source_dir_key / f"{tif_path.stem}.png"
                     if not png_path.exists():
                         self._convert_tif_to_png(tif_path, png_path)
-                        
+
                     path = f"/static/images/{run}/{year}/{month}/artifacts/{source_dir_key}/{Path(png_path).name}"
 
                     artifacs.append(
@@ -57,7 +88,9 @@ class FileSystemArtifactRepository(ArtifactRepository):
                         )
                     )
                 elif source_dir_key == "cloud_mask":
-                    png_path = output_dir / source_dir_key / f"{tif_path.stem}_cloud_mask.png"
+                    png_path = (
+                        output_dir / source_dir_key / f"{tif_path.stem}_cloud_mask.png"
+                    )
                     if not png_path.exists():
                         self._generate_fmask_overlay_image(tif_path, png_path)
                     path = f"/static/images/{run}/{year}/{month}/artifacts/{source_dir_key}/{Path(png_path).name}"
@@ -69,8 +102,29 @@ class FileSystemArtifactRepository(ArtifactRepository):
                             image_type=source_dir_key,
                         )
                     )
-                else:
-                    pass
+                elif source_dir_key == "water_mask":
+                    (output_dir / source_dir_key / "probs").mkdir(
+                        parents=True, exist_ok=True
+                    )
+
+                    png_path = (
+                        output_dir
+                        / source_dir_key
+                        / "probs"
+                        / f"{tif_path.stem}_water_probabilities.png"
+                    )
+
+                    if not png_path.exists():
+                        self._generate_probability_image(tif_path, png_path)
+                    path = f"/static/images/{run}/{year}/{month}/artifacts/{source_dir_key}/probs/{Path(png_path).name}"
+
+                    artifacs.append(
+                        ArtifactImage(
+                            name=tif_path.name,
+                            path=path,
+                            image_type=source_dir_key,
+                        )
+                    )
 
         return artifacs
 
@@ -124,11 +178,6 @@ class FileSystemArtifactRepository(ArtifactRepository):
 
         img = Image.fromarray(rgb_norm)
         img.save(png_path, format="PNG")
-        
-    from pathlib import Path
-
-    from PIL import Image
-
 
     def _generate_fmask_overlay_image(self, input_tif: Path, output_png: Path):
         with rasterio.open(input_tif) as src:
@@ -152,3 +201,44 @@ class FileSystemArtifactRepository(ArtifactRepository):
         img = Image.fromarray(rgba, mode="RGBA")
         img.save(output_png)
 
+    def _generate_probability_image(self, input_tif: Path, output_png: Path):
+        with rasterio.open(input_tif) as src:
+            prob = src.read(1).astype(np.float32)
+
+        if prob.max() > 1:
+            prob = prob / 100.0
+
+        prob = np.clip(prob, 0, 1)
+
+        from matplotlib import cm
+
+        colormap = cm.get_cmap("viridis")
+        colored = colormap(prob)
+
+        rgba = (colored * 255).astype(np.uint8)
+
+        rgba[..., 3] = 140
+
+        img = Image.fromarray(rgba, mode="RGBA")
+        img.save(output_png)
+
+    def _generate_binary_mask_image(
+        self, input_tif: Path, output_png: Path, threshold: float = 0.5
+    ):
+        print(f"Gerando máscara binária para {input_tif} com threshold {threshold}")
+        with rasterio.open(input_tif) as src:
+            prob = src.read(1).astype(np.float32)
+
+        if prob.max() > 1:
+            prob = prob / 100.0
+
+        mask = prob >= threshold
+
+        height, width = mask.shape
+        rgba = np.zeros((height, width, 4), dtype=np.uint8)
+
+        # azul água semi-transparente
+        rgba[mask] = [0, 150, 255, 180]
+
+        img = Image.fromarray(rgba, mode="RGBA")
+        img.save(output_png)

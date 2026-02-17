@@ -38,3 +38,12 @@ export async function getImagesArtifacts(runId, year, month, day) {
 
     return res.json();
 }
+
+export async function getWatermask(runId, year, month, day, threshold) {
+    console.log("Fetching water mask for:", runId, year, month, day, threshold);
+    const res = await fetch(
+        `${BASE_URL}/artifacts/get_water_mask?year=${year}&month=${month}&day=${day}&run_name=${runId}&threshold=${threshold}`
+    );
+
+    return res.json();
+}

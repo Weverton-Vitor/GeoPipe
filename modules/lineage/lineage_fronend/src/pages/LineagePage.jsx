@@ -100,6 +100,8 @@ export function LineagePage() {
       />
 
       {isModalOpen && (<ImageViewer
+        selectedRun={selectedRun}
+        selected_date={selectedDate}
         imageUrl={selectedImage.url} 
         onClose={() => setIsModalOpen(false)} 
         artifacts={artifacts}
