@@ -16,17 +16,15 @@ import styles from "./VolumeChart.module.css";
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
 
-console.log("Tooltip payload:", payload);
   const volume = payload.find(p => p.dataKey === "volume_m2")?.value;
   const ana = payload.find(p => p.dataKey === "ana_volume")?.value;
   const diff = payload[0]?.payload?.days_difference;
   const interp = payload[0]?.payload?.ana_interpolated;
 
-  console.log("CustomTooltip data:", { volume, ana, diff, interp });
   return (
     <div style={{
       background: "black",
-      border: "1px solid #ff0000",
+      border: "1px solid #7e7e7e",
       padding: 10,
       borderRadius: 6,
       fontSize: 13,
@@ -44,7 +42,7 @@ console.log("Tooltip payload:", payload);
         <div>
           ANA: <b>{ana.toLocaleString()}</b>
           {interp && (
-            <span style={{ color: "#ff0000", marginLeft: 6 }}>
+            <span style={{ color: "#bbbbbb", marginLeft: 6 }}>
               (~{diff} dias)
             </span>
           )}
@@ -84,11 +82,12 @@ export function VolumeChart({ data, onSelect }) {
         Volume de água ao longo do tempo
       </div>
 
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer  height="100%">
         <LineChart
           data={chartData}
           onMouseDown={handleMouseDown}
         >
+          <Legend />
 
           <CartesianGrid strokeDasharray="3 3" />
 
@@ -100,7 +99,6 @@ export function VolumeChart({ data, onSelect }) {
             cursor={{ stroke: "#aaa", strokeWidth: 1 }}
           />
 
-          <Legend />
 
           {/* -------- Linha ANA -------- */}
           <Line
@@ -124,7 +122,7 @@ export function VolumeChart({ data, onSelect }) {
             type="monotone"
             dataKey="volume_m2"
             pointerEvents="none"
-            stroke="#000"
+            stroke="#1a1687"
             strokeWidth={2}
             dot={(props) => {
               const { cx, cy, payload } = props;
@@ -136,7 +134,7 @@ export function VolumeChart({ data, onSelect }) {
                   cx={cx}
                   cy={cy}
                   r={4}
-                  fill={payload.ana_interpolated ? "#ef4444" : "#000"}
+                  fill={payload.ana_interpolated ? "#ef4444" : "#2b79ce"}
                 />
               );
             }}
@@ -149,17 +147,17 @@ export function VolumeChart({ data, onSelect }) {
 
 
           {/* -------- Camada invisível clicável -------- */}
-<Line
-  type="monotone"
-  dataKey="volume_m2"
-  stroke="transparent"
-  strokeWidth={18}
-  dot={false}
-  activeDot={false}
-  connectNulls
-  isAnimationActive={false}
-  pointerEvents="none"
-/>
+          <Line
+            type="monotone"
+            dataKey="volume_m2"
+            stroke="transparent"
+            strokeWidth={18}
+            dot={false}
+            activeDot={false}
+            connectNulls
+            isAnimationActive={false}
+            pointerEvents="none"
+          />
 
 
         </LineChart>

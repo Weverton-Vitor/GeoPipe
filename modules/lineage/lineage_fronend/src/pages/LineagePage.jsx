@@ -6,12 +6,11 @@ import {
   getImagesArtifacts,
 } from "../api/geopipeApi";
 
-import { RunSelect } from "../components/RunSelect";
 import { VolumeChart } from "../components/VolumeChart";
 import { ImageGallery } from "../components/ImageGallery";
 import { ImageViewer } from "../components/ImageViewer";
+import { Header } from "../components/Header";
 
-import { adaptTimeseriesResponse } from "../adapters/timeseriesAdapter";
 export function LineagePage() {
   const [runs, setRuns] = useState([]);
   const [selectedRun, setSelectedRun] = useState(null);
@@ -81,35 +80,36 @@ export function LineagePage() {
 
 
   return (
-    <div style={{ width: "90vw" }}>
-      <RunSelect
-        runs={runs}
+    <div style={{ display: "flex", flexDirection: "column",  width: "100%" }}>
+      <Header runs={runs}
         selectedRun={selectedRun}
         onChange={setSelectedRun}
       />
 
-      {timeseries.length > 0 && (
-        <VolumeChart
-          data={timeseries}
-          onSelect={handleSelectMonth}
-        />
-      )}
+      <div style={{ width: "96%", padding: "0 2%" }}>
 
-      <ImageGallery
-        images={images}
-        onSelect={selectImage}
-      />
-
-      {isModalOpen && (<ImageViewer
-        selectedRun={selectedRun}
-        selected_date={selectedDate}
-        imageUrl={selectedImage.url} 
-        onClose={() => setIsModalOpen(false)} 
-        artifacts={artifacts}
-        />
-        
+        {timeseries.length > 0 && (
+          <VolumeChart
+            data={timeseries}
+            onSelect={handleSelectMonth}
+          />
         )}
 
+        <ImageGallery
+          images={images}
+          onSelect={selectImage}
+        />
+
+        {isModalOpen && (<ImageViewer
+          selectedRun={selectedRun}
+          selected_date={selectedDate}
+          imageUrl={selectedImage.url}
+          onClose={() => setIsModalOpen(false)}
+          artifacts={artifacts}
+        />
+
+        )}
+      </div>
     </div>
   );
 }
