@@ -4,7 +4,7 @@ configs:
   # Nome da localidade, usada no caminho de download das imagens,
   # plot da máscara, no salvamento da imagem limpa e no nome da imagem
   # Parametro geral, usado pela maioria dos pipelines para acessar as imagens
-  location_name: "engenheiro_avidos_reservatorio"
+  location_name: "mares"
 
   # Fator de escala dos valores da reflectancia,
   scale_factor: 0.0001
@@ -12,6 +12,7 @@ configs:
   # Fator de deslocamento dos valores da reflectancia
   offset: 0
 
+  # TODO Tornar valores fixos
   # Caminho do log do algoritmo de remoção de nuvens
   cloud_removal_log: "data/06_color_file_log/"
 

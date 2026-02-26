@@ -17,6 +17,8 @@ export function ImageViewer({ selectedRun, selected_date, imageUrl, artifacts, o
   const [threshold, setThreshold] = useState(0.5);
   const [pendingThreshold, setPendingThreshold] = useState(0.5);
   const [binaryMaskUrl, setBinaryMaskUrl] = useState(null);
+  const [showRightShapefile, setShowRightShapefile] = useState(false);
+  const [showLeftShapefile, setShowLeftShapefile] = useState(false);
 
 
   async function handleApplyThreshold() {
@@ -78,10 +80,29 @@ export function ImageViewer({ selectedRun, selected_date, imageUrl, artifacts, o
                     style={{ opacity: maskOpacity }}
                   />
                 )}
+                {showLeftShapefile && artifacts.shapefile && (
+                  <img
+                    src={API_BASE + artifacts.shapefile.path}
+                    alt="Shapefile"
+                    className={styles.overlayImage}
+
+                    crossOrigin="anonymous"
+                  />
+                )}
               </div>
+              
 
               <div className={styles.controls}>
                 <div className={styles.controlCard}>
+                  <label className={styles.checkRow}>
+                    <input
+                      type="checkbox"
+                      checked={showLeftShapefile}
+                      onChange={() => setShowLeftShapefile(!showLeftShapefile)}
+                    />
+                    <span className={styles.checkLabel}>Shapefile</span>
+                  </label> 
+
                   <button
                     className={`${styles.toggleButton} ${showCloudMask ? styles.active : ""}`}
                     onClick={() => setShowCloudMask(!showCloudMask)}
@@ -143,13 +164,32 @@ export function ImageViewer({ selectedRun, selected_date, imageUrl, artifacts, o
                     crossOrigin="anonymous"
                   />
                 )}
+                {showRightShapefile && artifacts.shapefile && (
+                  <img
+                    src={API_BASE + artifacts.shapefile.path}
+                    alt="Shapefile"
+                    className={styles.overlayImage}
+
+                    crossOrigin="anonymous"
+                  />
+                )}
 
 
               </div>
               <div className={styles.controls}>
 
-                {/* Probabilidade */}
                 <div className={styles.controlCard}>
+                  <label className={styles.checkRow}>
+                    <input
+                      type="checkbox"
+                      checked={showRightShapefile}
+                      onChange={() => setShowRightShapefile(!showRightShapefile)}
+                    />
+                    <span className={styles.checkLabel}>Shapefile</span>
+                  </label>
+
+                {/* Probabilidade */}
+
                   <label className={styles.checkRow}>
                     <input
                       type="checkbox"
@@ -224,6 +264,8 @@ export function ImageViewer({ selectedRun, selected_date, imageUrl, artifacts, o
                     </>
                   )}
                 </div>
+
+                
 
               </div>
             </div>

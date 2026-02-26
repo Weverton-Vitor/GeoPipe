@@ -15,7 +15,7 @@ configs:
   #thresholds: [-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
   # Volume
-  cav_path: "notebooks/data/engenheiro_avidos_cotas.csv"
+  cav_path: "notebooks/data/cotas/mares_cotas.csv"
   cav_area_column: "area"
   cav_volume_column: "volume"
   year_column: "year"
@@ -29,13 +29,13 @@ configs:
   prefix_plot: ""
   #method_name: "WatNet"
   #method_name: "ArianeNet"
-  #method_name: "DeepWaterMap"
+  # method_name: "DeepWaterMap"
   #method_name: "NDWI"
   # method_name: "MNDWI"
   method_name: "VGG-UNet"
   initial_date: "01/2019"
   end_date: "06/2025"
   ground_truth_name: "ANA"
-  ground_truth_path_df:  "notebooks/data/engenheiro_avidos_ana.csv"
+  ground_truth_path_df:  "notebooks/data/ana/mares_ana.csv"
   ground_truth_column_volume: "Volume Útil (hm³)"
   ground_truth_column_date: "Data da Medição"
