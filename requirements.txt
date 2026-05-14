@@ -6,8 +6,7 @@ scikit-learn==1.5.2
 scikit-image==0.25.2
 
 # Deep Learning (Python 3.12 compatible)
-tensorflow>=2.16.1
-keras>=3.0.0
+tensorflow
 
 # Computer Vision
 opencv-python==4.10.0.84
@@ -48,3 +47,4 @@ openpyxl==3.1.5
 pillow==11.0.0
 segmentation_mask_overlay==0.4.4
 geojson==3.2.0
+geopandas

@@ -1,5 +1,14 @@
 {
     "python.analysis.extraPaths": [
         "./src/utils/WatNet"
-    ]
+    ],
+    
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "-s",
+        "modules/lineage/tests"
+    ],
+    "python.terminal.activateEnvironment": true
+
 }

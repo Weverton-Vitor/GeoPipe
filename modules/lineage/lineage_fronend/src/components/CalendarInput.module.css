@@ -1,0 +1,49 @@
+.container :global(.react-datepicker-wrapper) {
+  width: 100%;
+}
+
+.input {
+  padding: 10px 15px;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #f8fafc;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.input:focus {
+  border-color: #3b82f6;
+}
+
+/* Customização do Pop-over do Calendário */
+.calendar {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: white !important;
+}
+
+/* Estilo das datas com runs (destaque) */
+.hasRun {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  border-radius: 50% !important;
+  font-weight: bold;
+}
+
+/* Cor dos dias comuns no tema dark */
+:global(.react-datepicker__day),
+:global(.react-datepicker__day-name),
+:global(.react-datepicker__current-month) {
+  color: #cbd5e1 !important;
+}
+
+:global(.react-datepicker__day:hover) {
+  background-color: #334155 !important;
+}
+
+:global(.react-datepicker__header) {
+  background-color: #1e293b !important;
+  border-bottom: 1px solid #334155 !important;
+}

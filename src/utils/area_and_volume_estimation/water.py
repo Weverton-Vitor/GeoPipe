@@ -169,6 +169,7 @@ def calculate_volumes_to_multiple_methods(
     df_cav: pd.DataFrame,
     cav_area_column="area",
     cav_volume_column="volume",
+    day_column="day",
     year_column="year",
     month_column="month",
     cloud_percentage_column="CLOUDY_PIXEL_PERCENTAGE",
@@ -186,6 +187,7 @@ def calculate_volumes_to_multiple_methods(
     max_area = df_cav[cav_area_column].max()
 
     df_volumes = pd.DataFrame()
+    df_volumes["day"] = df_areas[day_column]
     df_volumes["year"] = df_areas[year_column]
     df_volumes["month"] = df_areas[month_column]
     df_volumes["CLOUDY_PIXEL_PERCENTAGE"] = df_areas[cloud_percentage_column]
