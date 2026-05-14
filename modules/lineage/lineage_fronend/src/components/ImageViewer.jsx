@@ -8,7 +8,7 @@ export function ImageViewer({ selectedRun, selected_date, imageUrl, artifacts, o
   const [showCloudMask, setShowCloudMask] = useState(false);
   const [maskOpacity, setMaskOpacity] = useState(0.5);
 
-  const [showProbability, setShowProbability] = useState(true);
+  const [showProbability, setShowProbability] = useState(false);
   const [probOpacity, setProbOpacity] = useState(0.7);
 
   const [showBinaryMask, setShowBinaryMask] = useState(false);
@@ -17,8 +17,8 @@ export function ImageViewer({ selectedRun, selected_date, imageUrl, artifacts, o
   const [threshold, setThreshold] = useState(0.5);
   const [pendingThreshold, setPendingThreshold] = useState(0.5);
   const [binaryMaskUrl, setBinaryMaskUrl] = useState(null);
-  const [showRightShapefile, setShowRightShapefile] = useState(false);
-  const [showLeftShapefile, setShowLeftShapefile] = useState(false);
+  const [showRightShapefile, setShowRightShapefile] = useState(true);
+  const [showLeftShapefile, setShowLeftShapefile] = useState(true);
 
 
   async function handleApplyThreshold() {

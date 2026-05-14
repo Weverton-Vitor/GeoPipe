@@ -148,6 +148,9 @@ class FileSystemArtifactRepository(ArtifactRepository):
                     for file in os.listdir(self.source_root_shapefile)
                     if file.split(".")[0] in tif_path.stem and file.endswith(".geojson")
                 ]
+                
+                for file in os.listdir(self.source_root_shapefile):
+                    print(file.split(".")[0], tif_path.stem)
 
                 tif_path_shapefile = self.source_root_shapefile / shapefile[0]
 
