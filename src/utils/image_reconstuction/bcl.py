@@ -36,7 +36,7 @@ class BCL:
         self.year = year
         self.nuvem = cloud_pixels
         self.idx_class_cloud = 0
-        self.color_file = open(f"{color_file_path}color_file_{data}.txt", "w")
+        # self.color_file = open(f"{color_file_path}color_file_{data}.txt", "w")
         self.imgNDWI = None
         pass
 
@@ -50,14 +50,14 @@ class BCL:
     # TODO OTIMIZAR URGENTEMENTE, sem fazer esse for
     def getImageSCLandNDNWI(self, data, year):
         # procurando a mascara pela data
-        for imageSCL in os.listdir(self.scl_path):
+        for imageSCL in [f for f in os.listdir(self.scl_path) if f.endswith(".tif")]:
             if imageSCL.replace("-", "").find(data) != -1:
                 with TIFF.open(self.scl_path + imageSCL) as img:
                     self.imgSCL = img.read()
                     self.sclMETA = img.meta
 
         # procurando a imagem pela data
-        for imageNDWI in os.listdir(self.path_6B):
+        for imageNDWI in [f for f in os.listdir(self.path_6B) if f.endswith(".tif")]:
             if imageNDWI.replace("-", "").find(data) != -1:
                 with TIFF.open(self.path_6B + imageNDWI) as img:
                     self.imgNDWI = img.read()
@@ -87,15 +87,15 @@ class BCL:
         self.resultadoIMGSCL[0][clear_mask] = self.imgSCL[self.idx_class_cloud][
             clear_mask
         ]
-        for i in range(12):
+        for i in range(len(self.resultadoIMGNDWI)):
             self.resultadoIMGNDWI[i][clear_mask] = self.imgNDWI[i][clear_mask]
         self.mask[clear_mask] = [0]
-        self.color_file.write("0 is the actual color of the image\n")
+        # self.color_file.write("0 is the actual color of the image\n")
 
     # Função que carrega em memória todas as imagens do ano
     def getAllImagesYear(self, year, data):
         self.imagesSclOfTheYear = []
-        for image in os.listdir(self.scl_path):
+        for image in [f for f in os.listdir(self.scl_path) if f.endswith(".tif")]:
             if image.replace("-", "").find(data) != -1:
                 continue
             else:
@@ -127,6 +127,7 @@ class BCL:
 
     # Nesta função é gerada a imagem
     def subPorDataProx(self, year, just_that=False):
+        # print("Iniciando correção temporal...")
         # Cada imagem será uma lista, em que o primeiro elemento é o nome da imagem
         # e os demais são os pixels que podem ser utilizados para a correção temporal
         self.elementos = [[] for _ in range(len(self.imagesSclOfTheYear))]
@@ -160,7 +161,7 @@ class BCL:
                 .replace("-", "")
             )
 
-            for i6b in os.listdir(self.path_6B):
+            for i6b in [f for f in os.listdir(self.path_6B) if f.endswith(".tif")]:
                 if i6b.replace("-", "").find(date) != -1:
                     with TIFF.open(self.path_6B + i6b) as tiff:
                         image_more_close_6b = tiff.read()
@@ -184,48 +185,15 @@ class BCL:
             # se mask2 não tiver nenhum pixel -1, não há mais pixels para serem substituídos
             if not np.any(mask2):
                 break
+            
+            # 1. Cria a máscara combinada uma única vez para economizar processamento
+            mask_combinada = mask1 & mask2
 
-            #TODO otimizar urgentimente
-            self.resultadoIMGSCL[0][(mask1 & mask2)] = array_image_more_close_scl[
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[0][(mask1 & mask2)] = image_more_close_6b[0][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[1][(mask1 & mask2)] = image_more_close_6b[1][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[2][(mask1 & mask2)] = image_more_close_6b[2][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[3][(mask1 & mask2)] = image_more_close_6b[3][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[4][(mask1 & mask2)] = image_more_close_6b[4][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[5][(mask1 & mask2)] = image_more_close_6b[5][
-                (mask1 & mask2)
-            ]
+            # 2. Mantém a primeira atribuição idêntica
+            self.resultadoIMGSCL[0][mask_combinada] = array_image_more_close_scl[mask_combinada]
 
-            self.resultadoIMGNDWI[6][(mask1 & mask2)] = image_more_close_6b[6][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[7][(mask1 & mask2)] = image_more_close_6b[7][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[8][(mask1 & mask2)] = image_more_close_6b[8][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[9][(mask1 & mask2)] = image_more_close_6b[9][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[10][(mask1 & mask2)] = image_more_close_6b[10][
-                (mask1 & mask2)
-            ]
-            self.resultadoIMGNDWI[11][(mask1 & mask2)] = image_more_close_6b[11][
-                (mask1 & mask2)
-            ]
+            # 3. Atualiza as 12 bandas de uma só vez (índices de 0 a 11)
+            self.resultadoIMGNDWI[0:len(self.resultadoIMGNDWI), mask_combinada] = image_more_close_6b[0:len(self.resultadoIMGNDWI), mask_combinada]
 
             # Color[i] is like [255 255 255], so it is necessary to convert px format [255,255,255]
             if color < 255:
@@ -250,11 +218,12 @@ class BCL:
 
             dict_color_image[str([0])] = "could no be corrected"
 
-        for key, value in dict_color_image.items():
-            self.color_file.write(f"{key} is the color of {value}\n")
+        # for key, value in dict_color_image.items():
+        #     self.color_file.write(f"{key} is the color of {value}\n")
 
     def singleImageCorrection(self, data, year, output_path, image_name, just_sp=False):
         # Obtém os objetos internos para serem corrigidos, a imagem SCL e a imagem NDWI
+        # print("Carregando imagens...")
         self.getImageSCLandNDNWI(data, year)
 
         # os resultados são inicialmente arrays de -1

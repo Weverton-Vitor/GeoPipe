@@ -18,7 +18,7 @@ from fmask_pipeline.pipelines.deepwatermap import pipeline as deepwatermap
 from fmask_pipeline.pipelines.download import (
     pipeline as download,
 )
-from fmask_pipeline.pipelines.fmask_preprocess import pipeline as fmask_preprocess
+from fmask_pipeline.pipelines.cloud_preprocess import pipeline as cloud_preprocess
 from fmask_pipeline.pipelines.water_segmentation_tensorflow_model import (
     pipeline as tensorflow_model,
 )
@@ -59,7 +59,7 @@ def register_pipelines() -> dict[str, Pipeline]:
 
     water_area_volume_monitoring_sentinel_fmask_spectral_indice = pipeline(
         pipe=download.create_pipeline()
-        + fmask_preprocess.create_pipeline()
+        + cloud_preprocess.create_pipeline()
         + calculate_spectral_indices.create_pipeline(
             [
                 "created_spectral_indice_dirs_dependency",
@@ -82,7 +82,7 @@ def register_pipelines() -> dict[str, Pipeline]:
 
     water_area_volume_monitoring_sentinel_fmask_deepwatermap = pipeline(
         pipe=download.create_pipeline()
-        + fmask_preprocess.create_pipeline()
+        + cloud_preprocess.create_pipeline()
         + deepwatermap.create_pipeline()
         + area_and_volume_estimation_pipeline.create_pipeline(),
         parameters=None,
@@ -90,7 +90,7 @@ def register_pipelines() -> dict[str, Pipeline]:
 
     water_area_volume_monitoring_sentinel_fmask_watnet = pipeline(
         pipe=download.create_pipeline()
-        + fmask_preprocess.create_pipeline()
+        + cloud_preprocess.create_pipeline()
         + watnet.create_pipeline()
         + area_and_volume_estimation_pipeline.create_pipeline(),
         parameters=None,
@@ -98,7 +98,7 @@ def register_pipelines() -> dict[str, Pipeline]:
 
     water_area_volume_monitoring_sentinel_fmask_tensorflow_model = pipeline(
         pipe=download.create_pipeline()
-        + fmask_preprocess.create_pipeline()
+        + cloud_preprocess.create_pipeline()
         + tensorflow_model.create_pipeline()
         + area_and_volume_estimation_pipeline.create_pipeline(),
         parameters=None,
@@ -120,7 +120,7 @@ def register_pipelines() -> dict[str, Pipeline]:
 
     coastline_fmask_sentinel_deepwatermap = pipeline(
         pipe=download.create_pipeline()
-        + fmask_preprocess.create_pipeline()
+        + cloud_preprocess.create_pipeline()
         + deepwatermap.create_pipeline()
         + canny.create_pipeline(),
         parameters=None,
@@ -137,7 +137,7 @@ def register_pipelines() -> dict[str, Pipeline]:
     return {
         "__default__": download.create_pipeline(),
         "download": download.create_pipeline(),
-        "fmask_preprocessing": fmask_preprocess.create_pipeline(),
+        "cloud_preprocessing": cloud_preprocess.create_pipeline(),
         "apply_deepwatermap": deepwatermap.create_pipeline(),
         "apply_canny": canny.create_pipeline(),
         # "water_volume_monitoring_sentinel_fmask_deepwatermap": water_volume_monitoring_sentinel_fmask_deepwatermap,

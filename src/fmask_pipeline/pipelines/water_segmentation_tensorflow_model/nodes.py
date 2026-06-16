@@ -24,6 +24,8 @@ def create_dirs(
     model_path: str,
     init_date: str,
     final_date: str,
+    cloud_mask_algoritm: str,
+    reconstruction_algorithm: str,
     *args,
     **kwargs,
 ):
@@ -31,13 +33,14 @@ def create_dirs(
     # Create directories structure, if not exists
     model_name = model_path.split("/")[-1].split(".")[0]
     path = os.path.join(
-        water_masks_save_path, location_name, "no_cloud_removed", model_name
+        water_masks_save_path, location_name, "original", model_name
     )
     if use_no_cloud_images:
         path = os.path.join(
             water_masks_save_path,
             location_name,
-            "cloud_removed",
+            cloud_mask_algoritm,
+            reconstruction_algorithm,
             model_name,
         )
 

@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 def create_dirs(
     water_masks_save_path: str,
     location_name: str,
+    cloud_mask_algoritm: str,
+    reconstruction_algorithm: str,
     init_date: str,
     final_date: str,
     *args,
@@ -22,7 +24,7 @@ def create_dirs(
     os.makedirs(f"{water_masks_save_path}{location_name}/", exist_ok=True)
 
     for year in range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1):
-        os.makedirs(f"{water_masks_save_path}{location_name}/{year}", exist_ok=True)
+        os.makedirs(f"{water_masks_save_path}{location_name}/{cloud_mask_algoritm}/{reconstruction_algorithm}/{year}", exist_ok=True)
 
     return True
 
@@ -31,6 +33,8 @@ def apply_deep_water_map(
     images_path: str,
     water_masks_save_path: str,
     location_name: str,
+    cloud_mask_algoritm: str,
+    reconstruction_algorithm: str,
     scale_factor,
     offset,
     skip_deepewatermap,
@@ -53,7 +57,7 @@ def apply_deep_water_map(
             tif_path = path.replace("\\", "/")
             deep_water_map.main(
                 image_path=tif_path,
-                save_path=f"{water_masks_save_path}{location_name}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
+                save_path=f"{water_masks_save_path}{location_name}/{cloud_mask_algoritm}/{reconstruction_algorithm}/{tif_path.split('/')[-2]}/{tif_path.split('/')[-1]}",
                 scale_factor=scale_factor,
                 offset=offset,
                 threshold=threshold,

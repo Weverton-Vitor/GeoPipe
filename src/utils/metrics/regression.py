@@ -9,52 +9,64 @@ import numpy as np
 from sklearn.metrics import r2_score
 from scipy.stats import pearsonr
 
-
-def calculate_metrics_regression_by_month(
+def calculate_metrics_regression(
     df_real: pd.DataFrame,
     df_pred: pd.DataFrame,
     col_real: str,
     col_pred: str,
-    on: list,  # colunas de junção como ['ano', 'mes'] ou ['data']
+    on: list[str] | None = None,
 ) -> tuple[dict, pd.DataFrame]:
     """
-    Calcula métricas de regressão considerando apenas meses presentes em ambos os DataFrames.
+    Calcula métricas de regressão usando as colunas
+    especificadas em 'on' para alinhamento.
 
-    Parâmetros:
-    - df_real: DataFrame com os valores reais.
-    - df_pred: DataFrame com os valores previstos.
-    - col_real: Nome da coluna com os valores reais.
-    - col_pred: Nome da coluna com os valores previstos.
-    - on: Lista com as colunas para fazer o merge (ex: ['ano', 'mes'] ou ['data']).
-
-    Retorna:
-    - dicionário com as métricas MAE, MSE, RMSE, MAPE, R² e Correlação de Pearson.
-    - DataFrame com colunas real, previsto e os erros ponto a ponto.
+    Padrão: cálculo diário (on=["date"])
     """
 
-    # Merge interno (apenas datas/mês que existem em ambos)
+    if on is None:
+        on = ["date"]
+        
+    print(df_real.columns)
+    print(df_pred.columns)
+
     df_merged = pd.merge(
-        df_real[on + [col_real]], df_pred[on + [col_pred]], on=on, how="inner"
+        df_real[on + [col_real]],
+        df_pred[on + [col_pred]],
+        on=on,
+        how="inner",
     )
 
+    if df_merged.empty:
+        raise ValueError(
+            f"Nenhuma correspondência encontrada para merge usando {on}"
+        )
 
-    # Extrair vetores
-    y_true = df_merged[col_real].values
-    y_pred = df_merged[col_pred].values
+    y_true = df_merged[col_real].to_numpy()
+    y_pred = df_merged[col_pred].to_numpy()
 
-    # Cálculo dos erros ponto a ponto
     df_erros = df_merged.copy()
+
     df_erros["erro_absoluto"] = np.abs(y_true - y_pred)
     df_erros["erro_quadrado"] = (y_true - y_pred) ** 2
-    df_erros["erro_percentual"] = np.abs((y_true - y_pred) / y_true) * 100
 
-    # Métricas globais
+    df_erros["erro_percentual"] = np.where(
+        y_true != 0,
+        np.abs((y_true - y_pred) / y_true) * 100,
+        np.nan,
+    )
+
     mae = df_erros["erro_absoluto"].mean()
     mse = df_erros["erro_quadrado"].mean()
     rmse = np.sqrt(mse)
     mape = df_erros["erro_percentual"].mean()
+
     r2 = r2_score(y_true, y_pred)
-    corr_pearson, _ = pearsonr(y_true, y_pred)
+
+    corr_pearson = (
+        pearsonr(y_true, y_pred)[0]
+        if len(df_merged) > 1
+        else np.nan
+    )
 
     metricas = {
         "MAE": mae,
@@ -63,6 +75,7 @@ def calculate_metrics_regression_by_month(
         "MAPE (%)": mape,
         "R²": r2,
         "Pearson": corr_pearson,
+        "N": len(df_merged),
     }
 
     return metricas, df_erros

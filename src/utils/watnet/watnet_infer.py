@@ -362,7 +362,7 @@ def deepwatermap_infer_onnx(
     for img_path, save_path in zip(image_paths, save_paths):
         # 1. Leitura da imagem
         image = tiff.imread(img_path).astype(np.float32)
-        image = image[:, :, bands]
+        # image = image[:, :, bands]
 
         # 2. Padding para múltiplos de 32
         pad_r = find_padding(image.shape[0])

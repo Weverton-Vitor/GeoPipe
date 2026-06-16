@@ -1,6 +1,6 @@
 import { CalendarInput } from './CalendarInput';
 import styles from './Header.module.css';
-import { RunSelect } from './RunSelect';
+import { Select } from './Select';
 
 export function Header({ runs, selectedRun, onChange }) {
   return (
@@ -16,9 +16,9 @@ export function Header({ runs, selectedRun, onChange }) {
       </div>
       
       <nav className={styles.nav}>
-        <RunSelect
-                runs={runs}
-                selectedRun={selectedRun}
+        <Select
+                options={runs}
+                selectedOption={selectedRun}
                 onChange={onChange}
               />
               <CalendarInput></CalendarInput>

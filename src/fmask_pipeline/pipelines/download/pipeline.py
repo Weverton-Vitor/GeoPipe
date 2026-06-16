@@ -25,6 +25,8 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "save_plots_path": "params:configs.save_plot_masks_path",
                     "save_clean_images_path": "params:configs.save_clean_images_path",
                     "cloud_removal_log": "params:configs.cloud_removal_log",
+                    "cloud_mask_algoritm": "params:configs.mask_type",
+                    "reconstruction_algorithm": "params:configs.reconstruction_algorithm",
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
                 },

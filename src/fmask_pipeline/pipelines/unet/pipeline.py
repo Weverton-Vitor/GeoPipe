@@ -5,7 +5,7 @@ generated using Kedro 0.19.12
 
 from kedro.pipeline import Pipeline, node, pipeline
 
-from fmask_pipeline.pipelines.fmask_preprocess.nodes import cloud_removal  # noqa
+from fmask_pipeline.pipelines.cloud_preprocess.nodes import cloud_removal  # noqa
 
 from .nodes import apply_unet
 

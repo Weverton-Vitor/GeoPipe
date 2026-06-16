@@ -10,6 +10,7 @@ import { VolumeChart } from "../components/VolumeChart";
 import { ImageGallery } from "../components/ImageGallery";
 import { ImageViewer } from "../components/ImageViewer";
 import { Header } from "../components/Header";
+import {Select} from "../components/Select";
 
 export function LineagePage() {
   const [runs, setRuns] = useState([]);
@@ -87,6 +88,14 @@ export function LineagePage() {
       />
 
       <div style={{ width: "96%", padding: "0 2%" }}>
+
+        {timeseries.length > 0 && (
+          <Select
+            options={runs}
+            selectedOption={selectedRun}
+            onChange={(value) => setSelectedRun(value)}
+          />
+        )}
 
         {timeseries.length > 0 && (
           <VolumeChart

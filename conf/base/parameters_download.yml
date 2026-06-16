@@ -15,28 +15,28 @@ configs:
 
   # Datas para filtrar a coleção
   init_date: "2017-01-01"
-  final_date: "2025-05-21"
-  # init_date: "2023-08-21"
-  # final_date: "2023-10-20"
+  final_date: "2026-06-02"
+  # init_date: "2025-01-01"
+  # final_date: "2026-06-02"
 
   # Primeira parte do nome das imagens
-  # toa_prefix_images_name: "landsat_6B_TOA"
-  # boa_prefix_images_name: "landsat_6B_BOA"
+  # toa_prefix_images_name: "landsat_TOA"
+  # boa_prefix_images_name: "landsat_BOA"
 
-  toa_prefix_images_name: "sentinel_6B_TOA"
-  boa_prefix_images_name: "sentinel_6B_BOA"
+  toa_prefix_images_name: "sentinel_TOA"
+  boa_prefix_images_name: "sentinel_BOA"
 
   # Selecionar as bandas, se for vazio todas as bandas são selecionadas
   # selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2", "QA_PIXEL"]
-  selected_bands: ["coastal", "blue","green","red","rededge1","rededge2","rededge3","nir","nir_narrow","water_vapour","swir1","swir2","cirrus"]
-  # selected_bands: ["blue","green","red", "nir", "swir1","swir2"]
+  # selected_bands: ["coastal", "blue","green","red","rededge1","rededge2","rededge3","nir","nir_narrow","water_vapour","swir1","swir2","cirrus"]
+  selected_bands: ["blue","green","red", "nir", "swir1","swir2"]
 
   # selected_bands: ["blue", "green", "red", "nir", "swir1", "swir2"]
 
   # Escala da imagem a ser salva
   scale: 10
 
-  save_metadata: False
+  save_metadata: True
 
   # Pular o download
   toa_skip_download: True
