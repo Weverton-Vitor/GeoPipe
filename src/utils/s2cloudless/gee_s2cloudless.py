@@ -220,14 +220,27 @@ def export_s2_cloud_shadow_masks(
         ):
         date_str = item["date"]
         mosaic_img = item["image"]
+        
         export_img = ee.Image.cat(
             [
                 # mosaic_img.select("probability").rename("cloud_probability"),
-                # mosaic_img.select("clouds").rename("clouds"),
-                # mosaic_img.select("shadows").rename("shadows"),
-                mosaic_img.select("cloudmask").rename("cloud_shadow_mask"),
+                mosaic_img.select("clouds").rename("clouds").multiply(1).rename("clouds"),
+                mosaic_img.select("shadows").rename("shadows").multiply(2).rename("shadows"),
+                # mosaic_img.select("cloudmask").rename("cloud_shadow_mask"),
             ]
         ).toUint8()
+        
+        clouds = mosaic_img.select("clouds")
+        shadows = mosaic_img.select("shadows")
+        base_img = ee.Image.constant(0).uint8()
+
+        # Aplica os valores na mesma banda (Sombra=2 tem prioridade sobre Nuvem=1 neste exemplo)
+        final_band = base_img.where(clouds.eq(1), 1)\
+                            .where(shadows.eq(1), 2)\
+                            .rename("raster_class")
+
+        export_img = final_band.toUint8()
+        
 
         filename = os.path.join(
             output_dir, date_str.split("-")[0], f"S2_cloud_shadow_mask_{date_str}.tif"

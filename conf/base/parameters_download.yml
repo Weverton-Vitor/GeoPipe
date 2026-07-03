@@ -15,8 +15,8 @@ configs:
 
   # Datas para filtrar a coleção
   init_date: "2017-01-01"
-  final_date: "2026-06-02"
-  # init_date: "2025-01-01"
+  final_date: "2026-06-27"
+  # init_date: "2026-05-01"
   # final_date: "2026-06-02"
 
   # Primeira parte do nome das imagens

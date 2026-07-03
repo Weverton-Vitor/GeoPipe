@@ -3,6 +3,7 @@ import logging
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from tqdm import tqdm
@@ -21,6 +22,11 @@ from utils.area_and_volume_estimation.water import (
 from utils.metrics.regression import (
     calculate_metrics_regression,
 )
+
+import os
+from concurrent.futures import ThreadPoolExecutor
+
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -99,11 +105,6 @@ def estimate_water_area(
     return results_df
 
 
-import os
-from concurrent.futures import ThreadPoolExecutor
-
-import pandas as pd
-
 
 def estimate_water_volume(
     water_areas_df: pd.DataFrame,
@@ -135,9 +136,18 @@ def estimate_water_volume(
     if areas_columns is None:
         areas_columns = []
 
+    
+    # Pegando o tipo de cada threshold (se disponível) para usar na construção dos labels
+    threshold_df = water_areas_df[["threshold", "threshold_type"]].drop_duplicates()
+
+    threshold_types = threshold_df['threshold_type'].to_list()
+    thresholds = threshold_df['threshold'].to_list()
+    
     df_cav = pd.read_csv(cav_path)
 
     def process_threshold(threshold):
+        threshold_type = threshold[1]
+        threshold = threshold[0]
         df_threshold = water_areas_df.loc[
             water_areas_df["threshold"] == threshold
         ].copy()
@@ -158,11 +168,12 @@ def estimate_water_volume(
         )
 
         df_volume["threshold"] = threshold
+        df_volume["threshold_type"] = threshold_type
 
         return df_volume
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        results = list(executor.map(process_threshold, thresholds))
+        results = list(executor.map(process_threshold, zip(thresholds, threshold_types)))
 
     results = [df for df in results if df is not None]
 
@@ -209,15 +220,6 @@ def calculate_metrics(
     real_df["year"] = real_df["Data da Medição"].str.split("/").str[-1]
     real_df["month"] = real_df["Data da Medição"].str.split("/").str[-2]
 
-    # dates = pd.to_datetime(
-    #     real_df["Data da Medição"],
-    #     format="%d/%m/%Y"
-    # )
-
-    # real_df["year"] = dates.dt.year
-    # real_df["month"] = dates.dt.month
-    # real_df["year"] = real_df["year"].astype(int)
-    # real_df["month"] = real_df["month"].astype(int)
 
     real_df["Volume Útil (hm³)"] = pd.to_numeric(
         real_df["Volume Útil (hm³)"].astype(str).str.replace(",", "."),
@@ -226,43 +228,56 @@ def calculate_metrics(
 
     real_df["volume_m2_real"] = real_df["Volume Útil (hm³)"]
 
-    # real_df = media_mensal_por_ano(
-    #     real_df,
-    #     column="volume_m2_real",
-    # )
-
     real_df.rename(
         columns={"volume_m2": "volume_m2_real"},
         inplace=True,
     )
+    
+    pred_df["experiment"] = np.where(
+    pred_df["threshold_type"] == "otsu",
+        "otsu",
+        "fixed_" + pred_df["threshold"].astype(str)
+    )
 
-    thresholds = pred_df["threshold"].unique()
+    experiments = pred_df["experiment"].unique()
 
-    def process_threshold(threshold):
+    def process_experiment(experiment):
 
-        df_thr = pred_df.loc[pred_df["threshold"] == threshold].copy()
-
-        # df_thr = media_mensal_por_ano(
-        #     df_thr,
-        #     column="volume_m2",
-        # )
+        df_exp = pred_df.loc[
+            pred_df["experiment"] == experiment
+        ].copy()
 
         metrics, df_errors = calculate_metrics_regression(
             df_real=real_df,
-            df_pred=df_thr,
+            df_pred=df_exp,
             col_real="volume_m2_real",
             col_pred="volume_m2",
             on=["year", "month", "day"],
-            # on=["year", "month"],
         )
 
-        metrics["threshold"] = threshold
-        df_errors["threshold"] = threshold
+        if experiment == "otsu":
+            metrics["threshold"] = "otsu"
+        else:
+            metrics["experiment"] = df_exp["threshold"].iloc[0]
+            df_errors["threshold"] = df_exp["threshold"].iloc[0]
+
+        # opcional
+        if experiment == "otsu":
+            metrics["threshold"] = np.nan
+        else:
+            metrics["threshold"] = float(
+                experiment.replace("fixed_", "")
+            )
 
         return metrics, df_errors
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        results = list(executor.map(process_threshold, thresholds))
+        results = list(
+            executor.map(
+                process_experiment,
+                experiments
+            )
+        )
 
     metrics_list = []
     errors_list = []
