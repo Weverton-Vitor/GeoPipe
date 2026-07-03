@@ -1,0 +1,6 @@
+paths:
+
+  # Caminho onde as máscaras de segmentação de água serão salvas
+  water_masks_save_path: "data/07_water_masks/"
+
+  models_path: "data/00_models/"

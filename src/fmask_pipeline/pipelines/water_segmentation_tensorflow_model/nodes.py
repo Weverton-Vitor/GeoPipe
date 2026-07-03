@@ -1,18 +1,17 @@
 import glob
 import logging
 import os
-
-import tensorflow as tf
-from tqdm import tqdm
 from itertools import batched
 
-from utils.watnet.watnet_infer import (
-    watnet_infer,
-    watnet_infer_batch,
-    watnet_infer_onnx_optimized,
-    deepwatermap_infer_onnx,
-)
 import onnxruntime as ort
+import tensorflow as tf
+from tqdm import tqdm
+
+from utils.inference.models_register import WATER_SEGMENTATION_MODELS
+from utils.watnet.watnet_infer import (
+    deepwatermap_infer_onnx,
+    watnet_infer_onnx_optimized,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ def create_dirs(
     water_masks_save_path: str,
     location_name: str,
     use_no_cloud_images: bool,
-    model_path: str,
+    water_model_name: str,
     init_date: str,
     final_date: str,
     cloud_mask_algoritm: str,
@@ -31,10 +30,12 @@ def create_dirs(
 ):
     logger.info("Create Water Volume Monitoring pipeline Directories")
     # Create directories structure, if not exists
-    model_name = model_path.split("/")[-1].split(".")[0]
+    model_name = water_model_name.lower()
     path = os.path.join(
         water_masks_save_path, location_name, "original", model_name
     )
+    
+    # TODO if false
     if use_no_cloud_images:
         path = os.path.join(
             water_masks_save_path,
@@ -52,23 +53,28 @@ def create_dirs(
     return path
 
 
-def apply_water_segmentation_tensorflow_model(
-    tensorflow_model_images_paths: str,
+def apply_water_segmentation_onnx(
+    use_no_cloud_images: bool,
     save_path: str,
     location_name: str,
-    skip_tensorflow_model,
-    model_path,
-    patch_size,
-    qty_images_per_batch=20,
-    batch_size=32,
+    skip_water_segmentation: bool,
+    water_model_name: str,
+    patch_size: int,
+    qty_images_per_batch: int = 20,
+    batch_size: int = 32,
     *args,
     **kwargs,
 ):
-    if skip_tensorflow_model:
-        logger.warning("Skip Watnet Mask processing")
+    if skip_water_segmentation:
+        logger.warning("Skip Water Segmentation processing")
         return True
-
-    path = f"{tensorflow_model_images_paths}{location_name}"
+    
+    input_images_paths = "data/02_boa_images/"
+    if use_no_cloud_images:
+        input_images_paths = "data/04_clean_images/"
+    
+    model_path = WATER_SEGMENTATION_MODELS[water_model_name.lower()]
+    path = f"{input_images_paths}{location_name}"
     tif_files = glob.glob(os.path.join(path, "**", "*.tif"), recursive=True)
     total_tifs = len(tif_files)
 

@@ -27,12 +27,7 @@ configs:
   # Plots
   raw_thresholds: False
   prefix_plot: ""
-  # method_name: "WatNet"
-  method_name: "VGG-UNet"
-  # method_name: "DeepWaterMap"
-  #method_name: "NDWI"
-  # method_name: "MNDWI"
-  # method_name: "VGG-UNet"
+
   initial_date: "01/2019"
   end_date: "06/2025"
   ground_truth_name: "ANA"

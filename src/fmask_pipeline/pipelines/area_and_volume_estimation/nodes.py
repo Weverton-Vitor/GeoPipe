@@ -23,6 +23,8 @@ from utils.metrics.regression import (
     calculate_metrics_regression,
 )
 
+from utils.inference.models_register import WATER_SEGMENTATION_MODELS
+
 import os
 from concurrent.futures import ThreadPoolExecutor
 
@@ -39,27 +41,25 @@ def estimate_water_area(
     location_name: str,
     reconstruction_algorithm: str,
     cloud_mask_algoritm: str,
-    model_path: str,
+    water_model_name: str,
     dependency1=None,
     max_workers: int | None = None,
 ):
     logger.info(f"Estimating water area using {max_workers} workers...")
-
-    water_segmentation_algorithm = model_path.split("/")[-1].split(".")[0]
 
     masks_path = os.path.join(
         water_masks_path,
         location_name,
         cloud_mask_algoritm,
         reconstruction_algorithm,
-        water_segmentation_algorithm,
+        water_model_name.lower(),
     )
     save_dir = os.path.join(
         save_path,
         location_name,
         cloud_mask_algoritm,
         reconstruction_algorithm,
-        water_segmentation_algorithm,
+        water_model_name.lower(),
     )
     os.makedirs(save_dir, exist_ok=True)
 
@@ -114,7 +114,7 @@ def estimate_water_volume(
     thresholds: list,
     reconstruction_algorithm: str,
     cloud_mask_algoritm: str,
-    model_path: str,
+    water_model_name: str,
     cav_area_column: str = "area",
     cav_volume_column: str = "volume",
     year_column: str = "year",
@@ -136,7 +136,6 @@ def estimate_water_volume(
     if areas_columns is None:
         areas_columns = []
 
-    
     # Pegando o tipo de cada threshold (se disponível) para usar na construção dos labels
     threshold_df = water_areas_df[["threshold", "threshold_type"]].drop_duplicates()
 
@@ -182,14 +181,12 @@ def estimate_water_volume(
 
     final_df = pd.concat(results, ignore_index=True)
 
-    water_segmentation_algorithm = model_path.split("/")[-1].split(".")[0]
-
     save_dir = os.path.join(
         save_path,
         location_name,
         cloud_mask_algoritm,
         reconstruction_algorithm,
-        water_segmentation_algorithm,
+        water_model_name.lower(),
     )
     os.makedirs(save_dir, exist_ok=True)
 
@@ -206,9 +203,9 @@ def calculate_metrics(
     save_path: str,
     col_real: str,
     location_name: str,
+    water_model_name: str,
     reconstruction_algorithm: str,
     cloud_mask_algoritm: str,
-    model_path: str,
     max_workers: int = None,
 ) -> bool:
 
@@ -289,13 +286,12 @@ def calculate_metrics(
     metrics_df = pd.DataFrame(metrics_list)
     errors_df = pd.concat(errors_list, ignore_index=True)
 
-    water_segmentation_algorithm = model_path.split("/")[-1].split(".")[0]
     output_dir = os.path.join(
         save_path,
         location_name,
         cloud_mask_algoritm,
         reconstruction_algorithm,
-        water_segmentation_algorithm,
+        water_model_name.lower(),
     )
 
     os.makedirs(output_dir, exist_ok=True)
@@ -325,14 +321,13 @@ def plot_results(
     volumes_df: DataFrame,
     location_name: str,
     save_path: str,
-    method_name: str,
+    water_model_name: str,
     initial_date: str,
     end_date: str,
     ground_truth_name: str,
     ground_truth_path_df: str,
     reconstruction_algorithm: str,
     cloud_mask_algoritm: str,
-    model_path: str,
     ground_truth_column_volume: str = "Volume Útil (hm³)",
     ground_truth_column_date: str = "Data da Medição",
     raw_thresholds: bool = False,
@@ -350,14 +345,13 @@ def plot_results(
     # 1. DEFINE OUTPUT DIRECTORY
     # ======================================================
 
-    water_segmentation_algorithm = Path(model_path).stem
 
     final_dir = os.path.join(
         save_path,
         location_name,
         cloud_mask_algoritm,
         reconstruction_algorithm,
-        water_segmentation_algorithm,
+        water_model_name.lower(),
         "plots",
     )
 
@@ -422,9 +416,9 @@ def plot_results(
 
         for threshold, df in sorted(dataframes.items()):
             label = (
-                f"{method_name} ({float(threshold) * 100:.0f}%)"
+                f"{water_model_name} ({float(threshold) * 100:.0f}%)"
                 if not raw_thresholds
-                else f"{method_name} ({threshold})"
+                else f"{water_model_name} ({threshold})"
             )
 
             methods[label] = df
@@ -469,13 +463,13 @@ def plot_results(
             volume_columns=volume_columns,
             data_inicio=initial_date,
             data_fim=end_date,
-            titulo=f"{method_name} X {ground_truth_name} ({suffix})",
+            titulo=f"{water_model_name} X {ground_truth_name} ({suffix})",
         )
 
         figures.append(
             (
                 fig,
-                f"{method_name}_vs_{ground_truth_name}_{suffix}.png",
+                f"{water_model_name}_vs_{ground_truth_name}_{suffix}.png",
             )
         )
 
@@ -500,13 +494,13 @@ def plot_results(
             volume_columns=volume_columns,
             data_inicio=initial_date,
             data_fim=end_date,
-            titulo=(f"{method_name} X {ground_truth_name} (média mensal + {suffix})"),
+            titulo=(f"{water_model_name} X {ground_truth_name} (média mensal + {suffix})"),
         )
 
         figures.append(
             (
                 fig,
-                f"{method_name}_vs_{ground_truth_name}_media_{suffix}.png",
+                f"{water_model_name}_vs_{ground_truth_name}_media_{suffix}.png",
             )
         )
 
