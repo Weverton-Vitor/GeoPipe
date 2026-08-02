@@ -184,3 +184,6 @@ mlruns/*
 !data/00_shapefiles/*.geojson
 
 /venv_tf215
+
+**/notebooks/data/*
+**/notebooks/probabilities_analysis/data/*

@@ -1,7 +1,7 @@
 import glob
 import logging
 import os
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
 import numpy as np
 import pandas as pd
@@ -19,24 +19,17 @@ from utils.area_and_volume_estimation.water import (
     calculate_volumes_to_multiple_methods,
     process_single_mask,
 )
+from utils.inference.models_register import WATER_SEGMENTATION_MODELS
+from utils.locations.locations_register import LOCATIONS
 from utils.metrics.regression import (
     calculate_metrics_regression,
 )
-
-from utils.inference.models_register import WATER_SEGMENTATION_MODELS
-
-import os
-from concurrent.futures import ThreadPoolExecutor
-
-import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 
 def estimate_water_area(
-    water_masks_path: str,
-    path_shapefile: str,
-    thresholds: list,
+    water_masks_save_path: str,
     save_path: str,
     location_name: str,
     reconstruction_algorithm: str,
@@ -48,7 +41,7 @@ def estimate_water_area(
     logger.info(f"Estimating water area using {max_workers} workers...")
 
     masks_path = os.path.join(
-        water_masks_path,
+        water_masks_save_path,
         location_name,
         cloud_mask_algoritm,
         reconstruction_algorithm,
@@ -61,14 +54,31 @@ def estimate_water_area(
         reconstruction_algorithm,
         water_model_name.lower(),
     )
+    
+    if cloud_mask_algoritm == "no_mask":
+        masks_path = os.path.join(
+            water_masks_save_path,
+            location_name,
+            "original",
+            water_model_name.lower(),
+        )
+        save_dir = os.path.join(
+            save_path,
+            location_name,
+            "original",
+            water_model_name.lower(),
+        )
+        
     os.makedirs(save_dir, exist_ok=True)
 
     water_masks = glob.glob(
         os.path.join(masks_path, "**", "*.tif"),
         recursive=True,
     )
+    
+    thresholds = WATER_SEGMENTATION_MODELS[water_model_name.lower()]["thresholds"]
 
-    tasks = [(mask_path, path_shapefile, thresholds) for mask_path in water_masks]
+    tasks = [(mask_path, LOCATIONS[location_name]["path_shapefile"], thresholds) for mask_path in water_masks]
 
     # Lista única para armazenar todos os resultados
     results = []
@@ -108,10 +118,8 @@ def estimate_water_area(
 
 def estimate_water_volume(
     water_areas_df: pd.DataFrame,
-    cav_path: str,
     save_path: str,
     location_name: str,
-    thresholds: list,
     reconstruction_algorithm: str,
     cloud_mask_algoritm: str,
     water_model_name: str,
@@ -142,7 +150,7 @@ def estimate_water_volume(
     threshold_types = threshold_df['threshold_type'].to_list()
     thresholds = threshold_df['threshold'].to_list()
     
-    df_cav = pd.read_csv(cav_path)
+    df_cav = pd.read_csv(LOCATIONS[location_name]["path_cav"])
 
     def process_threshold(threshold):
         threshold_type = threshold[1]
@@ -188,6 +196,16 @@ def estimate_water_volume(
         reconstruction_algorithm,
         water_model_name.lower(),
     )
+
+    if cloud_mask_algoritm == "no_mask":
+        save_dir = os.path.join(
+            save_path,
+            location_name,
+            "original",
+            water_model_name.lower(),
+        )
+        
+    
     os.makedirs(save_dir, exist_ok=True)
 
     output_file = os.path.join(save_dir, "water_volumes.csv")
@@ -198,7 +216,6 @@ def estimate_water_volume(
 
 
 def calculate_metrics(
-    path_real_df: str,
     pred_df: pd.DataFrame,
     save_path: str,
     col_real: str,
@@ -211,7 +228,8 @@ def calculate_metrics(
 
     logger.info("Calculating metrics")
 
-    real_df = pd.read_csv(path_real_df)
+
+    real_df = pd.read_csv(LOCATIONS[location_name]["ground_truth_path_df"])
 
     real_df["day"] = real_df["Data da Medição"].str.split("/").str[0]
     real_df["year"] = real_df["Data da Medição"].str.split("/").str[-1]
@@ -293,6 +311,15 @@ def calculate_metrics(
         reconstruction_algorithm,
         water_model_name.lower(),
     )
+     
+    if cloud_mask_algoritm == "no_mask":
+        output_dir = os.path.join(
+            save_path,
+            location_name,
+            "original",
+            water_model_name.lower(),
+        )
+
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -310,7 +337,6 @@ def calculate_metrics(
 
 
 import os
-from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame
@@ -325,7 +351,6 @@ def plot_results(
     initial_date: str,
     end_date: str,
     ground_truth_name: str,
-    ground_truth_path_df: str,
     reconstruction_algorithm: str,
     cloud_mask_algoritm: str,
     ground_truth_column_volume: str = "Volume Útil (hm³)",
@@ -345,7 +370,6 @@ def plot_results(
     # 1. DEFINE OUTPUT DIRECTORY
     # ======================================================
 
-
     final_dir = os.path.join(
         save_path,
         location_name,
@@ -354,6 +378,16 @@ def plot_results(
         water_model_name.lower(),
         "plots",
     )
+     
+    if cloud_mask_algoritm == "no_mask":
+        final_dir = os.path.join(
+            save_path,
+            location_name,
+            "original",
+            water_model_name.lower(),
+            "plots",
+        )
+
 
     os.makedirs(final_dir, exist_ok=True)
 
@@ -363,7 +397,7 @@ def plot_results(
     # 2. LOAD AND PREPROCESS GROUND TRUTH DATA
     # ======================================================
 
-    gt_df = pd.read_csv(ground_truth_path_df)
+    gt_df = pd.read_csv(LOCATIONS[location_name]["ground_truth_path_df"])
 
     dates = pd.to_datetime(
         gt_df[ground_truth_column_date],

@@ -6,17 +6,10 @@ configs:
   # toa_collection_ids: []
   # boa_collection_ids: ["LANDSAT/LT05/C02/T1_L2", "LANDSAT/LE07/C02/T1_L2", "LANDSAT/LC08/C02/T1_L2"]
 
-  # TODO Tornar valores fixos
-  # Caminho das imagens baixadas do topo da atmosfera (TOA)
-  toa_dowload_path: "data/01_toa_images/"
-
-  # Caminho das imagens baixadas do base da atmosfera BOA)
-  boa_dowload_path: "data/02_boa_images/"
-
   # Datas para filtrar a coleção
   init_date: "2017-01-01"
-  final_date: "2026-06-27"
-  # init_date: "2026-05-01"
+  final_date: "2026-06-30"
+  # init_date: "2026-05-16"
   # final_date: "2026-06-02"
 
   # Primeira parte do nome das imagens
@@ -36,7 +29,7 @@ configs:
   # Escala da imagem a ser salva
   scale: 10
 
-  save_metadata: True
+  save_metadata: False
 
   # Pular o download
   toa_skip_download: True

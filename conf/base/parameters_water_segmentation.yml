@@ -6,19 +6,15 @@
 
 configs:
 
+  # water_model_name: "DeepWaterMap"
   # water_model_name: "WatNet"
   water_model_name: "VGG-UNet"
-  #water_model_name: "NDWI"
+  # water_model_name: "NDWI"
   # water_model_name: "MNDWI"
-  # water_model_name: "VGG-UNet"
 
   input_size: [512, 512]
 
   patch_size: 512
-
-  # if True, uses images from the "data/04_clean_images/" folder,
-  # otherwise uses images from the "data/02_boa_images/" folder
-  use_no_cloud_images: True 
 
   # Pula a geração de mascaras
   skip_water_segmentation: False

@@ -19,7 +19,7 @@ from fmask_pipeline.pipelines.download import (
     pipeline as download,
 )
 from fmask_pipeline.pipelines.cloud_preprocess import pipeline as cloud_preprocess
-from fmask_pipeline.pipelines.water_segmentation_tensorflow_model import (
+from fmask_pipeline.pipelines.water_segmentation import (
     pipeline as tensorflow_model,
 )
 from fmask_pipeline.pipelines.watnet import pipeline as watnet

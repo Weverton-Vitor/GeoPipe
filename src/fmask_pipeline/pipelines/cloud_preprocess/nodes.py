@@ -27,6 +27,10 @@ def apply_cloud_mask(
     *args,
     **kwargs,
 ):
+    if mask_type == 'no_mask':
+        logger.warning("Skip generation of cloud and shadow masks")
+        return True
+    
     if mask_type == "fmask":
         return apply_fmask(
             toa_path=toa_path,
@@ -61,16 +65,17 @@ def apply_fmask(
     *args,
     **kwargs,
 ):
+    # TODO REMOVE
     if skip_masks:
         logger.warning("Skip generation of cloud and shadow masks")
         return True
 
     fmask = Fmask(scale_factor=scale_factor)
     inputs = glob.glob(f"{toa_path}{location_name}/*/*.tif")
-
+    
     for inp in inputs:
         inp = inp.replace("\\", "/")
-        file_name = f"fmask/{location_name}/{inp.split('/')[-2]}/mask_{inp.split('/')[-1].split('.')[0]}"
+        file_name = f"{location_name}/fmask/{inp.split('/')[-2]}/mask_{inp.split('/')[-1].split('.')[0]}"
 
         color_composite, cloud_mask, shadow_mask, water_mask = fmask.create_fmask(inp)
 
@@ -123,7 +128,7 @@ def apply_s2cloudless(
 
     return True
 
-
+# TODO refactore to remove coupling
 def cloud_removal(
     path_images: str,
     path_masks: str,
@@ -134,8 +139,8 @@ def cloud_removal(
     final_date: str,
     skip_clean: bool,
     color_file_log_path: str,
-    reconstruction_algorithm: str = "temporal_interpolation",
-    cloud_mask_algoritm: str = "s2cloudless",
+    cloud_mask_algorithm: str,
+    reconstruction_algorithm: str,
     max_workers: int = 4,
     *args: Any,
     **kwargs: Any,
@@ -170,7 +175,7 @@ def cloud_removal(
     max_workers:
         Maximum number of threads used for concurrent image processing.
     """
-    if skip_clean:
+    if skip_clean or cloud_mask_algorithm == "no_mask":
         logger.warning("Skip Cloud Removal")
         return True
 
@@ -183,6 +188,7 @@ def cloud_removal(
     logger.info(
         "Processing reservoir '%s' with algorithm '%s'.", location_name, reconstruction_algorithm
     )
+    
 
     year_range = range(
         int(init_date.split("-")[0]),
@@ -199,13 +205,13 @@ def cloud_removal(
         for year in year_range:
             path_images_year = os.path.join(path_images, location_name, str(year), "")
             path_masks_year = os.path.join(
-                path_masks, location_name, cloud_mask_algoritm, str(year), ""
+                path_masks, location_name, cloud_mask_algorithm, str(year), ""
             )
             output_path_year = os.path.join(
-                output_path, location_name, cloud_mask_algoritm, reconstruction_algorithm, str(year), ""
+                output_path, location_name, cloud_mask_algorithm, reconstruction_algorithm, str(year), ""
             )
             color_file_log = os.path.join(
-                color_file_log_path, location_name, cloud_mask_algoritm, reconstruction_algorithm, str(year), ""
+                color_file_log_path, location_name, cloud_mask_algorithm, reconstruction_algorithm, str(year), ""
             )
             # Path(output_path_year).mkdir(parents=True, exist_ok=True)
 
