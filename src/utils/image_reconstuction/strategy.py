@@ -37,10 +37,11 @@ class CorrectionContext:
     image_path: str
     mask_path: str
     output_path: str
+    time_series_images_path: str
+    time_series_masks_path: str
     location_name: str
     date: str
     year: int
-    image_stem: str  # filename without extension
     img_dim: tuple[int, int]
     cloud_pixels: str
     color_file_path: str
@@ -74,8 +75,8 @@ class BCLStrategy(ImageReconstructionStrategy):
     def correct_image(self, ctx: CorrectionContext) -> None:
         processor = BCL(
             img_dim=ctx.img_dim,
-            scl_path=ctx.mask_path,
-            path_6B=ctx.image_path,
+            time_series_masks_path=ctx.time_series_masks_path,
+            time_series_images_path=ctx.time_series_images_path,
             year=ctx.year,
             data=ctx.date,
             intern_reservoir=ctx.location_name,
@@ -85,10 +86,11 @@ class BCLStrategy(ImageReconstructionStrategy):
         )
         try:
             processor.singleImageCorrection(
-                ctx.date,
-                ctx.year,
-                ctx.output_path,
-                ctx.image_stem,
+                target_image_path=ctx.image_path,
+                target_mask_path=ctx.mask_path,
+                output_path=ctx.output_path,
+                image_date=ctx.date,
+                image_year=ctx.year,
             )
         finally:
             processor.death()
@@ -134,10 +136,11 @@ def _extract_date(filename: str) -> str:
 
 
 def process_single_image(
-    image_filename: str,
+    image_file_path: str,
+    mask_file_path: str,
     year: int,
-    path_images_year: str,
-    path_masks_year: str,
+    time_series_images_path: str,
+    time_series_masks_path: str,
     output_path_year: str,
     color_file_log: str,
     location_name: str,
@@ -149,18 +152,19 @@ def process_single_image(
     Process one TIFF file.  Returns the filename on success.
     Raises on unrecoverable failure so the caller can log and move on.
     """
-    tif_path = os.path.join(path_images_year, image_filename)
-    img_dim = _read_tiff_dimensions(tif_path)
-    date = _extract_date(image_filename)
-
+    image_file_name = image_file_path.rsplit("/", maxsplit=1)[-1]
+    img_dim = _read_tiff_dimensions(image_file_path)
+    date = _extract_date(image_file_name)
+    
     ctx = CorrectionContext(
-        image_path=path_images_year,
-        mask_path=path_masks_year,
+        image_path=image_file_path,
+        mask_path=mask_file_path,
+        time_series_images_path=time_series_images_path,
+        time_series_masks_path=time_series_masks_path,
         output_path=output_path_year,
         location_name=location_name,
         date=date,
         year=year,
-        image_stem=image_filename.replace(".tif", ""),
         img_dim=img_dim,
         cloud_pixels=cloud_pixels,
         color_file_path=color_file_log,
@@ -168,4 +172,4 @@ def process_single_image(
     )
 
     strategy.correct_image(ctx)
-    return image_filename
+    return image_file_name

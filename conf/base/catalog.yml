@@ -8,4 +8,4 @@
 
 shapefile:
   type: utils.datasets.GeoJsonDataset.GeoJsonDataSet
-  filepath: data/00_shapefiles/sume_reservatorio.geojson
+  filepath: data/00_shapefiles/lagoa_do_arroz_reservatorio.geojson

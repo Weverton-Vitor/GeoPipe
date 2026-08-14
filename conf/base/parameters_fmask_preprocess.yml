@@ -1,10 +1,10 @@
 configs:
 
   # Pula o processo de limpeza das imagens
-  skip_clean: False
+  skip_clean: True
 
   # Pular geração das máscaras
-  skip_masks: False
+  skip_masks: True
 
   # cloud_mask_algoritm: s2cloudless
   cloud_mask_algoritm: fmask

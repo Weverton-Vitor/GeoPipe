@@ -20,25 +20,29 @@ class BCL:
     def __init__(
         self,
         img_dim,
-        scl_path,
-        path_6B,
+        time_series_masks_path,
+        time_series_images_path,
         year,
         data,
         intern_reservoir,
         cloud_pixels,
         use_dec_tree,
-        color_file_path
+        color_file_path,
     ):
         self.intern_reservoir = intern_reservoir
         self.width, self.height = img_dim
-        self.scl_path = scl_path
-        self.path_6B = path_6B
+        self.time_series_masks_path = time_series_masks_path
+        self.time_series_images_path = time_series_images_path
         self.year = year
         self.nuvem = cloud_pixels
         self.idx_class_cloud = 0
         # self.color_file = open(f"{color_file_path}color_file_{data}.txt", "w")
-        self.imgNDWI = None
-        pass
+
+        self.original_image_mask = None
+        self.original_image_mask_meta = None
+
+        self.original_image = None
+        self.original_image_meta = None
 
     def death(self):
         del self
@@ -46,56 +50,65 @@ class BCL:
     def pxHasCloud(self, pixelValue):
         return pixelValue in self.nuvem
 
-    # Função que carrega em memórias as imagens que serão corrigidas
-    # TODO OTIMIZAR URGENTEMENTE, sem fazer esse for
-    def getImageSCLandNDNWI(self, data, year):
-        # procurando a mascara pela data
-        for imageSCL in [f for f in os.listdir(self.scl_path) if f.endswith(".tif")]:
-            if imageSCL.replace("-", "").find(data) != -1:
-                with TIFF.open(self.scl_path + imageSCL) as img:
-                    self.imgSCL = img.read()
-                    self.sclMETA = img.meta
+    def openImageAndMask(self, image_path, mask_path):
+        with TIFF.open(mask_path) as mask:
+            self.original_image_mask = mask.read()
+            self.original_image_mask_meta = mask.meta
 
-        # procurando a imagem pela data
-        for imageNDWI in [f for f in os.listdir(self.path_6B) if f.endswith(".tif")]:
-            if imageNDWI.replace("-", "").find(data) != -1:
-                with TIFF.open(self.path_6B + imageNDWI) as img:
-                    self.imgNDWI = img.read()
-                    self.ndwiMETA = img.meta
+        with TIFF.open(image_path) as image:
+            self.original_image = image.read()
+            self.original_image_meta = image.meta
+
+        # print(image_path)
+        # print(self.original_image.shape)
+
+        # print(mask_path)
+        # print(self.original_image_mask.shape)
 
         # se alguma das duas imagens são vazias, lança exceção
-        if self.imgNDWI.shape[0] == 0 or self.imgSCL.shape[0] == 0:
+        if self.original_image.shape[0] == 0 or self.original_image_mask.shape[0] == 0:
             raise Exception("Erro")
 
         # Cria uma matriz booleana onde True indica que o pixel está poluído
         # Essa imagem é grayscale, cada cor imagem que for usada será uma cor diferente
         # sempre que um pixel de uma imagem for utilizado, essa máscara será marcada na mesma localização com a cor da imagem
         self.mask = np.zeros(
-            (self.imgSCL.shape[1], self.imgSCL.shape[2]), dtype=np.uint8
+            (
+                self.original_image_mask.shape[1],
+                self.original_image_mask.shape[2],
+            ),
+            dtype=np.uint8,
         )
 
     # Os pixels que já estiverem 'limpos' serão mantidos
     # Aqueles que estão com nuvens ou sombras serão marcados em memória.
     def alreadyClear(self):
         # Cria uma matriz booleana onde True indica que o pixel está poluído
-        cloud_mask = np.isin(self.imgSCL[self.idx_class_cloud], self.nuvem)
+        cloud_mask = np.isin(self.original_image_mask[self.idx_class_cloud], self.nuvem)
 
         # Cria uma máscara onde True indica que o pixel está limpo
         clear_mask = ~cloud_mask
 
         # Transfere os pixels limpos para o resultado
-        self.resultadoIMGSCL[0][clear_mask] = self.imgSCL[self.idx_class_cloud][
-            clear_mask
-        ]
+        self.resultadoIMGSCL[0][clear_mask] = self.original_image_mask[
+            self.idx_class_cloud
+        ][clear_mask]
+
+        # print('------------')
+        # print(self.original_image_mask.shape)
+        # print(clear_mask.shape)
+        # print(self.resultadoIMGNDWI.shape)
         for i in range(len(self.resultadoIMGNDWI)):
-            self.resultadoIMGNDWI[i][clear_mask] = self.imgNDWI[i][clear_mask]
+            self.resultadoIMGNDWI[i][clear_mask] = self.original_image[i][clear_mask]
         self.mask[clear_mask] = [0]
         # self.color_file.write("0 is the actual color of the image\n")
 
     # Função que carrega em memória todas as imagens do ano
-    def getAllImagesYear(self, year, data):
+    def getAllImagesYear(self, data):
         self.imagesSclOfTheYear = []
-        for image in [f for f in os.listdir(self.scl_path) if f.endswith(".tif")]:
+        for image in [
+            f for f in os.listdir(self.time_series_masks_path) if f.endswith(".tif")
+        ]:
             if image.replace("-", "").find(data) != -1:
                 continue
             else:
@@ -126,7 +139,7 @@ class BCL:
         return self.pairImages
 
     # Nesta função é gerada a imagem
-    def subPorDataProx(self, year, just_that=False):
+    def subPorDataProx(self, year, just_that=True):
         # print("Iniciando correção temporal...")
         # Cada imagem será uma lista, em que o primeiro elemento é o nome da imagem
         # e os demais são os pixels que podem ser utilizados para a correção temporal
@@ -135,7 +148,12 @@ class BCL:
         # Essa imagem é grayscale, cada cor imagem que for usada será uma cor diferente
         # sempre que um pixel de uma imagem for utilizado, essa máscara será marcada na mesma localização com a cor da imagem
         self.mask = np.zeros(
-            (self.imgSCL.shape[1], self.imgSCL.shape[2], 3), dtype=np.uint8
+            (
+                self.original_image_mask.shape[1],
+                self.original_image_mask.shape[2],
+                3,
+            ),
+            dtype=np.uint8,
         )
 
         # Pixels de valores altearios
@@ -150,7 +168,7 @@ class BCL:
                 min(self.relativeTimeList)
             )
             path_image_more_close_scl = (
-                self.scl_path + self.pairImages[i_image_more_closer]
+                self.time_series_masks_path + self.pairImages[i_image_more_closer]
             )
 
             # Filtro para obter a data da imagem
@@ -161,10 +179,17 @@ class BCL:
                 .replace("-", "")
             )
 
-            for i6b in [f for f in os.listdir(self.path_6B) if f.endswith(".tif")]:
+            image_more_close_6b = None
+            for i6b in [
+                f
+                for f in os.listdir(self.time_series_images_path)
+                if f.endswith(".tif")
+            ]:
                 if i6b.replace("-", "").find(date) != -1:
-                    with TIFF.open(self.path_6B + i6b) as tiff:
+                    with TIFF.open(self.time_series_images_path + i6b) as tiff:
                         image_more_close_6b = tiff.read()
+                        # print('------')
+                            # print(self.time_series_images_path + i6b)
                         break
 
             # A imagem mais próxima é carregada
@@ -182,18 +207,40 @@ class BCL:
             mask1 = np.logical_not(np.isin(array_image_more_close_scl, self.nuvem))
             mask2 = self.resultadoIMGSCL[0] == -1
 
+            # print(mask1.shape)
+            # print(mask2.shape)
+
+            # print('------------')
+            # print(path_image_more_close_scl)
+            # print(image_more_close_scl[0].shape)
+
             # se mask2 não tiver nenhum pixel -1, não há mais pixels para serem substituídos
             if not np.any(mask2):
                 break
-            
+
             # 1. Cria a máscara combinada uma única vez para economizar processamento
             mask_combinada = mask1 & mask2
 
             # 2. Mantém a primeira atribuição idêntica
-            self.resultadoIMGSCL[0][mask_combinada] = array_image_more_close_scl[mask_combinada]
+            self.resultadoIMGSCL[0][mask_combinada] = array_image_more_close_scl[
+                mask_combinada
+            ]
 
+            if image_more_close_6b is None:
+                logger.warning(
+                    "No corresponding 6-band image found for '%s'. Skipping band update.",
+                    self.pairImages[i_image_more_closer],
+                )
+                continue
+            
+            # print('------------')
+            # print(mask_combinada.shape)
+            # print(self.resultadoIMGNDWI.shape)
+            # print(image_more_close_6b.shape)
             # 3. Atualiza as 12 bandas de uma só vez (índices de 0 a 11)
-            self.resultadoIMGNDWI[0:len(self.resultadoIMGNDWI), mask_combinada] = image_more_close_6b[0:len(self.resultadoIMGNDWI), mask_combinada]
+            self.resultadoIMGNDWI[0 : len(self.resultadoIMGNDWI), mask_combinada] = (
+                image_more_close_6b[0 : len(self.resultadoIMGNDWI), mask_combinada]
+            )
 
             # Color[i] is like [255 255 255], so it is necessary to convert px format [255,255,255]
             if color < 255:
@@ -205,13 +252,15 @@ class BCL:
         if just_that:
             # onde for -1, não foi possível substituir o pixel
             # então será atribuído o valor original da imagem
-            self.resultadoIMGSCL[0][(self.resultadoIMGSCL[0] == -1)] = self.imgSCL[
-                self.idx_class_cloud
-            ][(self.resultadoIMGSCL[0] == -1)]
+            self.resultadoIMGSCL[0][(self.resultadoIMGSCL[0] == -1)] = (
+                self.original_image_mask[self.idx_class_cloud][
+                    (self.resultadoIMGSCL[0] == -1)
+                ]
+            )
 
             for i in range(12):
                 self.resultadoIMGNDWI[i][(self.resultadoIMGNDWI[i] == -1)] = (
-                    self.imgNDWI[i][(self.resultadoIMGNDWI[i] == -1)]
+                    self.original_image[i][(self.resultadoIMGNDWI[i] == -1)]
                 )
 
             self.mask[self.resultadoIMGSCL[0] == -1] = [0]
@@ -221,28 +270,52 @@ class BCL:
         # for key, value in dict_color_image.items():
         #     self.color_file.write(f"{key} is the color of {value}\n")
 
-    def singleImageCorrection(self, data, year, output_path, image_name, just_sp=False):
-        # Obtém os objetos internos para serem corrigidos, a imagem SCL e a imagem NDWI
-        # print("Carregando imagens...")
-        self.getImageSCLandNDNWI(data, year)
+    def singleImageCorrection(
+        self,
+        target_image_path,
+        target_mask_path,
+        output_path,
+        image_date,
+        image_year,
+        just_sp=False,
+    ):
+        self.openImageAndMask(target_image_path, target_mask_path)
 
         # os resultados são inicialmente arrays de -1
         self.resultadoIMGSCL = np.full(
-            (1, self.imgSCL.shape[1], self.imgSCL.shape[2]), -1, dtype=np.int16
+            (
+                1,
+                self.original_image_mask.shape[1],
+                self.original_image_mask.shape[2],
+            ),
+            -1,
+            dtype=np.int16,
         )
         self.resultadoIMGNDWI = np.full(
-            (self.imgNDWI.shape[0], self.imgNDWI.shape[1], self.imgNDWI.shape[2]),
+            (
+                self.original_image.shape[0],
+                self.original_image.shape[1],
+                self.original_image.shape[2],
+            ),
             -1,
             dtype=np.int16,
         )
 
-        # # Salva os pixels que estão poluídos
+        # print(self.resultadoIMGNDWI.shape)
+        # print(self.resultadoIMGSCL.shape)
+        # print("")
+        # print(target_image_path)
+        # print(target_mask_path)
+        # print(self.time_series_images_path)
+        # print(self.time_series_masks_path)
+
+        # # # Salva os pixels que estão poluídos
         self.alreadyClear()
-        self.getAllImagesYear(year, data)
+        self.getAllImagesYear(image_date)
 
         # Correção temporal
-        self.relativeTime(data)
-        self.subPorDataProx(year, just_sp)
+        self.relativeTime(image_date)
+        self.subPorDataProx(image_year, just_sp)
 
         # # self.correcaoPorBorda(3, 3)
         self.resultadoIMGSCL = np.where(
@@ -255,6 +328,8 @@ class BCL:
         # Salvando novo arquivo com resultado e rasterio
         # cv2.imwrite(scl_output_path + "/" + data + "_mask.png", self.resultadoIMGSCL[0])
         with TIFF.open(
-            f"{output_path}{image_name}_clean.tif", "w", **self.ndwiMETA
+            f"{output_path}{target_image_path.split('/')[-1].split('.')[0]}_clean.tif",
+            "w",
+            **self.original_image_meta,
         ) as dst:
             dst.write(self.resultadoIMGNDWI)

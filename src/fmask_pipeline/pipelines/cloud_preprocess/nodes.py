@@ -27,10 +27,10 @@ def apply_cloud_mask(
     *args,
     **kwargs,
 ):
-    if mask_type == 'no_mask':
+    if mask_type == "no_mask":
         logger.warning("Skip generation of cloud and shadow masks")
         return True
-    
+
     if mask_type == "fmask":
         return apply_fmask(
             toa_path=toa_path,
@@ -72,7 +72,7 @@ def apply_fmask(
 
     fmask = Fmask(scale_factor=scale_factor)
     inputs = glob.glob(f"{toa_path}{location_name}/*/*.tif")
-    
+
     for inp in inputs:
         inp = inp.replace("\\", "/")
         file_name = f"{location_name}/fmask/{inp.split('/')[-2]}/mask_{inp.split('/')[-1].split('.')[0]}"
@@ -127,6 +127,7 @@ def apply_s2cloudless(
     )
 
     return True
+
 
 # TODO refactore to remove coupling
 def cloud_removal(
@@ -186,9 +187,10 @@ def cloud_removal(
         )
 
     logger.info(
-        "Processing reservoir '%s' with algorithm '%s'.", location_name, reconstruction_algorithm
+        "Processing reservoir '%s' with algorithm '%s'.",
+        location_name,
+        reconstruction_algorithm,
     )
-    
 
     year_range = range(
         int(init_date.split("-")[0]),
@@ -196,7 +198,9 @@ def cloud_removal(
     )
 
     # Count total files upfront for the progress-bar
-    all_tifs = glob.glob(os.path.join(path_images, location_name, "**", "*.tif"), recursive=True)
+    all_tifs = glob.glob(
+        os.path.join(path_images, location_name, "**", "*.tif"), recursive=True
+    )
     total_tifs = len(all_tifs)
 
     extra: dict[str, Any] = kwargs  # forward unknown kwargs to strategies
@@ -207,44 +211,79 @@ def cloud_removal(
             path_masks_year = os.path.join(
                 path_masks, location_name, cloud_mask_algorithm, str(year), ""
             )
+
             output_path_year = os.path.join(
-                output_path, location_name, cloud_mask_algorithm, reconstruction_algorithm, str(year), ""
+                output_path,
+                location_name,
+                cloud_mask_algorithm,
+                reconstruction_algorithm,
+                str(year),
+                "",
             )
             color_file_log = os.path.join(
-                color_file_log_path, location_name, cloud_mask_algorithm, reconstruction_algorithm, str(year), ""
+                color_file_log_path,
+                location_name,
+                cloud_mask_algorithm,
+                reconstruction_algorithm,
+                str(year),
+                "",
             )
             # Path(output_path_year).mkdir(parents=True, exist_ok=True)
 
-            tif_files = [f for f in os.listdir(path_images_year) if f.endswith(".tif")]
-
+            tif_files = [
+                f"{path_images_year}{f}".replace("\\", "/")
+                for f in os.listdir(path_images_year)
+                if f.endswith(".tif")
+            ]
             if not tif_files:
                 logger.debug("No TIF files found for year %d — skipping.", year)
                 continue
+
+            mask_files = [
+                f"{path_masks_year}{f}".replace("\\", "/")
+                for f in os.listdir(path_masks_year)
+                if f.endswith(".tif")
+            ]
+            
+            # print(mask_files)
+            if not mask_files:
+                logger.debug("No mask files found for year %d — skipping.", year)
+                continue
+
+            if extra.get("time_series_images_path") and extra.get(
+                "time_series_masks_path"
+            ):
+                # print(location_name)
+                path_images_year = extra.get("time_series_images_path") + f"/{location_name}/{year}/"
+                path_masks_year = extra.get("time_series_masks_path") + f"/{location_name}/{cloud_mask_algorithm}/{year}/"
 
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = {
                     executor.submit(
                         process_single_image,
-                        image_filename=fname,
+                        image_file_path=file_path,
+                        mask_file_path=mask_path,
                         year=year,
-                        path_images_year=path_images_year,
-                        path_masks_year=path_masks_year,
+                        time_series_images_path=path_images_year,
+                        time_series_masks_path=path_masks_year,
                         output_path_year=output_path_year,
                         color_file_log=color_file_log,
                         location_name=location_name,
                         cloud_pixels=cloud_and_cloud_shadow_pixels,
                         strategy=strategy,
                         extra=extra,
-                    ): fname
-                    for fname in tif_files
+                    ): file_path
+                    for file_path, mask_path in zip(tif_files, mask_files)
                 }
 
                 for future in as_completed(futures):
                     fname = futures[future]
-                    try:
-                        future.result()
-                    except Exception as exc:
-                        logger.error("Failed to process '%s': %s", fname, exc)
+                    future.result()
+                    
+                    # try:
+                    #     future.result()
+                    # except Exception as exc:
+                    #     logger.error("Failed to process '%s': %s", fname, exc)
                     pbar.update(1)
 
     return True
