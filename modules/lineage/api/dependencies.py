@@ -4,6 +4,9 @@ from config import LINEAGE_ROOT
 from domain.repositories.file_system_run_repository import (
     FileSystemRunRepository,
 )
+from domain.repositories.filesystem_artifacts_repository import (
+    FileSystemArtifactRepository,
+)
 from domain.repositories.filesystem_images_repository import (
     FileSystemImageRepository,
 )
@@ -14,11 +17,6 @@ from domain.services.artifacts_service import ArtifactsService
 from domain.services.image_service import ImageService
 from domain.services.runs_service import RunService
 from domain.services.timeseries_service import TimeSeriesService
-from fastapi import Depends
-
-from domain.repositories.filesystem_artifacts_repository import (
-    FileSystemArtifactRepository,
-)
 
 
 def get_images_service():

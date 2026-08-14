@@ -10,8 +10,6 @@ from tqdm import tqdm
 from utils.download.download import (
     adjust_date,
     download_mosaic_image,
-    download_scene,
-    get_image_metadata,
     get_original_bands_name,
     group_images_by_date,
     is_TOA,
@@ -32,6 +30,8 @@ def create_dirs(
     save_plots_path: str,
     save_clean_images_path: str,
     cloud_removal_log: str,
+    cloud_mask_algoritm: str,
+    reconstruction_algorithm: str,
     init_date: str,
     final_date: str,
 ):
@@ -49,10 +49,10 @@ def create_dirs(
     for year in range(int(init_date.split("-")[0]), int(final_date.split("-")[0]) + 1):
         os.makedirs(f"{toa_dowload_path}{location_name}/{year}", exist_ok=True)
         os.makedirs(f"{boa_dowload_path}{location_name}/{year}", exist_ok=True)
-        os.makedirs(f"{save_masks_path}{location_name}/{year}", exist_ok=True)
-        os.makedirs(f"{save_plots_path}{location_name}/{year}", exist_ok=True)
-        os.makedirs(f"{save_clean_images_path}{location_name}/{year}", exist_ok=True)
-        os.makedirs(f"{cloud_removal_log}{location_name}/{year}", exist_ok=True)
+        os.makedirs(f"{save_masks_path}{location_name}/{cloud_mask_algoritm}/{year}", exist_ok=True)
+        os.makedirs(f"{save_plots_path}{location_name}/{cloud_mask_algoritm}/{year}", exist_ok=True)
+        os.makedirs(f"{save_clean_images_path}{location_name}/{cloud_mask_algoritm}/{reconstruction_algorithm}/{year}", exist_ok=True)
+        os.makedirs(f"{cloud_removal_log}{location_name}/{cloud_mask_algoritm}/{year}", exist_ok=True)
 
     return True
 
@@ -67,7 +67,6 @@ def shapefile2feature_collection(
     fc = ee.FeatureCollection(geojson_data)
 
     return fc
-
 
 def donwload_images(
     collection_ids: list,
@@ -87,7 +86,7 @@ def donwload_images(
     if skip_download:
         logger.warning("Skip Download of images")
         return True
-
+    
     for collection_id in collection_ids:
         # Validando as datas
         satelite_name = collection_id.split("/")[1]
@@ -203,3 +202,88 @@ def donwload_images(
             logger.info("Metadata saved as CSV")
 
     return True
+
+
+
+import time
+
+
+def validate_tif_fast(
+    caminho_arquivo,
+    tamanho_min_bytes: int = 10_000,
+    wait_stable: bool = True,
+    stable_checks: int = 3,
+    interval: float = 1.0,
+) -> dict:
+    """
+    Validação rápida de TIFF sem abrir o raster completo.
+
+    Verifica:
+    - existência
+    - tamanho mínimo
+    - assinatura TIFF
+    - estabilidade do tamanho (arquivo terminou de baixar)
+
+    Retorna:
+        {
+            "valido": bool,
+            "erro": str | None,
+            "tamanho_bytes": int
+        }
+    """
+
+    caminho = Path(caminho_arquivo)
+
+    resultado = {
+        "valido": False,
+        "erro": None,
+        "tamanho_bytes": 0,
+    }
+
+    # 1. Existe?
+    if not caminho.exists():
+        resultado["erro"] = "Arquivo não existe."
+        return resultado
+
+    # 2. Tamanho mínimo
+    tamanho = caminho.stat().st_size
+    resultado["tamanho_bytes"] = tamanho
+
+    if tamanho < tamanho_min_bytes:
+        resultado["erro"] = f"Arquivo muito pequeno ({tamanho} bytes)."
+        return resultado
+
+    # 3. Verifica se ainda está sendo escrito
+    if wait_stable:
+        ultimo_tamanho = tamanho
+
+        for _ in range(stable_checks):
+            time.sleep(interval)
+            tamanho_atual = caminho.stat().st_size
+
+            if tamanho_atual != ultimo_tamanho:
+                resultado["erro"] = "Arquivo ainda está em escrita/download."
+                return resultado
+
+            ultimo_tamanho = tamanho_atual
+
+    # 4. Verifica cabeçalho TIFF
+    try:
+        with open(caminho, "rb") as f:
+            header = f.read(4)
+
+        tif_signatures = [
+            b"II*\x00",  # Little endian
+            b"MM\x00*",  # Big endian
+        ]
+
+        if header not in tif_signatures:
+            resultado["erro"] = "Cabeçalho TIFF inválido."
+            return resultado
+
+    except Exception as e:
+        resultado["erro"] = f"Erro ao ler cabeçalho: {e}"
+        return resultado
+
+    resultado["valido"] = True
+    return resultado

@@ -9,29 +9,56 @@ from scipy.stats import zscore
 
 from .general import crop_raster_with_geojson_obj
 
+from skimage.filters import threshold_otsu
+import numpy as np
+import os
+
+
 def process_single_mask(args):
     mask_path, path_shapefile, thresholds = args
 
     filename = os.path.basename(mask_path).replace("_clean", "")
     date_str = filename.split("_")[-1][:8]
-    year, month, day = date_str[:4], date_str[4:6], date_str[6:8]
+
+    year, month, day = (
+        date_str[:4],
+        date_str[4:6],
+        date_str[6:8]
+    )
 
     image, pixel_area = preprocess_raster(
         tif_path=mask_path,
         path_shapefile=path_shapefile
     )
 
+    # Remove NaNs caso existam
+    valid_pixels = image[~np.isnan(image)]
+
+    # Calcula threshold de Otsu
+    otsu_threshold = threshold_otsu(valid_pixels)
+
+    # Adiciona aos thresholds informados
+    all_thresholds = list(thresholds) + [otsu_threshold]
+
     areas = calculate_areas_from_array(
         image=image,
         pixel_area=pixel_area,
-        thresholds=thresholds
+        thresholds=all_thresholds
     )
 
-    # Resultado compacto (retorno único)
     results = []
+
     for threshold, (area_m2, area_km2) in areas.items():
+
+        threshold_type = (
+            "otsu"
+            if np.isclose(threshold, otsu_threshold)
+            else "fixed"
+        )
+
         results.append({
-            "threshold": threshold,
+            "threshold": float(threshold),
+            "threshold_type": threshold_type,
             "water_masks": mask_path,
             "year": year,
             "month": month,
@@ -44,11 +71,11 @@ def process_single_mask(args):
     return results
 
 
-
 def preprocess_raster(tif_path, path_shapefile):
     with rasterio.open(tif_path) as src_file:
 
         src, memfile_src = crop_raster_with_geojson_obj(
+            tif_path,
             src_file, geojson_path=path_shapefile
         )
 
@@ -88,16 +115,21 @@ def preprocess_raster(tif_path, path_shapefile):
     pixel_area = abs(transform.a) * abs(transform.e)
     return image, pixel_area
 
+
 def calculate_areas_from_array(image, pixel_area, thresholds):
-    results = {}
+    thresholds = np.asarray(thresholds)
 
-    for t in thresholds:
-        water_pixels = np.count_nonzero(image > t)
-        area_m2 = water_pixels * pixel_area
-        results[t] = (area_m2, area_m2 / 1e6)
+    masks = image[..., None] > thresholds
 
-    return results
+    water_pixels = masks.sum(axis=(0, 1))
 
+    return {
+        t: (
+            count * pixel_area,
+            count * pixel_area / 1e6
+        )
+        for t, count in zip(thresholds, water_pixels)
+    }
 
 
 def calculate_water_area(tif_path, path_shapefile, threshold=0, save_path=None):

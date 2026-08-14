@@ -6,5 +6,13 @@ configs:
   # Pular geração das máscaras
   skip_masks: True
 
+  # cloud_mask_algoritm: s2cloudless
+  cloud_mask_algoritm: fmask
+  # cloud_mask_algoritm: no_mask
+
   # Valores da máscara que representam nuvem e sombra de nuvem
   cloud_and_cloud_shadow_pixels: [1, 2]
+
+  max_workers_image_reconstruction: 4
+
+  reconstruction_algorithm: temporal_interpolation

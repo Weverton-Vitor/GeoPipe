@@ -1,0 +1,26 @@
+paths:
+
+  models_path: "data/00_models/"
+
+  # Caminho das imagens baixadas do topo da atmosfera (TOA)
+  toa_dowload_save_path: "data/01_toa_images/"
+
+  # Caminho das imagens baixadas do base da atmosfera BOA)
+  boa_dowload_path_save_path: "data/02_boa_images/"
+
+  # Caminho onde as máscaras serão salvas
+  cloud_masks_save_path: "data/03_cloud_masks/"
+
+  # Caminho para salvar as imagens limpas
+  clean_images_save_path: "data/04_clean_images/"
+
+  # Caminho para as plotagem das máscaras
+  plot_masks_save_path: "data/05_masks_plot/"
+
+  # Caminho do log do algoritmo de remoção de nuvens
+  cloud_removal_log_save_path: "data/06_color_file_log/"
+
+  # Caminho onde as máscaras de segmentação de água serão salvas
+  water_masks_save_path: "data/07_water_masks/"
+
+  area_and_volume_save_path: "data/010_areas_volumes/"

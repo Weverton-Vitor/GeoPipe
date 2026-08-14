@@ -5,9 +5,10 @@ generated using Kedro 0.19.10
 
 from kedro.pipeline import Pipeline, node, pipeline
 
-from fmask_pipeline.pipelines.water_segmentation_tensorflow_model.nodes import (
-    apply_water_segmentation_tensorflow_model,
+from fmask_pipeline.pipelines.water_segmentation.nodes import (
+    apply_water_segmentation,
     create_dirs,
+    
 )
 
 
@@ -25,24 +26,26 @@ def create_pipeline(
                 inputs={
                     "water_masks_save_path": "params:configs.water_masks_save_path",
                     "location_name": "params:configs.location_name",
-                    "use_no_cloud_images": "params:configs.use_no_cloud_images",
-                    "model_path": "params:configs.model_path",
+                    "water_model_name": "params:configs.water_model_name",
                     "init_date": "params:configs.init_date",
                     "final_date": "params:configs.final_date",
+                    "cloud_mask_algoritm": "params:configs.cloud_mask_algoritm",
+                    "reconstruction_algorithm": "params:configs.reconstruction_algorithm",
                 },
                 outputs="save_water_masks_path",
                 name="create_deepwatermap_directories",
             ),
             node(
-                func=apply_water_segmentation_tensorflow_model,
+                func=apply_water_segmentation,
                 inputs={
-                    "tensorflow_model_images_paths": "params:configs.tensorflow_model_images_paths",
                     "save_path": "save_water_masks_path",
                     "location_name": "params:configs.location_name",
-                    "skip_tensorflow_model": "params:configs.skip_tensorflow_model",
+                    "skip_water_segmentation": "params:configs.skip_water_segmentation",
                     "threshold": "params:configs.watnet_threshold",
-                    "model_path": "params:configs.model_path",
+                    "water_model_name": "params:configs.water_model_name",
                     "patch_size": "params:configs.patch_size",
+                    "cloud_mask_algoritm": "params:configs.cloud_mask_algoritm",
+                    "reconstruction_algorithm": "params:configs.reconstruction_algorithm",
                     dependencies[0]: dependencies[0],
                     dependencies[1]: dependencies[1],
                 },

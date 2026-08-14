@@ -1,37 +1,43 @@
 """
-This is a boilerplate pipeline 'cfmask_preprocess'
+This is a boilerplate pipeline 'fmask_preprocess'
 generated using Kedro 0.19.10
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
 
-from fmask_pipeline.pipelines.cloud_preprocess.nodes import cloud_removal
-
-from .nodes import apply_cfmask
+from .nodes import apply_cloud_mask, cloud_removal
 
 
-def create_pipeline(**kwargs) -> Pipeline:
+def create_pipeline(
+    toa="TOA_download_images_dependency", boa="BOA_download_images_dependency", **kwargs
+) -> Pipeline:
     return pipeline(
         [
             node(
-                func=apply_cfmask,
+                func=apply_cloud_mask,
                 inputs={
-                    "dependency": "TOA_download_images_dependency",
-                    "TOA_download_images_dependency": "BOA_download_images_dependency",
-                    "boa_path": "params:paths.boa_dowload_path_save_path",
+                    "shapefile": "shapefile",
+                    "mask_type": "params:configs.cloud_mask_algoritm",
+                    "dowload_path": "params:paths.cloud_masks_save_path",
+                    "TOA_download_images_dependency": toa,
+                    "BOA_download_images_dependency": boa,
+                    "toa_path": "params:paths.toa_dowload_save_path",
                     "location_name": "params:configs.location_name",
                     "save_masks_path": "params:paths.cloud_masks_save_path",
                     "save_plots_path": "params:paths.plot_masks_save_path",
-                    "scale_factor": "params:configs.scale_factor",
-                    "skip_masks": "params:configs.skip_cfmasks",
+                    "scale": "params:configs.scale_factor",
+                    "skip_masks": "params:configs.skip_masks",
+                    "init_date": "params:configs.init_date",
+                    "final_date": "params:configs.final_date",
+                    "prefix_images_name": "params:configs.toa_prefix_images_name",
                 },
-                outputs="CF_mask_dependency",
-                name="apply_CFMask",
+                outputs="Fmask_dependency",
+                name="apply_cloud_masks",
             ),
             node(
                 func=cloud_removal,
                 inputs={
-                    "dependency": "CF_mask_dependency",
+                    "dependency": "Fmask_dependency",
                     "path_images": "params:paths.boa_dowload_path_save_path",
                     "path_masks": "params:paths.cloud_masks_save_path",
                     "output_path": "params:paths.clean_images_save_path",

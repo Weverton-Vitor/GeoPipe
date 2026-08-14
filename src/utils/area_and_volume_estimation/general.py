@@ -5,30 +5,33 @@ from rasterio.io import MemoryFile
 from rasterio.mask import mask
 
 
-def crop_raster_with_geojson_obj(src, geojson_path):
-    gdf = gpd.read_file(geojson_path)
-    if gdf.crs != src.crs:
-        gdf = gdf.to_crs(src.crs)
+def crop_raster_with_geojson_obj(tif_path, src, geojson_path):
+    try:
+        gdf = gpd.read_file(geojson_path)
+        if gdf.crs != src.crs:
+            gdf = gdf.to_crs(src.crs)
 
-    geometrias = [feature["geometry"] for feature in json.loads(gdf.to_json())["features"]]
-    imagem_cortada, transform = mask(src, geometrias, crop=True)
+        geometrias = [feature["geometry"] for feature in json.loads(gdf.to_json())["features"]]
+        imagem_cortada, transform = mask(src, geometrias, crop=True)
 
-    perfil = src.profile.copy()
-    perfil.update(
-        {
-            "height": imagem_cortada.shape[1],
-            "width": imagem_cortada.shape[2],
-            "transform": transform,
-        }
-    )
+        perfil = src.profile.copy()
+        perfil.update(
+            {
+                "height": imagem_cortada.shape[1],
+                "width": imagem_cortada.shape[2],
+                "transform": transform,
+            }
+        )
 
-    memfile = MemoryFile()
-    dataset = memfile.open(**perfil)
-    dataset.write(imagem_cortada)
+        memfile = MemoryFile()
+        dataset = memfile.open(**perfil)
+        dataset.write(imagem_cortada)
 
-    # return both so caller can close
-    return dataset, memfile
-
+        # return both so caller can close
+        return dataset, memfile
+    except Exception as e:
+        print(f"Erro ao cortar o raster {tif_path} com o shapefile {geojson_path}: {e}")
+        return None, None
 
 
 def media_mensal_por_ano(df, column="volume_m2"):

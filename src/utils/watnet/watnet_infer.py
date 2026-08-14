@@ -309,7 +309,7 @@ def watnet_infer_onnx_optimized(
     for img_path, save_path in zip(image_paths, save_paths):
         # 1. Leitura rápida
         image = tiff.imread(img_path).astype(np.float32) / 10000.0
-        image = image[:, :, bands]
+        # image = image[:, :, bands]
 
         patcher = imgPatch(image, patch_size=patch_size, edge_overlay=edge_overlay)
         patch_list, _, n_rows, n_cols = patcher.toPatch()
@@ -362,7 +362,7 @@ def deepwatermap_infer_onnx(
     for img_path, save_path in zip(image_paths, save_paths):
         # 1. Leitura da imagem
         image = tiff.imread(img_path).astype(np.float32)
-        image = image[:, :, bands]
+        # image = image[:, :, bands]
 
         # 2. Padding para múltiplos de 32
         pad_r = find_padding(image.shape[0])
