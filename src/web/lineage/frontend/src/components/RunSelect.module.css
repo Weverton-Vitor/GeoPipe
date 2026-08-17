@@ -1,0 +1,24 @@
+.darkSelect {
+  appearance: none; /* Remove a seta padrão para permitir customização */
+  background-color: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  padding: 8px 32px 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  width: 100%;
+}
+
+/* Estilo para quando o select é focado */
+.darkSelect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Nota: Estilizar as <option> é limitado em alguns navegadores */
+.darkSelect option {
+  background-color: #1e293b;
+  color: #f8fafc;
+}

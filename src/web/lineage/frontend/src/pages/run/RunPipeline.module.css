@@ -1,0 +1,32 @@
+.container {
+  padding: 18px 20px;
+
+  border: 1px solid #dfe6e2;
+  border-radius: 10px;
+
+  background: white;
+}
+
+.label {
+  margin-bottom: 15px;
+
+  color: #8c9792;
+
+  font-size: 8px;
+  font-weight: 750;
+
+  letter-spacing: 0.13em;
+}
+
+.pipeline {
+  display: flex;
+  align-items: flex-start;
+}
+
+@media (max-width: 760px) {
+  .pipeline {
+    overflow-x: auto;
+
+    padding-bottom: 5px;
+  }
+}

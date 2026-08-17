@@ -1,0 +1,46 @@
+.wrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 11px;
+}
+
+.table th {
+  padding: 11px 14px;
+
+  background: #fafbfa;
+
+  color: #89938f;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  text-align: left;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table td {
+  padding: 11px 14px;
+
+  border-top: 1px solid #edf0ef;
+
+  color: #53615a;
+
+  white-space: nowrap;
+}
+
+.table tbody tr:hover {
+  background: #fafcfa;
+}
+
+.table td:last-child {
+  color: #293832;
+  font-weight: 650;
+}

@@ -1,0 +1,107 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+
+  flex: 1;
+}
+
+.step {
+  min-width: 125px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.icon {
+  width: 25px;
+  height: 25px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.text strong {
+  color: #47564f;
+
+  font-size: 9px;
+
+  white-space: nowrap;
+}
+
+.text span {
+  color: #9aa49f;
+
+  font-size: 8px;
+
+  white-space: nowrap;
+}
+
+.completed .icon {
+  background: #e9f3ee;
+
+  color: #39715a;
+}
+
+.running .icon {
+  background: #dcece5;
+
+  color: #2f6853;
+}
+
+.pending .icon {
+  background: #f0f3f2;
+
+  color: #a0aaa5;
+}
+
+.failed .icon {
+  background: #faeaea;
+
+  color: #a24f4f;
+}
+
+.skipped .icon {
+  background: #f1f3f2;
+
+  color: #9aa49f;
+}
+
+.connector {
+  height: 1px;
+
+  flex: 1;
+
+  margin: 0 10px;
+
+  background: #dfe5e2;
+}
+
+.connectorDone {
+  background: #9db8ab;
+}
+
+@media (max-width: 760px) {
+  .wrapper {
+    flex: initial;
+  }
+
+  .connector {
+    min-width: 25px;
+  }
+}
