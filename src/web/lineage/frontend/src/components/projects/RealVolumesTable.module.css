@@ -1,5 +1,6 @@
 .wrapper {
   overflow-x: auto;
+  height: 40vh;
 }
 
 .table {

@@ -78,6 +78,8 @@
   border-radius: 12px;
 
   overflow: hidden;
+
+height: 40vh;
 }
 
 .sectionHeader {

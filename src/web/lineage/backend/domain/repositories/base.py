@@ -19,3 +19,5 @@ class ArtifactRepository(ABC):
     @abstractmethod
     def get_artifacts(self, run_name, segmentation_method) -> list[Artifact]:
         pass
+
+

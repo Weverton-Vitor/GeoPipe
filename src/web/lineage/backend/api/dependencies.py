@@ -13,8 +13,12 @@ from domain.repositories.filesystem_images_repository import (
 from domain.repositories.filesystem_volume_repository import (
     FileSystemVolumeRepository,
 )
+from domain.repositories.sqlite.sqlite_project_repository import (
+    ProjectRepositorySqlite,
+)
 from domain.services.artifacts_service import ArtifactsService
 from domain.services.image_service import ImageService
+from domain.services.project_service import ProjectService
 from domain.services.runs_service import RunService
 from domain.services.timeseries_service import TimeSeriesService
 
@@ -37,3 +41,6 @@ def get_artifact_service():
     return ArtifactsService(
         artifact_repository=FileSystemArtifactRepository(Path(LINEAGE_ROOT))
     )
+def get_project_service():
+    return ProjectService(project_repository=ProjectRepositorySqlite())
+    

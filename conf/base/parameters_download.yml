@@ -10,8 +10,8 @@ configs:
   # init_date: "2026-02-25"
   init_date: "2017-01-01"
   final_date: "2026-07-31"
-  # init_date: "2026-02-25"
-  # final_date: "2026-02-27"
+  #init_date: "2026-07-25"
+  #final_date: "2026-07-31"
 
   # Primeira parte do nome das imagens
   # toa_prefix_images_name: "landsat_TOA"

@@ -1,5 +1,5 @@
 import uvicorn
-from api.routes import images, runs, timeseries, artifacts
+from api.routes import artifacts, images, projects, runs, timeseries
 from config import API_TITLE, API_VERSION
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +17,12 @@ def create_app() -> FastAPI:
     )
 
     # Rotas
+    app.include_router(
+        projects.router,
+        prefix="/projects",
+        tags=["Projects"],
+    )
+
     app.include_router(
         runs.router,
         prefix="/runs",
@@ -48,7 +54,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # Vite
-        "*"
+        "*",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -57,8 +63,11 @@ app.add_middleware(
 
 
 from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from infrastructure.database.sqlite.database import Base, engine
+from infrastructure.database.sqlite.models.project_model import ProjectModel
 
 BASE_DIR = Path(__file__).resolve().parents[2]  # ajuste se necessário
 
@@ -68,6 +77,7 @@ STATIC_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
 app.mount("/static/images", StaticFiles(directory=STATIC_IMAGES_DIR), name="images")
 
+Base.metadata.create_all(bind=engine)
 
 def main():
     """
@@ -83,7 +93,7 @@ def main():
         reload=True,
         log_level="info",
     )
-
+    
 
 if __name__ == "__main__":
     main()

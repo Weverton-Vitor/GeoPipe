@@ -69,13 +69,12 @@ export async function getWatermask(
 // ==========================================
 // PROJETOS
 // ==========================================
-
 export async function createProject(form) {
     const formData = new FormData();
 
     formData.append("name", form.name);
     formData.append("location", form.location);
-    formData.append("description", form.description);
+    formData.append("description", form.description ?? "");
 
     if (form.shapefile) {
         formData.append("shapefile", form.shapefile);
@@ -83,14 +82,14 @@ export async function createProject(form) {
 
     if (form.elevationFile) {
         formData.append(
-            "elevationFile",
+            "elevation_file",
             form.elevationFile
         );
     }
 
     if (form.volumeFile) {
         formData.append(
-            "volumeFile",
+            "volume_file",
             form.volumeFile
         );
     }
@@ -101,10 +100,34 @@ export async function createProject(form) {
     });
 
     if (!res.ok) {
+        const errorText = await res.text();
         throw new Error(
-            `Erro ao criar projeto: ${res.status}`
+            `Erro ao criar projeto: ${res.status} - ${errorText}`
         );
     }
 
+    return res.json();
+}
+
+
+export async function getProjects() {
+    const res = await fetch(`${BASE_URL}/projects/`, {
+        method: "GET",
+    });
+    if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Erro ao buscar projetos: ${res.status} - ${errorText}`);
+    }
+    return res.json();
+}
+
+export async function getProject(id) {
+    const res = await fetch(`${BASE_URL}/projects/${id}`, {
+        method: "GET",
+    });
+    if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Erro ao buscar projeto: ${res.status} - ${errorText}`);
+    }
     return res.json();
 }

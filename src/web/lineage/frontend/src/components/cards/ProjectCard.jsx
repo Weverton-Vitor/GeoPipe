@@ -4,6 +4,7 @@ export default function ProjectCard({
   onDelete,
   onOpen,
 }) {
+
   return (
     <article className="project-card">
       <div className="project-card-top">
@@ -28,13 +29,13 @@ export default function ProjectCard({
       <div className="project-stats">
         <div>
           <span>Runs</span>
-          <strong>{project.runs}</strong>
+          <strong>{project.runs_qty}</strong>
         </div>
 
         <div>
           <span>Shapefile</span>
-          <strong title={project.shapefile}>
-            {project.shapefile}
+          <strong title={project.shapefile_path}>
+            {project.shapefile_path}
           </strong>
         </div>
       </div>

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from fastapi.testclient import TestClient
-from modules.lineage.main import app
+from web.lineage.main import app
 
 client = TestClient(app)
 

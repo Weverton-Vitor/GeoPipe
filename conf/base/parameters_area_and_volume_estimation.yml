@@ -17,7 +17,7 @@ configs:
   prefix_plot: ""
 
   initial_date: "01/2019"
-  end_date: "06/2025"
+  end_date: "07/2026"
   ground_truth_name: "ANA"
   ground_truth_column_volume: "Volume Útil (hm³)"
   ground_truth_column_date: "Data da Medição"

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends
 from pathlib import Path
+
 from api.dependencies import get_artifact_service
 from domain.services.artifacts_service import ArtifactsService
+from fastapi import APIRouter, Depends
 
 router = APIRouter()
 

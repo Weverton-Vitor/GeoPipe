@@ -11,7 +11,7 @@ import styles from "./ProjectOverview.module.css";
 
 export default function ProjectOverview({ project }) {
     const [newRunModalOpen, setNewRunModalOpen] = useState(false);
-
+    console.log(project)
     return (
         <div className={styles.container}>
             <section className={styles.projectHeader}>
@@ -84,7 +84,7 @@ export default function ProjectOverview({ project }) {
                         </div>
                     </div>
 
-                    <RealVolumesTable data={project.realVolumes} />
+                    <RealVolumesTable data={project.real_volumes} />
                 </div>
             </section>
 

@@ -5,12 +5,12 @@
 # Link: https://docs.kedro.org/en/0.19.10/configuration/parameters.html
 
 configs:
-
+# 
   # water_model_name: "DeepWaterMap"
   # water_model_name: "WatNet"
-  water_model_name: "VGG-UNet"
+  # water_model_name: "VGG-UNet"
   # water_model_name: "NDWI"
-  # water_model_name: "MNDWI"
+  water_model_name: "MNDWI"
 
   input_size: [512, 512]
 
