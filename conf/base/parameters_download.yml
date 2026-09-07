@@ -8,7 +8,7 @@ configs:
 
   # Datas para filtrar a coleção
   # init_date: "2026-02-25"
-  init_date: "2017-01-01"
+  init_date: "2026-07-15"
   final_date: "2026-07-31"
   # init_date: "2026-02-25"
   # final_date: "2026-02-27"
@@ -30,11 +30,11 @@ configs:
   # Escala da imagem a ser salva
   scale: 10
 
-  save_metadata: False
+  save_metadata: True
 
   # Pular o download
-  toa_skip_download: True
-  boa_skip_download: True
+  toa_skip_download: False
+  boa_skip_download: False
 
 
 
