@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 import ee
+import numpy as np
 import requests
 from tqdm import tqdm
 
@@ -66,7 +67,7 @@ def add_shadow_bands(img):
     cld_proj = (
         img.select("clouds")
         .directionalDistanceTransform(shadow_azimuth, CLD_PRJ_DIST * 10)
-        # .reproject(crs=img.select(0).projection(), scale=10)
+        .reproject(crs=img.select("B8").projection(), scale=10)
         .select("distance")
         .mask()
         .rename("cloud_transform")
@@ -247,15 +248,20 @@ def export_s2_cloud_shadow_masks(
         )
 
         if generate_plots:
+            rgb_array = mosaic_img.select(["B4", "B3", "B2"]).sampleRectangle(region=roi_feature_collection.geometry().bounds()).get("array")
+            color_composite_local = np.array(rgb_array.getInfo())
+
+            # 3. Faça o mesmo para as máscaras (exemplo convertendo para lista de arrays se sua função original pedir isso)
+            clouds_local = np.array(mosaic_img.select("clouds").rename("clouds").sampleRectangle(region=roi_feature_collection.geometry().bounds()).get("array").getInfo())
+            shadows_local = np.array(mosaic_img.select("shadows").sampleRectangle(region=roi_feature_collection.geometry().bounds()).get("array").getInfo())
+
+            # 4. Chame a sua função passando os dados já convertidos em arrays locais
             save_overlayed_mask_plot(
-                [
-                    mosaic_img.select("clouds").rename("clouds"),
-                    mosaic_img.select("shadows"),
-                ],
-                mosaic_img.select(["B4", "B3", "B2"]),
+                [clouds_local, shadows_local],
+                color_composite_local,
                 output_file=f"{save_plots_path}/{location_name}/{'s2cloudless'}/S2_cloud_shadow_mask_plot_{date_str}.png",
             )
-
+            
         roi_bounds = roi_feature_collection.geometry().bounds()
         # print(roi_bounds.getInfo()["coordinates"])
 
@@ -264,7 +270,7 @@ def export_s2_cloud_shadow_masks(
         # region recebe o dict GeoJSON — nunca o objeto ee.Geometry
         url = export_img.getDownloadURL(
             {
-                "scale": scale,
+                "scale": 10,
                 "region": roi_bounds,
                 "format": "GEO_TIFF",
             }

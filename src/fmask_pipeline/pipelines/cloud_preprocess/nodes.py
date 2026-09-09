@@ -1,15 +1,14 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import glob
 import logging
 import os
-from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 from tqdm import tqdm
 
+from fmask_pipeline.pipelines.download.nodes import shapefile2feature_collection
 from utils.fmask.Fmask import Fmask
 from utils.fmask.fmask_utils import save_mask_tif, save_overlayed_mask_plot
-from fmask_pipeline.pipelines.download.nodes import shapefile2feature_collection
 from utils.image_reconstuction.strategy import ALGORITHM_REGISTRY, process_single_image
 from utils.s2cloudless.gee_s2cloudless import export_s2_cloud_shadow_masks
 

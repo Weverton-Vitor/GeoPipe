@@ -172,6 +172,7 @@ def save_overlayed_mask_plot(
 
     fig = plt.figure(figsize=(25, 15))
     plt.subplot(1, 2, 1)
+    color_composite  = np.array(color_composite).astype(float)
     color_composite = (color_composite - color_composite.min()) / (
         color_composite.max() - color_composite.min()
     )

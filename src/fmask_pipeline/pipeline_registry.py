@@ -151,3 +151,4 @@ def register_pipelines() -> dict[str, Pipeline]:
         "water_area_volume_monitoring_sentinel_fmask_spectral_indice": water_area_volume_monitoring_sentinel_fmask_spectral_indice,
         "water_area_volume_monitoring_sentinel_fmask_tensorflow_model": water_area_volume_monitoring_sentinel_fmask_tensorflow_model,
     }
+ 
